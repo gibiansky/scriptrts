@@ -1,4 +1,4 @@
-public class Unit extends Construct {
+public abstract class Unit extends Construct {
     private int speed;
     private UnitType type;
 
