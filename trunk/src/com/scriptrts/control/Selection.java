@@ -1,8 +1,8 @@
 package com.scriptrts.control;
-public class Selection implements Iterable<MapElement> {
+public class Selection implements Iterable<Entity> {
 
     /* Inner container */
-    private ArrayList<MapElement> objects = new ArrayList<MapElement>(10);
+    private ArrayList<Entity> objects = new ArrayList<MapElement>(10);
 
     public Selection(){
         super();
