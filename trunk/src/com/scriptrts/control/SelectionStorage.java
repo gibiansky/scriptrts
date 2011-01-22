@@ -1,3 +1,4 @@
+package com.scriptrts.control;
 public class SelectionStorage {
     private HashMap<Integer, Selection> map = new HashMap<Integer, Selection>(100);
 

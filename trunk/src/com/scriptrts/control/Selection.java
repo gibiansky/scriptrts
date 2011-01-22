@@ -1,3 +1,4 @@
+package com.scriptrts.control;
 public class Selection implements Iterable<MapElement> {
 
     /* Inner container */
