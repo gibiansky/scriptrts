@@ -9,25 +9,25 @@ public class Selection implements Iterable<Entity> {
     }
 
     /* Global selections */
-    public static Selection visibleConstructs(){
-
+    public static Selection allEntities(){
+        return null;
     }
-
-    public static Selection pastConstructs(){
-
+    public static Selection myEntities(){
+        return null;
     }
-
-    public static Selection visibleTerrain(){
-
+    public static Selection enemyEntities(){
+        return null;
     }
-
-    public static Selection pastTerrain(){
-
+    public static Selection allyEntities(){
+        return null;
+    }
+    public static Selection terrainEntities(){
+        return null;
     }
 
     /* Combine selections */
     public static Selection combine(Selection one, Selection two){
-
+        return null;
     }
 
 }
