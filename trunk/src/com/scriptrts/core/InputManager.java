@@ -1,6 +1,14 @@
-import java.awt.event.*;
+package com.scriptrts.core;
 
-public class InputManager extends  MouseInputListener, MouseWheelListener, KeyListener {
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+
+import javax.swing.event.MouseInputListener;
+
+public class InputManager implements MouseInputListener, MouseWheelListener, KeyListener {
     /* Singleton */
     private final InputManager manager = new InputManager();
 
@@ -9,7 +17,7 @@ public class InputManager extends  MouseInputListener, MouseWheelListener, KeyLi
         super();
     }
 
-    public getInputManager(){
+    public InputManager getInputManager(){
         return manager;
     }
 

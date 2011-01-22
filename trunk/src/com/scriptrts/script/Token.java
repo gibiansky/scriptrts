@@ -1,3 +1,5 @@
+package com.scriptrts.script;
+
 class Token {
     TokenType type;
     String data;
