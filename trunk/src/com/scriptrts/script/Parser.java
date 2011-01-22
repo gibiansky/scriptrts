@@ -70,17 +70,20 @@ public class Parser {
                 throw new SyntaxException("mixing spaces and tabs is not permitted.", currentLine);
 
             /* Emit indent or dedent token if indent level changed */
-            if(indentCount < indentLevels.peek()){
+            boolean hasDedent = false;
+            while(indentCount < indentLevels.peek()){
+                hasDedent = true;
                 indentLevels.pop();
-
-                /* Make sure we returned to the old indent level, not something in between */
-                if(indentCount != indentLevels.peek())
-                    throw new SyntaxException("returned to intermediate indent level.", currentLine);
 
                 /* Emit dedent token */
                 tokens.add(Token.DEDENT);
             }
-            else if(indentCount > indentLevels.peek()){
+
+            /* Make sure we returned to the old indent level, not something in between */
+            if(hasDedent && indentCount != indentLevels.peek())
+                throw new SyntaxException("returned to intermediate indent level.", currentLine);
+
+            if(indentCount > indentLevels.peek()){
                 /* Push new indent level onto the stack as the current one */
                 indentLevels.push(indentCount);
 
@@ -89,10 +92,12 @@ public class Parser {
             }
 
             /* Finish lexing the rest of the line */
-            lexLine(tokens, line.substring(i, line.length()));
+            String lineRest = line.substring(i, line.length());
+            lexLine(tokens, lineRest);
 
             /* Go to the next line */
             currentLine++;
+            tokens.add(Token.NEWLINE); 
         }
 
         Token[] toks = new Token[tokens.size()];
@@ -112,44 +117,50 @@ public class Parser {
                 char numNext = next;
                 while(i + len != text.length() && (numNext == '.' || Character.isDigit(numNext))){
                     numNext = text.charAt(i+len);
+
+                    if(!(numNext == '.' || Character.isDigit(numNext))) break;
                     len++;
                 }
 
+
                 Token number = new Token(TokenType.NUMBER);
-                number.data = text.substring(i, i + len - 1);
+                number.data = text.substring(i, i + len);
                 tokens.add(number);
-                i += len - 2;
+                i += len;
             }
             else if(Character.isJavaIdentifierStart(next)){
                 int len = 0;
                 char idNext = next;
                 while(i + len != text.length() && Character.isJavaIdentifierPart(idNext)){
                     idNext = text.charAt(i+len);
+
+                    if(!Character.isJavaIdentifierPart(idNext)) break;
                     len++;
                 }
 
                 Token ident = new Token(TokenType.IDENTIFIER);
-                ident.data = text.substring(i, i + len - 1);
+                ident.data = text.substring(i, i + len);
                 tokens.add(ident);
-                i += len - 2;
+                i += len;
             }
-            else switch(next){
-                case '.': 
-                    tokens.add(Token.DOT); break;
-                case '=': 
-                    tokens.add(Token.EQUALS); break;
-                case '<': 
-                    tokens.add(Token.LT); break;
-                case '>': 
-                    tokens.add(Token.GT); break;
-                case '!': 
-                    tokens.add(Token.NOT); break;
-                case '\n': 
-                    tokens.add(Token.NEWLINE); break;
-                case ':': 
-                    tokens.add(Token.COLON); break;
+            else {
+                switch(next){
+                    case '.': 
+                        tokens.add(Token.DOT); break;
+                    case '=': 
+                        tokens.add(Token.EQUALS); break;
+                    case '<': 
+                        tokens.add(Token.LT); break;
+                    case '>': 
+                        tokens.add(Token.GT); break;
+                    case '!': 
+                        tokens.add(Token.NOT); break;
+                    case ':': 
+                        tokens.add(Token.COLON); break;
+                }
+                i++;
             }
-            i++;
+
         }
     }
 
