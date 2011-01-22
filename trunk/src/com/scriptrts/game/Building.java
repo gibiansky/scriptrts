@@ -1,4 +1,4 @@
-public class Building extends PlayerObject {
+public class Building extends Construct {
     private BuildingType type;
 
 }
