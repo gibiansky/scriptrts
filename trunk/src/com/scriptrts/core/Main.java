@@ -21,16 +21,24 @@ import javax.swing.JPanel;
 
 public class Main extends JPanel {
     /* Game properties */
-    static int n = 1280, tilesize = 32, width=800, height=600;
+    final static int n = 1280, tilesize = 32;
+    final static JFrame window = new JFrame("ScriptRTS");
+
+    /* Viewport properties */
+    static int width=800, height=600;
+    int viewportX = 0, viewportY = 0;
 
     /* Game data */
     String[][] terrain;
     BufferedImage dirt, grass;
+    boolean initialized = false;
 
     /* Input manager */
     InputManager manager = InputManager.getInputManager();
 
     /* Perspective affine transform */
+    AffineTransform projectionTransform = new AffineTransform(Math.sqrt(1/2.0), 0, -Math.sqrt(1/6.0), 2* Math.sqrt(1/6.0), 250, 80);
+    AffineTransform inverseTransform;
 
     /* Create a new JPanel Main object with double buffering enabled */
     public Main() {
@@ -39,7 +47,6 @@ public class Main extends JPanel {
 
     public static void main(String... args) {
         /* Create window of default size */
-        final JFrame window = new JFrame("ScriptRTS");
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setSize(width, height);
 
@@ -97,6 +104,11 @@ public class Main extends JPanel {
             }
         }
 
+        /* Initialize transforms */
+        try {
+            inverseTransform = projectionTransform.createInverse();
+        } catch (Exception e) { e.printStackTrace(); System.exit(1); }
+
         // load textures
         dirt = grass = null;
         try {
@@ -107,26 +119,75 @@ public class Main extends JPanel {
         }
 
         // set up key listeners
-        addKeyListener(manager);
-        addMouseMotionListener(manager);
-        addMouseListener(manager);
+        window.addKeyListener(manager);
+        window.addMouseMotionListener(manager);
+        window.addMouseListener(manager);
         manager.registerKeyCode(KeyEvent.VK_LEFT);
         manager.registerKeyCode(KeyEvent.VK_RIGHT);
         manager.registerKeyCode(KeyEvent.VK_UP);
         manager.registerKeyCode(KeyEvent.VK_DOWN);
+
+        /* Done with initialization */
+        initialized = true;
     }
 
     /* Update game state */
     public void updateGame(){
-
+        int increment = 10;
+        if(manager.getKeyCodeFlag(KeyEvent.VK_RIGHT)) {
+            viewportX += increment;
+            if(viewportX >= n * tilesize - width) viewportX = n * tilesize - width;
+        }
+        if(manager.getKeyCodeFlag(KeyEvent.VK_LEFT)) {
+            viewportX -= increment;
+            if(viewportX <= 0) viewportX = 0;
+        }
+        if(manager.getKeyCodeFlag(KeyEvent.VK_UP)) {
+            viewportY -= increment;
+            if(viewportY <= 0) viewportY = 0;
+        }
+        if(manager.getKeyCodeFlag(KeyEvent.VK_DOWN)) {
+            viewportY += increment;
+            if(viewportY >= n * tilesize - height) viewportY = n * tilesize - height;
+        }
     }
 
     @Override
     protected void paintComponent(Graphics g) {
+        if(!initialized) return;
+
+        /* Create a transformed graphics object to draw in perspective */
         Graphics2D graphics = (Graphics2D) g;
-        int leftBoundary = 0, topBoundary = 0;
-        for(int i = leftBoundary; i < leftBoundary + width/tilesize + 1; i++) {
-            for(int j = topBoundary; j < topBoundary + height/tilesize + 1; j++) {
+        AffineTransform flatTransform = graphics.getTransform();
+        graphics.setTransform(projectionTransform);
+ 
+        /* Find where to cull the edges of the map */
+        Point2D topLeft = new Point2D.Double(viewportX, viewportY);
+        Point2D bottomRight = new Point2D.Double(topLeft.getX() + width, topLeft.getY() + height);
+        inverseTransform.transform(topLeft, topLeft);
+        inverseTransform.transform(bottomRight, bottomRight);
+
+        /* Find boundaries of map */
+        int leftBoundary = (int) (topLeft.getX() / tilesize) - 1, topBoundary = (int) (topLeft.getY() / tilesize) - 1;
+        if(leftBoundary < 0) leftBoundary = 0;
+        if(topBoundary < 0) topBoundary = 0;
+
+        int rightBoundary = (int) (bottomRight.getX() / tilesize) + 1, bottomBoundary = (int) (bottomRight.getY() / tilesize) + 1;
+        if(rightBoundary > n) rightBoundary = n;
+        if(bottomBoundary > n) bottomBoundary = n;
+
+        /* Translate graphics so that entire map is visible and scrolling is smooth */
+        int shiftX = viewportX > 420 ? 420 : viewportX;
+        int shiftY = viewportY > 120 ? 120 : viewportY;
+        graphics.translate(-shiftX, -shiftY);
+
+        System.out.println("Left, Right: " + leftBoundary + " "  + rightBoundary);
+        System.out.println("Top, Down: " + topBoundary + " "  + bottomBoundary);
+        System.out.println("Viewport x, y: " + viewportX + " " + viewportY);
+        System.out.println();
+
+        for(int i = leftBoundary; i < rightBoundary; i++) {
+            for(int j = topBoundary; j < bottomBoundary; j++) {
                 graphics.drawImage(terrain[i][j] == "dirt" ? dirt : grass, (i - leftBoundary)*tilesize, (j - topBoundary)*tilesize, null);
             }
         }

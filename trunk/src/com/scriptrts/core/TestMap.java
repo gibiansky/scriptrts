@@ -101,7 +101,6 @@ public class TestMap extends JFrame {
 			// do stuff here
 			if(manager.getKeyCodeFlag(KeyEvent.VK_RIGHT)) {
                 leftBoundary++;
-                System.out.println("RIGHT");
                 if(leftBoundary >= n) leftBoundary = n;
             }
 			if(manager.getKeyCodeFlag(KeyEvent.VK_LEFT)) {
