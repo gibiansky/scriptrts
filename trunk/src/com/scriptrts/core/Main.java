@@ -20,12 +20,17 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class Main extends JPanel {
+    /* Game properties */
     static int n = 1280, tilesize = 32, width=800, height=600;
+
+    /* Game data */
     String[][] terrain;
     BufferedImage dirt, grass;
-    BufferedImage buf = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-    Graphics2D ig = (Graphics2D) buf.getGraphics();
+
+    /* Input manager */
     InputManager manager = InputManager.getInputManager();
+
+    /* Perspective affine transform */
 
     /* Create a new JPanel Main object with double buffering enabled */
     public Main() {

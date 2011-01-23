@@ -91,7 +91,7 @@ public class TestMap extends JFrame {
 
         // Affine transform
         double a = 1/Math.sqrt(6);
-        double[] matrx = {Math.sqrt(3) * a, 0, -a, 2*a, 140,80};
+        double[] matrx = {Math.sqrt(3) * a, 0, -a, 2*a, 250, 80};
         AffineTransform projection = new AffineTransform(matrx);
         ig.setTransform(projection);
 
