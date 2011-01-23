@@ -21,7 +21,7 @@ import javax.swing.JPanel;
 
 public class Main extends JPanel {
     /* Game properties */
-    final static int n = 1280, tilesize = 32;
+    final static int n = 128, tilesize = 32;
     final static JFrame window = new JFrame("ScriptRTS");
 
     /* Viewport properties */
@@ -37,7 +37,7 @@ public class Main extends JPanel {
     InputManager manager = InputManager.getInputManager();
 
     /* Perspective affine transform */
-    AffineTransform projectionTransform = new AffineTransform(Math.sqrt(1/2.0), 0, -Math.sqrt(1/6.0), 2* Math.sqrt(1/6.0), 250, 80);
+    AffineTransform projectionTransform = new AffineTransform(Math.sqrt(1/2.0), 0, -Math.sqrt(1/6.0), 2* Math.sqrt(1/6.0), 0, 0);
     AffineTransform inverseTransform;
 
     /* Create a new JPanel Main object with double buffering enabled */
@@ -51,8 +51,9 @@ public class Main extends JPanel {
         window.setSize(width, height);
 
         /* Check for fullscreen */
-        boolean fullscreen = JOptionPane.showConfirmDialog(null, "Enable Full Screen display?", "Fullscreen?", JOptionPane.YES_NO_OPTION) == 0;
+        //boolean fullscreen = JOptionPane.showConfirmDialog(null, "Enable Full Screen display?", "Fullscreen?", JOptionPane.YES_NO_OPTION) == 0;
 
+        boolean fullscreen = false;
         if(fullscreen){
             /* Disable resizing and decorations */
             window.setUndecorated(true);
@@ -133,18 +134,16 @@ public class Main extends JPanel {
 
     /* Update game state */
     public void updateGame(){
-        int increment = 15;
+        int increment = 30;
         if(manager.getKeyCodeFlag(KeyEvent.VK_RIGHT)) {
             viewportX += increment;
             if(viewportX >= n * tilesize - width) viewportX = n * tilesize - width;
         }
         if(manager.getKeyCodeFlag(KeyEvent.VK_LEFT)) {
             viewportX -= increment;
-            if(viewportX <= 0) viewportX = 0;
         }
         if(manager.getKeyCodeFlag(KeyEvent.VK_UP)) {
             viewportY -= increment;
-            if(viewportY <= 0) viewportY = 0;
         }
         if(manager.getKeyCodeFlag(KeyEvent.VK_DOWN)) {
             viewportY += increment;
@@ -158,7 +157,6 @@ public class Main extends JPanel {
 
         /* Create a transformed graphics object to draw in perspective */
         Graphics2D graphics = (Graphics2D) g;
-        AffineTransform flatTransform = graphics.getTransform();
         graphics.setTransform(projectionTransform);
  
         /* Find where to cull the edges of the map */
@@ -177,18 +175,22 @@ public class Main extends JPanel {
         if(bottomBoundary > n) bottomBoundary = n;
 
         /* Translate graphics so that entire map is visible and scrolling is smooth */
-        graphics.translate(-viewportX, -viewportY);
+        /* We want to translate by (viewportX, viewportY) but we're in a transformed coordinate system.
+         * Thus, we want to translate by some (a, b) such that T((a,b)) = (viewportX, viewportY).
+         * To find (a, b) we apply T^(-1) to (viewportX, viewportY). */
+        Point2D shift = new Point2D.Double(-viewportX, -viewportY);
+        inverseTransform.transform(shift, shift);
+        graphics.translate(shift.getX(), shift.getY());
 
+        /* DEBUG */
         System.out.println("Left, Right: " + leftBoundary + " "  + rightBoundary);
         System.out.println("Top, Down: " + topBoundary + " "  + bottomBoundary);
         System.out.println("Viewport x, y: " + viewportX + " " + viewportY);
         System.out.println();
 
-        leftBoundary = topBoundary = 0;
-        rightBoundary = bottomBoundary = 100;
         for(int i = leftBoundary; i < rightBoundary; i++) {
             for(int j = topBoundary; j < bottomBoundary; j++) {
-                graphics.drawImage(terrain[i][j] == "dirt" ? dirt : grass, (i)*tilesize, (j)*tilesize, null);
+                graphics.drawImage(terrain[i][j] == "dirt" ? dirt : grass, i*tilesize, j*tilesize, null);
             }
         }
     }
