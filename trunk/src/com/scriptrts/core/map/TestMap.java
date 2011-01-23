@@ -21,7 +21,6 @@ import com.scriptrts.core.InputManager;
 public class TestMap extends JFrame {
 
 	int n = 1280, tilesize = 32, width=800, height=600;
-	int x,y;
 	String[][] terrain;
 	BufferedImage dirt, grass;
 	BufferedImage buf = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -40,6 +39,7 @@ public class TestMap extends JFrame {
 		}
 
 		boolean fullscreen = JOptionPane.showConfirmDialog(null, "Enable Full Screen display?", "Fullscreen?", JOptionPane.YES_NO_OPTION) == 0;
+		fullscreen = false;
 		if(fullscreen){
 			/* Disable resizing and decorations */
 			setUndecorated(true);
@@ -78,10 +78,12 @@ public class TestMap extends JFrame {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		x=y=0;
 		// set up key listeners
 		addKeyListener(manager);
 		manager.registerKeyCode(KeyEvent.VK_LEFT);
+		manager.registerKeyCode(KeyEvent.VK_RIGHT);
+		manager.registerKeyCode(KeyEvent.VK_UP);
+		manager.registerKeyCode(KeyEvent.VK_DOWN);
 		// initial map paint
 		for(int i=0; i<n; i++) {
 			for(int j=0; j<n; j++) {
@@ -89,14 +91,9 @@ public class TestMap extends JFrame {
 			}
 		}
 		while(true) {
-			// check for keystrokes
-			if(manager.getKeyCodeFlag(KeyEvent.VK_LEFT))
-				System.out.println("Left arrow key pressed.");
-			try {
-				Thread.sleep(50);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			// do stuff here
+			if(manager.getKeyCodeFlag(KeyEvent.VK_RIGHT))
+				;
 			repaint();
 		}
 	}
