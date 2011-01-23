@@ -1,5 +1,6 @@
-package com.scriptrts.core.map;
+package com.scriptrts.core;
 
+import java.awt.geom.*;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -38,8 +39,8 @@ public class TestMap extends JFrame {
 			}
 		}
 
-		boolean fullscreen = JOptionPane.showConfirmDialog(null, "Enable Full Screen display?", "Fullscreen?", JOptionPane.YES_NO_OPTION) == 0;
-		fullscreen = false;
+        boolean fullscreen = false;
+		//boolean fullscreen = JOptionPane.showConfirmDialog(null, "Enable Full Screen display?", "Fullscreen?", JOptionPane.YES_NO_OPTION) == 0;
 		if(fullscreen){
 			/* Disable resizing and decorations */
 			setUndecorated(true);
@@ -78,23 +79,55 @@ public class TestMap extends JFrame {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+
 		// set up key listeners
 		addKeyListener(manager);
+        addMouseMotionListener(manager);
+        addMouseListener(manager);
 		manager.registerKeyCode(KeyEvent.VK_LEFT);
 		manager.registerKeyCode(KeyEvent.VK_RIGHT);
 		manager.registerKeyCode(KeyEvent.VK_UP);
 		manager.registerKeyCode(KeyEvent.VK_DOWN);
-		// initial map paint
-		for(int i=0; i<n; i++) {
-			for(int j=0; j<n; j++) {
-				ig.drawImage(terrain[i][j]=="dirt" ? dirt : grass, i*tilesize, j*tilesize, null);
-			}
-		}
+
+        // Affine transform
+        double a = 1/Math.sqrt(6);
+        double[] matrx = {Math.sqrt(3) * a, 0, a, 2*a};
+        AffineTransform projection = new AffineTransform(matrx);
+        ig.setTransform(projection);
+
+		
+        int leftBoundary = 0, topBoundary = 0;
 		while(true) {
 			// do stuff here
-			if(manager.getKeyCodeFlag(KeyEvent.VK_RIGHT))
-				;
-			repaint();
+			if(manager.getKeyCodeFlag(KeyEvent.VK_RIGHT)) {
+                leftBoundary++;
+                System.out.println("RIGHT");
+                if(leftBoundary >= n) leftBoundary = n;
+            }
+			if(manager.getKeyCodeFlag(KeyEvent.VK_LEFT)) {
+                leftBoundary--;
+                if(leftBoundary <= 0) leftBoundary = 0;
+            }
+			if(manager.getKeyCodeFlag(KeyEvent.VK_UP)) {
+                topBoundary--;
+                if(topBoundary <= 0) topBoundary = 0;
+            }
+			if(manager.getKeyCodeFlag(KeyEvent.VK_DOWN)) {
+                topBoundary++;
+                if(topBoundary >= n) topBoundary = n;
+            }
+
+            for(int i = leftBoundary; i < leftBoundary + width/tilesize + 1; i++) {
+                for(int j = topBoundary; j < topBoundary + height/tilesize + 1; j++) {
+                    ig.drawImage(terrain[i][j] == "dirt" ? dirt : grass, (i - leftBoundary)*tilesize, (j - topBoundary)*tilesize, null);
+                }
+            }
+        
+            repaint();
+
+            try {
+            Thread.sleep(30);
+            } catch(Exception e) {e.printStackTrace();}
 		}
 	}
 

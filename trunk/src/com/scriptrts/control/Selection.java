@@ -1,8 +1,12 @@
 package com.scriptrts.control;
-public class Selection implements Iterable<Entity> {
+
+import com.scriptrts.game.*;
+import java.util.*;
+
+public class Selection {
 
     /* Inner container */
-    private ArrayList<Entity> objects = new ArrayList<MapElement>(10);
+    private ArrayList<Entity> objects = new ArrayList<Entity>(10);
 
     public Selection(){
         super();
