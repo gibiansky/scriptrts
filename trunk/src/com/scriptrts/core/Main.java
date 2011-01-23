@@ -133,7 +133,7 @@ public class Main extends JPanel {
 
     /* Update game state */
     public void updateGame(){
-        int increment = 10;
+        int increment = 15;
         if(manager.getKeyCodeFlag(KeyEvent.VK_RIGHT)) {
             viewportX += increment;
             if(viewportX >= n * tilesize - width) viewportX = n * tilesize - width;
@@ -177,8 +177,6 @@ public class Main extends JPanel {
         if(bottomBoundary > n) bottomBoundary = n;
 
         /* Translate graphics so that entire map is visible and scrolling is smooth */
-        int shiftX = viewportX > 420 ? 420 : viewportX;
-        int shiftY = viewportY > 120 ? 120 : viewportY;
         graphics.translate(-viewportX, -viewportY);
 
         System.out.println("Left, Right: " + leftBoundary + " "  + rightBoundary);
@@ -190,7 +188,7 @@ public class Main extends JPanel {
         rightBoundary = bottomBoundary = 100;
         for(int i = leftBoundary; i < rightBoundary; i++) {
             for(int j = topBoundary; j < bottomBoundary; j++) {
-                graphics.drawImage(terrain[i][j] == "dirt" ? dirt : grass, (i - leftBoundary)*tilesize, (j - topBoundary)*tilesize, null);
+                graphics.drawImage(terrain[i][j] == "dirt" ? dirt : grass, (i)*tilesize, (j)*tilesize, null);
             }
         }
     }
