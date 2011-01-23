@@ -179,13 +179,15 @@ public class Main extends JPanel {
         /* Translate graphics so that entire map is visible and scrolling is smooth */
         int shiftX = viewportX > 420 ? 420 : viewportX;
         int shiftY = viewportY > 120 ? 120 : viewportY;
-        graphics.translate(-shiftX, -shiftY);
+        graphics.translate(-viewportX, -viewportY);
 
         System.out.println("Left, Right: " + leftBoundary + " "  + rightBoundary);
         System.out.println("Top, Down: " + topBoundary + " "  + bottomBoundary);
         System.out.println("Viewport x, y: " + viewportX + " " + viewportY);
         System.out.println();
 
+        leftBoundary = topBoundary = 0;
+        rightBoundary = bottomBoundary = 100;
         for(int i = leftBoundary; i < rightBoundary; i++) {
             for(int j = topBoundary; j < bottomBoundary; j++) {
                 graphics.drawImage(terrain[i][j] == "dirt" ? dirt : grass, (i - leftBoundary)*tilesize, (j - topBoundary)*tilesize, null);
