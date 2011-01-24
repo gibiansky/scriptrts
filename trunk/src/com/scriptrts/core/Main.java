@@ -21,12 +21,12 @@ import javax.swing.JPanel;
 
 public class Main extends JPanel {
     /* Game properties */
-    final static int n = 128, tilesize = 32;
+    final static int n = 128, tileX = 128, tileY = 64;
     final static JFrame window = new JFrame("ScriptRTS");
 
     /* Viewport properties */
     static int width=800, height=600;
-    int viewportX = 0, viewportY = 0;
+    int viewportX = tileX / 2, viewportY = tileY / 2;
 
     /* Game data */
     String[][] terrain;
@@ -35,10 +35,6 @@ public class Main extends JPanel {
 
     /* Input manager */
     InputManager manager = InputManager.getInputManager();
-
-    /* Perspective affine transform */
-    AffineTransform projectionTransform;
-    AffineTransform inverseTransform;
 
     /* Create a new JPanel Main object with double buffering enabled */
     public Main() {
@@ -105,20 +101,11 @@ public class Main extends JPanel {
             }
         }
 
-        /* Initialize transforms */
-        try {
-            double beta = Math.PI / 4; 
-            double theta = Math.PI/20;//Math.asin(Math.tan(Math.PI / 6));
-            projectionTransform = new AffineTransform(Math.cos(beta), Math.sin(beta), -Math.sin(beta)*Math.cos(theta), Math.cos(beta) * Math.cos(theta), 0, 0);
-            projectionTransform = new AffineTransform(Math.cos(.46365), Math.sin(.46365), 0, -1, 0, 0);
-            inverseTransform = projectionTransform.createInverse();
-        } catch (Exception e) { e.printStackTrace(); System.exit(1); }
-
         // load textures
         dirt = grass = null;
         try {
-            dirt = ImageIO.read(new File("resource/map/dirt32.png"));
-            grass = ImageIO.read(new File("resource/map/grass32.png"));
+            dirt = ImageIO.read(new File("resource/map/Martian Range.png"));
+            grass = ImageIO.read(new File("resource/map/Silver Hex.png"));
         } catch (IOException e1) {
             e1.printStackTrace();
         }
@@ -141,17 +128,19 @@ public class Main extends JPanel {
         int increment = 30;
         if(manager.getKeyCodeFlag(KeyEvent.VK_RIGHT)) {
             viewportX += increment;
-            if(viewportX >= n * tilesize - width) viewportX = n * tilesize - width;
+            if(viewportX >= n * tileX - width) viewportX = n * tileX - width;
         }
         if(manager.getKeyCodeFlag(KeyEvent.VK_LEFT)) {
             viewportX -= increment;
+            if(viewportX <= tileX/2) viewportX = tileX / 2;
         }
         if(manager.getKeyCodeFlag(KeyEvent.VK_UP)) {
             viewportY -= increment;
+            if(viewportY <= tileY/2) viewportY = tileY / 2;
         }
         if(manager.getKeyCodeFlag(KeyEvent.VK_DOWN)) {
             viewportY += increment;
-            if(viewportY >= n * tilesize - height) viewportY = n * tilesize - height;
+            if(viewportY >= n * tileY/2 - height) viewportY = n * tileY/2 - height;
         }
     }
 
@@ -161,41 +150,31 @@ public class Main extends JPanel {
 
         /* Create a transformed graphics object to draw in perspective */
         Graphics2D graphics = (Graphics2D) g;
-        graphics.setTransform(projectionTransform);
- 
-        /* Find where to cull the edges of the map */
-        Point2D topLeft = new Point2D.Double(viewportX, viewportY);
-        Point2D bottomRight = new Point2D.Double(topLeft.getX() + width, topLeft.getY() + height);
-        inverseTransform.transform(topLeft, topLeft);
-        inverseTransform.transform(bottomRight, bottomRight);
+        g.translate(-viewportX, -viewportY);
 
-        /* Find boundaries of map */
-        int leftBoundary = (int) (topLeft.getX() / tilesize) - 1, topBoundary = (int) (topLeft.getY() / tilesize) - 1;
+        int leftBoundary = (int) (viewportX / tileX) - 1, topBoundary = (int) (viewportY / (tileY / 2)) - 1;
         if(leftBoundary < 0) leftBoundary = 0;
         if(topBoundary < 0) topBoundary = 0;
 
-        int rightBoundary = (int) (bottomRight.getX() / tilesize) + 1, bottomBoundary = (int) (bottomRight.getY() / tilesize) + 1;
+        int rightBoundary = (int) ((viewportX + width) / tileX) + 1, bottomBoundary = (int) ((viewportY + height) / (tileY / 2)) + 1;
         if(rightBoundary > n) rightBoundary = n;
         if(bottomBoundary > n) bottomBoundary = n;
 
-        /* Translate graphics so that entire map is visible and scrolling is smooth */
-        /* We want to translate by (viewportX, viewportY) but we're in a transformed coordinate system.
-         * Thus, we want to translate by some (a, b) such that T((a,b)) = (viewportX, viewportY).
-         * To find (a, b) we apply T^(-1) to (viewportX, viewportY). */
-        Point2D shift = new Point2D.Double(-viewportX, -viewportY);
-        inverseTransform.transform(shift, shift);
-       // graphics.translate(shift.getX(), shift.getY());
-
-        /* DEBUG */
         System.out.println("Left, Right: " + leftBoundary + " "  + rightBoundary);
         System.out.println("Top, Down: " + topBoundary + " "  + bottomBoundary);
         System.out.println("Viewport x, y: " + viewportX + " " + viewportY);
         System.out.println();
 
-        leftBoundary = topBoundary = 0; rightBoundary = bottomBoundary = n;
-        for(int i = leftBoundary; i < rightBoundary; i++) {
-            for(int j = topBoundary; j < bottomBoundary; j++) {
-                graphics.drawImage(terrain[i][j] == "dirt" ? dirt : grass, i*tilesize, j*tilesize, null);
+        for(int i = topBoundary; i < bottomBoundary; i++) {
+            for(int j = leftBoundary; j < rightBoundary; j++) {
+                if(i % 2 == 0) {
+                    graphics.drawImage(terrain[i][j] == "dirt" ? dirt : dirt, j*tileX, i*tileY/2, tileX, tileY, null);
+                    graphics.drawString("(" + i + ", " + j + ")", j*tileX, i*tileY/2);
+                }
+                else {
+                    graphics.drawImage(terrain[i][j] == "grass" ? grass : grass, j*tileX + tileX/2, i*tileY/2, tileX, tileY, null);
+                    graphics.drawString("(" + i + ", " + j + ")", j*tileX + tileX/2, i*tileY/2);
+                }
             }
         }
     }
