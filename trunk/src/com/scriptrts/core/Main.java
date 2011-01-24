@@ -94,14 +94,6 @@ public class Main extends JPanel {
     public void initializeGame(){
         /* Create terrain */
         terrain = new int[n][n];
-        for(int i=0; i<n; i++) {
-            for(int j=0; j<n; j++) {
-                if(Math.random() < 0.5)
-                    terrain[i][j] = 0;
-                else
-                    terrain[i][j] = 1;
-            }
-        }
 
         // load textures
         dirt = grass = null;
@@ -112,8 +104,19 @@ public class Main extends JPanel {
             e1.printStackTrace();
         }
 
+        /* Create and populate map with tiles */
+        Map randomMap = new Map(n, ResourceDensity.Medium);
+        randomMap.populateTiles();
+        TerrainType[][] mapTerrain = randomMap.getTileArray();
+        
         /* Create map painter */
         BufferedImage[] imgs = {dirt, grass};
+        for (int i = 0; i < mapTerrain.length; i++)
+        	for(int j = 0; j < mapTerrain[0].length; j++)
+        		if(mapTerrain[i][j] == TerrainType.Dirt)
+        			terrain[i][j] = 0;
+        		else
+        			terrain[i][j] = 1;
         mapPainter = new MapPainter(terrain, imgs);
 
         // set up key listeners
