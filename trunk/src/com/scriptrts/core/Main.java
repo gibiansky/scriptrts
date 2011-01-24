@@ -37,7 +37,7 @@ public class Main extends JPanel {
     InputManager manager = InputManager.getInputManager();
 
     /* Perspective affine transform */
-    AffineTransform projectionTransform = new AffineTransform(Math.sqrt(1/2.0), 0, -Math.sqrt(1/6.0), 2* Math.sqrt(1/6.0), 0, 0);
+    AffineTransform projectionTransform;
     AffineTransform inverseTransform;
 
     /* Create a new JPanel Main object with double buffering enabled */
@@ -107,6 +107,10 @@ public class Main extends JPanel {
 
         /* Initialize transforms */
         try {
+            double beta = Math.PI / 4; 
+            double theta = Math.PI/20;//Math.asin(Math.tan(Math.PI / 6));
+            projectionTransform = new AffineTransform(Math.cos(beta), Math.sin(beta), -Math.sin(beta)*Math.cos(theta), Math.cos(beta) * Math.cos(theta), 0, 0);
+            projectionTransform = new AffineTransform(Math.cos(.46365), Math.sin(.46365), 0, -1, 0, 0);
             inverseTransform = projectionTransform.createInverse();
         } catch (Exception e) { e.printStackTrace(); System.exit(1); }
 
@@ -180,7 +184,7 @@ public class Main extends JPanel {
          * To find (a, b) we apply T^(-1) to (viewportX, viewportY). */
         Point2D shift = new Point2D.Double(-viewportX, -viewportY);
         inverseTransform.transform(shift, shift);
-        graphics.translate(shift.getX(), shift.getY());
+       // graphics.translate(shift.getX(), shift.getY());
 
         /* DEBUG */
         System.out.println("Left, Right: " + leftBoundary + " "  + rightBoundary);
@@ -188,6 +192,7 @@ public class Main extends JPanel {
         System.out.println("Viewport x, y: " + viewportX + " " + viewportY);
         System.out.println();
 
+        leftBoundary = topBoundary = 0; rightBoundary = bottomBoundary = n;
         for(int i = leftBoundary; i < rightBoundary; i++) {
             for(int j = topBoundary; j < bottomBoundary; j++) {
                 graphics.drawImage(terrain[i][j] == "dirt" ? dirt : grass, i*tilesize, j*tilesize, null);
