@@ -1,10 +1,14 @@
-package com.scriptrts.game;
+package com.scriptrts.combat;
+
+import com.scriptrts.game.Construct;
+import com.scriptrts.game.Sprite;
+
 public abstract class Unit extends Construct {
     protected double movementSpeed;
     protected double attackSpeed;
     // This is an int array because we may want different types of attack. 
     //ex.: [land_attack air_attack] or [attack1 attack2] or something depending on plot
-    protected int[] damage;
+    protected int[][] damage;
     
     protected Sprite sprite;
     
@@ -13,9 +17,13 @@ public abstract class Unit extends Construct {
     protected boolean air;
     
     protected Direction direction;
-    
-    protected enum Direction{N, NE, E, SE, S, SW, W, NW}
 
+    protected Action curAction;
+    
+    protected enum Direction{N, NE, E, SE, S, SW, W, NW};
+
+    public abstract boolean act(Action a);
+    
     public double getMovementSpeed() {
         return movementSpeed;
     }
@@ -32,11 +40,11 @@ public abstract class Unit extends Construct {
         this.attackSpeed = attackSpeed;
     }
 
-    public int[] getDamage() {
+    public int[][] getDamage() {
         return damage;
     }
 
-    public void setDamage(int[] damage) {
+    public void setDamage(int[][] damage) {
         this.damage = damage;
     }
 
