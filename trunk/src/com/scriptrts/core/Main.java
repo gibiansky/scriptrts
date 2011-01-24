@@ -1,6 +1,5 @@
 package com.scriptrts.core;
 
-import java.awt.geom.*;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -9,13 +8,9 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.awt.Image;
-import java.io.File;
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -49,8 +44,7 @@ public class Main extends JPanel {
         window.setSize(width, height);
 
         /* Check for fullscreen */
-        //boolean fullscreen = JOptionPane.showConfirmDialog(null, "Enable Full Screen display?", "Fullscreen?", JOptionPane.YES_NO_OPTION) == 0;
-
+//        boolean fullscreen = JOptionPane.showConfirmDialog(null, "Enable Full Screen display?", "Fullscreen?", JOptionPane.YES_NO_OPTION) == 0;
         boolean fullscreen = false;
         if(fullscreen){
             /* Disable resizing and decorations */
@@ -92,32 +86,13 @@ public class Main extends JPanel {
 
     /* Initialize game resources */
     public void initializeGame(){
-        /* Create terrain */
-        terrain = new int[n][n];
-
-        // load textures
-        dirt = grass = null;
-        try {
-            dirt = ImageIO.read(new File("resource/map/Martian Range.png"));
-            grass = ImageIO.read(new File("resource/map/Silver Hex.png"));
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-
+    	
         /* Create and populate map with tiles */
         Map randomMap = new Map(n, ResourceDensity.Medium);
         randomMap.populateTiles();
-        TerrainType[][] mapTerrain = randomMap.getTileArray();
         
         /* Create map painter */
-        BufferedImage[] imgs = {dirt, grass};
-        for (int i = 0; i < mapTerrain.length; i++)
-        	for(int j = 0; j < mapTerrain[0].length; j++)
-        		if(mapTerrain[i][j] == TerrainType.Dirt)
-        			terrain[i][j] = 0;
-        		else
-        			terrain[i][j] = 1;
-        mapPainter = new MapPainter(terrain, imgs);
+        mapPainter = new MapPainter(randomMap);
 
         // set up key listeners
         window.addKeyListener(manager);

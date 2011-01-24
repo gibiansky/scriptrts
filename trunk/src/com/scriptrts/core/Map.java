@@ -46,14 +46,11 @@ public class Map {
 			for(int j = 0; j < n; j++)
 				if(Math.random() < param) {
 					tileArray[i][j] = TerrainType.Dirt; // dirt "source"
-					System.out.println("Placing dirt source");
 					int x = i, y = j;
 					for (int k = 0; k < n; k++)
 						for(int l = 0; l < n; l++)
-							if(Math.pow(x - k, 2) + Math.pow(y - l, 2) < Math.pow(radius, 2)) {
+							if(Math.pow(x - k, 2) + Math.pow(y - l, 2) / 2 < Math.pow(radius, 2))
 								tileArray[l][k] = TerrainType.Dirt;
-								System.out.println("Placing dirt");
-							}
 				}
 	}
 }
