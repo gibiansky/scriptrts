@@ -9,6 +9,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.util.Timer;
@@ -29,9 +30,10 @@ public class Main extends JPanel {
     int viewportX = tileX / 2, viewportY = tileY / 2;
 
     /* Game data */
-    String[][] terrain;
-    BufferedImage dirt, grass;
+    int[][] terrain;
+    BufferedImage dirt, grass, maskTL;
     boolean initialized = false;
+    MapPainter mapPainter;
 
     /* Input manager */
     InputManager manager = InputManager.getInputManager();
@@ -91,13 +93,13 @@ public class Main extends JPanel {
     /* Initialize game resources */
     public void initializeGame(){
         /* Create terrain */
-        terrain = new String[n][n];
+        terrain = new int[n][n];
         for(int i=0; i<n; i++) {
             for(int j=0; j<n; j++) {
                 if(Math.random() < 0.5)
-                    terrain[i][j] = "dirt";
+                    terrain[i][j] = 0;
                 else
-                    terrain[i][j] = "grass";
+                    terrain[i][j] = 1;
             }
         }
 
@@ -109,6 +111,10 @@ public class Main extends JPanel {
         } catch (IOException e1) {
             e1.printStackTrace();
         }
+
+        /* Create map painter */
+        BufferedImage[] imgs = {dirt, grass};
+        mapPainter = new MapPainter(terrain, imgs);
 
         // set up key listeners
         window.addKeyListener(manager);
@@ -160,23 +166,8 @@ public class Main extends JPanel {
         if(rightBoundary > n) rightBoundary = n;
         if(bottomBoundary > n) bottomBoundary = n;
 
-        System.out.println("Left, Right: " + leftBoundary + " "  + rightBoundary);
-        System.out.println("Top, Down: " + topBoundary + " "  + bottomBoundary);
-        System.out.println("Viewport x, y: " + viewportX + " " + viewportY);
-        System.out.println();
-
-        for(int i = topBoundary; i < bottomBoundary; i++) {
-            for(int j = leftBoundary; j < rightBoundary; j++) {
-                if(i % 2 == 0) {
-                    graphics.drawImage(terrain[i][j] == "dirt" ? dirt : dirt, j*tileX, i*tileY/2, tileX, tileY, null);
-                    graphics.drawString("(" + i + ", " + j + ")", j*tileX, i*tileY/2);
-                }
-                else {
-                    graphics.drawImage(terrain[i][j] == "grass" ? grass : grass, j*tileX + tileX/2, i*tileY/2, tileX, tileY, null);
-                    graphics.drawString("(" + i + ", " + j + ")", j*tileX + tileX/2, i*tileY/2);
-                }
-            }
-        }
+        /* Paint the map using the map painter */
+        mapPainter.paintMap(graphics, leftBoundary, topBoundary, rightBoundary - leftBoundary, bottomBoundary - topBoundary, tileX, tileY);
     }
 
 }
