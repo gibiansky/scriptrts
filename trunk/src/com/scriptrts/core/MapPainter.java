@@ -1,6 +1,13 @@
 package com.scriptrts.core;
 
+
+
+
+import javax.swing.*;
 import java.awt.Graphics2D;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.util.ArrayList;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
@@ -14,170 +21,261 @@ import javax.imageio.ImageIO;
 
 public class MapPainter {
 
-	Map toPaint;
-	HashMap<TerrainType, BufferedImage> images;
+    private Map toPaint;
+    private int[][] terrain;
+    private int[][] originalTerrain;
+    private ArrayList<BufferedImage> images = new ArrayList<BufferedImage>(TerrainType.values().length);
+    private int[][] masking;
 
-	 public MapPainter(Map map){
-	    	this.toPaint = map;
-	    	images = new HashMap<TerrainType, BufferedImage>();
-	    	
-	    	/* Set up correspondences between TerrainTypes and their images */
-	    	try {
-				BufferedReader reader = new BufferedReader(new FileReader("resource/map/textureTrans.dat"));
-				String str;
-				TerrainType[] values = TerrainType.values();
-			    while ((str = reader.readLine()) != null) {
-			        String[] line = str.split(",");
-			        String tt = line[0].trim();
-			        String imgname = line[1].trim();
-			        for(TerrainType t : values)
-			        	if(t.name().equals(tt)) {
-			        		images.put(t, ImageIO.read(new File("resource/map/" + imgname + ".png")));
-			        		break;
-			        	}
-			    }
-			    reader.close();
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-	    }
-	
-	
-	//    int[][] terrain;
-	//    int[][] isMasked;
-	//    static boolean masking = false;
-	//    ArrayList<BufferedImage> images = new ArrayList<BufferedImage>();
+    private ArrayList<MaskRequest> maskTypes = new ArrayList<MaskRequest>();
+    private ArrayList<Integer> imageIndices = new ArrayList<Integer>();
 
-	/* Implements a basic map to make sure masked images aren't duplicated */
-	/* The point array stores pairs of integers: the first integer is the tile that is the original, 
-	 * the second integer is the tile that is the masking tile.
-	 * The integer array stores the result of the mask, i.e. the index of the image that uses the mask.
-	 */
-	//    ArrayList<Point> maskTypes = new ArrayList<Point>();
-	//    ArrayList<Integer> imageIndices = new ArrayList<Integer>();
+    /* Side masks */
+    static BufferedImage maskTopLeft, maskTopRight, maskBottomLeft, maskBottomRight;
 
-	//    static BufferedImage maskTopLeft, maskTopRight, maskBottomLeft, maskBottomRight;
-	//    static {
-	//        try {
-	//            maskTopLeft = ImageIO.read(new File("resource/mask/TileMaskTL.png"));
-	//            maskTopRight = ImageIO.read(new File("resource/mask/TileMaskTR.png"));
-	//            maskBottomLeft = ImageIO.read(new File("resource/mask/TileMaskBL.png"));
-	//            maskBottomRight = ImageIO.read(new File("resource/mask/TileMaskBR.png"));
-	//        } catch(IOException e){
-	//            e.printStackTrace();
-	//        }
-	//    }
+    /* Corner masks */
+    static BufferedImage maskTop, maskBottom, maskLeft, maskRight;
 
-	//    public MapPainter(int[][] mapTerrain, BufferedImage[] tileImages){
-	//        /* Add all tile images to our image cache */
-	//        for(BufferedImage img : tileImages)
-	//            images.add(img);
-	//
-	//        /* Copy over the terrain into our terrain array */
-	//        terrain = new int[mapTerrain.length][mapTerrain[0].length];
-	//        isMasked = new int[mapTerrain.length][mapTerrain[0].length];
-	//        for(int i = 0; i < mapTerrain.length; i++){
-	//            for(int j = 0; j < mapTerrain[0].length; j++){
-	//                terrain[i][j] = mapTerrain[i][j];
-	//            }
-	//        }
-	//
-	//        if(masking){
-	//            /* Create new terrain tiles for where terrains merge using masks */
-	//            for(int i = 0; i < terrain.length; i++){
-	//                for(int j = 0; j < terrain[0].length; j += 2){
-	//                    /* Check for top left mask */
-	//                    if(i != 0 && j != 0 && terrain[i][j] != terrain[i-1][j-1]) {
-	//                        terrain[i][j] = mask(terrain[i][j], terrain[i-1][j-1], maskTopLeft);
-	//                    }
-	//
-	//                    /* Check for top right mask */
-	//                    if(i != 0 && j != terrain[0].length - 1 && terrain[i][j] != terrain[i-1][j+1]){
-	//                        terrain[i][j] = mask(terrain[i][j], terrain[i-1][j+1], maskTopRight);
-	//                    }
-	//
-	//                    /* Check for bottom left mask */
-	//                    if(i != terrain.length - 1 && j != 0 && terrain[i][j] != terrain[i+1][j-1]) {
-	//                        terrain[i][j] = mask(terrain[i][j], terrain[i+1][j-1], maskBottomLeft);
-	//                    }
-	//
-	//                    /* Check for bottom right mask */
-	//                    if(i != terrain.length - 1 && j != terrain[0].length - 1 && terrain[i][j] != terrain[i+1][j+1]){
-	//                        terrain[i][j] = mask(terrain[i][j], terrain[i+1][j+1], maskBottomRight);
-	//                    }
-	//                }
-	//            }
-	//        }
-	//    }
+    /* Load masks */
+    static {
+        try {
+            maskTopLeft = ImageIO.read(new File("resource/mask/TileMaskTL.png"));
+            maskTopRight = ImageIO.read(new File("resource/mask/TileMaskTR.png"));
+            maskBottomLeft = ImageIO.read(new File("resource/mask/TileMaskBL.png"));
+            maskBottomRight = ImageIO.read(new File("resource/mask/TileMaskBR.png"));
+            maskTop = ImageIO.read(new File("resource/mask/TileMaskTop.png"));
+            maskBottom = ImageIO.read(new File("resource/mask/TileMaskBottom.png"));
+            maskLeft = ImageIO.read(new File("resource/mask/TileMaskLeft.png"));
+            maskRight = ImageIO.read(new File("resource/mask/TileMaskRight.png"));
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
 
-	//    private int mask(int originalType, int maskType, BufferedImage mask){
-	//        /* Check that we haven't made this mask before */
-	//        for(int i = 0; i < maskTypes.size(); i++){
-	//            Point pairing = maskTypes.get(i);
-	//            if(pairing.x == originalType && pairing.y == maskType)
-	//                return imageIndices.get(i);
-	//        }
-	//        System.out.println("MAKS " + originalType + " " + maskType);
-	//
-	//
-	//        BufferedImage originalImg = images.get(originalType);
-	//        BufferedImage maskImg = images.get(maskType);
-	//
-	//        BufferedImage result = new BufferedImage(originalImg.getWidth(), originalImg.getHeight(), BufferedImage.TYPE_INT_ARGB);
-	//        Graphics drawer = result.getGraphics();
-	//
-	//        /* Create image by combining mask image and mask, then we will draw this image onto the original to create the result */
-	//        BufferedImage layerMask = new BufferedImage(originalImg.getWidth(), originalImg.getHeight(), BufferedImage.TYPE_INT_ARGB);
-	//        for(int i = 0; i < originalImg.getWidth(); i++){
-	//            for(int j = 0; j < originalImg.getHeight(); j++){
-	//                /* Get colors of mask image and mask itself */
-	//                int color = maskImg.getRGB(i, j);
-	//                int maskColor = mask.getRGB(i, j);
-	//
-	//                int alpha = ((maskColor & 0xFF000000) >> 24);
-	//                int red = ((color & 0x00FF0000) >> 16); 
-	//                int green = ((color & 0x0000FF00) >> 8);
-	//                int blue = ((color & 0x000000FF) >> 0); 
-	//
-	//                int newColor = (alpha << 24) | (red << 16) | (green << 8) | blue;
-	//                layerMask.setRGB(i, j, newColor);
-	//            }
-	//        }
-	//
-	//        drawer.drawImage(originalImg, 0, 0, null);
-	//        drawer.drawImage(layerMask, 0, 0, null);
-	//
-	//        /* return id of new thing */
-	//        int newImgIndex = images.size() - 1;
-	//        images.add(result);
-	//
-	//        /* before returning, add this to the cache */
-	//        maskTypes.add(new Point(originalType, maskType));
-	//        imageIndices.add(newImgIndex);
-	//
-	//        return newImgIndex;
-	//    }
+    public MapPainter(Map map){
+        this.toPaint = map;
+        TerrainType[][] terrainTypes = map.getTileArray();
 
-	public void paintMap(Graphics2D graphics, int left, int top, int width, int height, int tileX, int tileY){
-		int bottom = top + height;
-		int right = left + width;
+        /* Grow the images list to the right size */
+        for(int i = 0; i < TerrainType.values().length; i++)
+            images.add(null);
 
-		for(int i = top; i < bottom; i++) {
-			for(int j = left; j < right; j++) {
-				/* Draw the tile */
-				int x;
-				if(i % 2 == 0)
-					x = j*tileX;
-				else 
-					x = j*tileX + tileX/2;
+        /* Set up correspondences between TerrainTypes and their images */
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("resource/map/textureTrans.dat"));
+            String str;
+            TerrainType[] values = TerrainType.values();
+            while ((str = reader.readLine()) != null) {
+                String[] line = str.split(",");
+                String tt = line[0].trim();
+                String imgname = line[1].trim();
+                for(TerrainType t : values)
+                    if(t.name().equals(tt)) {
+                        images.set(t.ordinal(), ImageIO.read(new File("resource/map/" + imgname + ".png")));
+                        break;
+                    }
+            }
+            reader.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-				//                Image image = images.get(terrain[i][j]);
-				Image image = images.get(toPaint.getTileArray()[i][j]);
-				graphics.drawImage(image, x, i*tileY/2, tileX, tileY, null);
-			}
-		}
-	}
+        /* Convert terrain to ints */
+        terrain = new int[terrainTypes.length][terrainTypes[0].length];
+        for(int i = 0; i < terrain.length; i++)
+            for(int j = 0; j < terrain[0].length; j++)
+                terrain[i][j] = terrainTypes[i][j].ordinal();
+
+        originalTerrain = new int[terrainTypes.length][terrainTypes[0].length];
+        for(int i = 0; i < terrain.length; i++)
+            for(int j = 0; j < terrain[0].length; j++)
+                originalTerrain[i][j] = terrain[i][j];
+
+        /* Calculate what type of masking is necessary */
+        masking = new int[terrain.length][terrain[0].length];
+        calculateMasking();
+    }
+
+    private class MaskRequest {
+        int original, mask;
+        BufferedImage img;
+
+        public MaskRequest(int o, int m, BufferedImage i){
+            super();
+            original = o;
+            mask = m;
+            img = i;
+        }
+    }
+
+    private void calculateMasking() {
+        /* Mask sides going from the top right to bottom left */
+        ArrayList<MaskRequest> maskRequestsForTile = new ArrayList<MaskRequest>(8);
+        for(int i = 0; i < terrain.length; i++){
+            for(int j = 0; j < terrain[0].length; j ++){
+                /* Get rid of previous requests */
+                maskRequestsForTile.clear();
+
+                /* Top right side of the tile */
+                int newIndexX = i -1;
+                int newIndexY = (i % 2 == 0 ? j : j + 1);
+                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
+                    if(originalTerrain[i][j] != originalTerrain[newIndexX][newIndexY]){
+                        if(originalTerrain[i][j] > originalTerrain[newIndexX][newIndexY])
+                            maskRequestsForTile.add(new MaskRequest(terrain[i][j], originalTerrain[newIndexX][newIndexY], maskTopRight));
+                    }
+                }
+
+                /* Bottom left side of the tile */
+                newIndexX = i + 1;
+                newIndexY = (i % 2 == 0 ? j - 1: j);
+                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
+                    if(originalTerrain[i][j] != originalTerrain[newIndexX][newIndexY]){
+                        if(originalTerrain[i][j] > originalTerrain[newIndexX][newIndexY])
+                            maskRequestsForTile.add(new MaskRequest(terrain[i][j], originalTerrain[newIndexX][newIndexY], maskBottomLeft));
+                    }
+                }
+
+                /* Mask sides going from the top left to bottom right */
+                /* Top left side of the tile */
+                newIndexX = i - 1;
+                newIndexY = (i % 2 == 0 ? j - 1: j);
+                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
+                    if(originalTerrain[i][j] != originalTerrain[newIndexX][newIndexY]){
+                        if(originalTerrain[i][j] > originalTerrain[newIndexX][newIndexY])
+                            maskRequestsForTile.add(new MaskRequest(terrain[i][j], originalTerrain[newIndexX][newIndexY], maskTopLeft));
+                    }
+                }
+
+                /* Bottom right side of the tile */
+                newIndexX = i + 1;
+                newIndexY = (i % 2 == 0 ? j : j + 1);
+                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
+                    if(originalTerrain[i][j] != originalTerrain[newIndexX][newIndexY]){
+                        if(originalTerrain[i][j] > originalTerrain[newIndexX][newIndexY])
+                            maskRequestsForTile.add(new MaskRequest(terrain[i][j], originalTerrain[newIndexX][newIndexY], maskBottomRight));
+                    }
+                }
+
+                /* Top  corner */
+                newIndexX = i - 2;
+                newIndexY = j;
+                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
+                    if(originalTerrain[i][j] != originalTerrain[newIndexX][newIndexY]){
+                        if(originalTerrain[i][j] > originalTerrain[newIndexX][newIndexY])
+                            maskRequestsForTile.add(new MaskRequest(terrain[i][j], originalTerrain[newIndexX][newIndexY], maskTop));
+                    }
+                }
+
+                /* Bottom corner */
+                newIndexX = i + 2;
+                newIndexY = j;
+                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
+                    if(originalTerrain[i][j] != originalTerrain[newIndexX][newIndexY]){
+                        if(originalTerrain[i][j] > originalTerrain[newIndexX][newIndexY])
+                            maskRequestsForTile.add(new MaskRequest(terrain[i][j], originalTerrain[newIndexX][newIndexY], maskBottom));
+                    }
+                }
+
+                /* Top  corner */
+                newIndexX = i;
+                newIndexY = j-1;
+                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
+                    if(originalTerrain[i][j] != originalTerrain[newIndexX][newIndexY]){
+                        if(originalTerrain[i][j] > originalTerrain[newIndexX][newIndexY])
+                            maskRequestsForTile.add(new MaskRequest(terrain[i][j], originalTerrain[newIndexX][newIndexY], maskLeft));
+                    }
+                }
+
+                /* Bottom corner */
+                newIndexX = i;
+                newIndexY = j+1;
+                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
+                    if(originalTerrain[i][j] != originalTerrain[newIndexX][newIndexY]){
+                        if(originalTerrain[i][j] > originalTerrain[newIndexX][newIndexY])
+                            maskRequestsForTile.add(new MaskRequest(terrain[i][j], originalTerrain[newIndexX][newIndexY], maskRight));
+                    }
+                }
+
+                terrain[i][j] = combinedMask(maskRequestsForTile, terrain[i][j]);
+            }
+        }
+    }
+
+    private int combinedMask(ArrayList<MaskRequest> requests, int terrain){
+        if(requests.isEmpty()) 
+            return terrain;
+
+        for(int i = 0; i < requests.size(); i++)
+            terrain = performMask(requests.get(i), terrain);
+        return terrain;
+    }
+
+    private int performMask(MaskRequest req, int originalType){
+        int maskType = req.mask;
+        BufferedImage mask = req.img;
+        for(int i = 0; i < maskTypes.size(); i++)
+            if(maskTypes.get(i).original == originalType && maskTypes.get(i).mask == maskType && maskTypes.get(i).img == mask)
+                return imageIndices.get(i);
+
+        BufferedImage originalImg = images.get(originalType);
+        BufferedImage maskImg = images.get(maskType);
+
+        final BufferedImage result = new BufferedImage(originalImg.getWidth(), originalImg.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics drawer = result.getGraphics();
+
+        /* Create image by combining mask image and mask, then we will draw this image onto the original to create the result */
+        BufferedImage layerMask = new BufferedImage(originalImg.getWidth(), originalImg.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        for(int i = 0; i < originalImg.getWidth(); i++){
+            for(int j = 0; j < originalImg.getHeight(); j++){
+                /* Get colors of mask image and mask itself */
+                int color = maskImg.getRGB(i, j);
+                int maskColor = mask.getRGB(i, j);
+
+                int alpha = ((maskColor & 0xFF000000) >> 24);
+                int intensity = 255 - ((maskColor & 0x00FF0000) >> 16); 
+                int red = ((color & 0x00FF0000) >> 16); 
+                int green = ((color & 0x0000FF00) >> 8);
+                int blue = ((color & 0x000000FF) >> 0); 
+
+                int newColor = (intensity << 24) | (red << 16) | (green << 8) | blue;
+                layerMask.setRGB(i, j, alpha == 0 ? color : newColor);
+            }
+        }
+
+        drawer.drawImage(originalImg, 0, 0, null);
+        drawer.drawImage(layerMask, 0, 0, null);
+
+        /* return id of new thing */
+        int newImgIndex = images.size();
+        images.add(result);
+
+        /* before returning, add this to the cache */
+        MaskRequest mr = new MaskRequest(originalType, maskType, mask);
+        maskTypes.add(mr);
+        imageIndices.add(newImgIndex);
+
+        return newImgIndex;
+    }
+
+    public void paintMap(Graphics2D graphics, int left, int top, int width, int height, int tileX, int tileY){
+        int bottom = top + height;
+        int right = left + width;
+
+        for(int i = top; i < bottom; i++) {
+            for(int j = left; j < right; j++) {
+                /* Draw the tile */
+                int x;
+                if(i % 2 == 0)
+                    x = j*tileX;
+                else 
+                    x = j*tileX + tileX/2;
+
+                Image image = images.get(terrain[i][j]);
+                graphics.drawImage(image, x, i*tileY/2, tileX, tileY, null);
+                graphics.setColor(Color.RED);
+            }
+        }
+    }
 
 }
