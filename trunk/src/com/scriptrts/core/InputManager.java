@@ -1,5 +1,6 @@
 package com.scriptrts.core;
 
+import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -38,7 +39,33 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     	keyCodeFlags.put(code, false);
     	return flag;
     }
+
+    /* Mouse methods */
+    private boolean mouseMovement = false;
+    private Point mouseLocation = new Point(0, 0);
+    private boolean mousePressed = false;
+    private boolean mouseClicked = false;
+
+    public boolean getMouseMoved(){
+        boolean ret = mouseMovement;
+        mouseMovement = false;
+        return ret;
+    }
+
+    public Point getMouseLocation(){
+        return mouseLocation;
+    }
+
+    public boolean getMouseClicked(){
+        boolean ret = mouseClicked;
+        mouseClicked = false;
+        return ret;
+    }
     
+    public boolean getMouseDown(){
+        return mousePressed;
+    }
+
     /* Key listener */
     public void keyPressed(KeyEvent key){
     	keyCodeFlags.put(key.getKeyCode(), true);
@@ -47,13 +74,40 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     public void keyTyped(KeyEvent key){}
 
     /* Mouse listener */
-    public void mouseClicked(MouseEvent mouse){} 
-    public void mouseEntered(MouseEvent mouse){}
-    public void mouseExited(MouseEvent mouse){}
-    public void mousePressed(MouseEvent mouse){}
-    public void mouseReleased(MouseEvent mouse){}
-    public void mouseDragged(MouseEvent mouse){}
-    public void mouseMoved(MouseEvent mouse){}
+    public void mouseEntered(MouseEvent mouse){
+        mouseLocation.x = mouse.getX();
+        mouseLocation.y = mouse.getY();
+    }
+    public void mouseExited(MouseEvent mouse){
+        mouseLocation.x = mouse.getX();
+        mouseLocation.y = mouse.getY();
+    }
+
+    public void mouseClicked(MouseEvent mouse){
+        mouseClicked = true;
+        mouseLocation.x = mouse.getX();
+        mouseLocation.y = mouse.getY();
+    } 
+    public void mousePressed(MouseEvent mouse){
+        mousePressed = true;
+        mouseLocation.x = mouse.getX();
+        mouseLocation.y = mouse.getY();
+    }
+    public void mouseReleased(MouseEvent mouse){
+        mousePressed = false;
+        mouseLocation.x = mouse.getX();
+        mouseLocation.y = mouse.getY();
+    }
+    public void mouseDragged(MouseEvent mouse){
+        mouseMovement = true;
+        mouseLocation.x = mouse.getX();
+        mouseLocation.y = mouse.getY();
+    }
+    public void mouseMoved(MouseEvent mouse){
+        mouseMovement = true;
+        mouseLocation.x = mouse.getX();
+        mouseLocation.y = mouse.getY();
+    }
 
     /* Mouse wheel listener */
     public void mouseWheelMoved(MouseWheelEvent e){

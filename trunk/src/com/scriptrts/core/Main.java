@@ -9,6 +9,7 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.Timer;
+import java.awt.Point;
 import java.util.TimerTask;
 
 import javax.swing.JFrame;
@@ -92,7 +93,7 @@ public class Main extends JPanel {
         randomMap.populateTiles();
         
         /* Create map painter */
-        mapPainter = new MapPainter(randomMap);
+        mapPainter = new MapPainter(randomMap, tileX, tileY);
 
         // set up key listeners
         window.addKeyListener(manager);
@@ -109,6 +110,27 @@ public class Main extends JPanel {
 
     /* Update game state */
     public void updateGame(){
+        /* Try to accept and locate mouse clicks */
+        if(manager.getMouseClicked()){
+            /* Get mouse location */
+            Point point = manager.getMouseLocation();
+            int mouseX = (int) point.getX();
+            int mouseY = (int) point.getY();
+
+            /* Convert map location into absolute coordinates on the map */
+            point.translate(viewportX, viewportY);
+
+            /* Shift the mouse location over to the origin, so we can use shapes to determine the hit */
+            int shiftedMouseY = mouseY % tileY;
+            int tilesShiftedY = mouseY / tileY;
+            
+            int shiftedMouseX = mouseX % tileX;
+            int tilesShiftedX = mouseX / tileX;
+
+            System.out.println("Click: (" + shiftedMouseX + ", " + shiftedMouseY + ") shifted (" + tilesShiftedX + ", " + tilesShiftedY + ").");
+        }
+
+        /* Scrolling */
         int increment = 30;
         if(manager.getKeyCodeFlag(KeyEvent.VK_RIGHT)) {
             viewportX += increment;
@@ -145,7 +167,7 @@ public class Main extends JPanel {
         if(bottomBoundary > n) bottomBoundary = n;
 
         /* Paint the map using the map painter */
-        mapPainter.paintMap(graphics, leftBoundary, topBoundary, rightBoundary - leftBoundary, bottomBoundary - topBoundary, tileX, tileY);
+        mapPainter.paintMap(graphics, leftBoundary, topBoundary, rightBoundary - leftBoundary, bottomBoundary - topBoundary);
     }
 
 }

@@ -1,8 +1,5 @@
 package com.scriptrts.core;
 
-
-
-
 import javax.swing.*;
 import java.awt.Graphics2D;
 import java.awt.Color;
@@ -26,6 +23,7 @@ public class MapPainter {
     private int[][] originalTerrain;
     private ArrayList<BufferedImage> images = new ArrayList<BufferedImage>(TerrainType.values().length);
     private int[][] masking;
+    private int tileX, tileY;
 
     private ArrayList<MaskRequest> maskTypes = new ArrayList<MaskRequest>();
     private ArrayList<Integer> imageIndices = new ArrayList<Integer>();
@@ -36,29 +34,30 @@ public class MapPainter {
     /* Corner masks */
     static BufferedImage maskTop, maskBottom, maskLeft, maskRight;
 
-    /* Load masks */
-    static {
-        try {
-            maskTopLeft = ImageIO.read(new File("resource/mask/TileMaskTL.png"));
-            maskTopRight = ImageIO.read(new File("resource/mask/TileMaskTR.png"));
-            maskBottomLeft = ImageIO.read(new File("resource/mask/TileMaskBL.png"));
-            maskBottomRight = ImageIO.read(new File("resource/mask/TileMaskBR.png"));
-            maskTop = ImageIO.read(new File("resource/mask/TileMaskTop.png"));
-            maskBottom = ImageIO.read(new File("resource/mask/TileMaskBottom.png"));
-            maskLeft = ImageIO.read(new File("resource/mask/TileMaskLeft.png"));
-            maskRight = ImageIO.read(new File("resource/mask/TileMaskRight.png"));
-        } catch(IOException e){
-            e.printStackTrace();
-        }
-    }
-
-    public MapPainter(Map map){
+    public MapPainter(Map map, int tileX, int tileY){
         this.toPaint = map;
         TerrainType[][] terrainTypes = map.getTileArray();
+        this.tileX = tileX;
+        this.tileY = tileY;
 
         /* Grow the images list to the right size */
         for(int i = 0; i < TerrainType.values().length; i++)
             images.add(null);
+
+        /* Load masks */
+        try {
+            maskTopLeft = resizeImage(ImageIO.read(new File("resource/mask/TileMaskTL.png")), tileX, tileY);
+            maskTopRight = resizeImage(ImageIO.read(new File("resource/mask/TileMaskTR.png")), tileX, tileY);
+            maskBottomLeft = resizeImage(ImageIO.read(new File("resource/mask/TileMaskBL.png")), tileX, tileY);
+            maskBottomRight = resizeImage(ImageIO.read(new File("resource/mask/TileMaskBR.png")), tileX, tileY);
+            maskTop = resizeImage(ImageIO.read(new File("resource/mask/TileMaskTop.png")), tileX, tileY);
+            maskBottom = resizeImage(ImageIO.read(new File("resource/mask/TileMaskBottom.png")), tileX, tileY);
+            maskLeft = resizeImage(ImageIO.read(new File("resource/mask/TileMaskLeft.png")), tileX, tileY);
+            maskRight = resizeImage(ImageIO.read(new File("resource/mask/TileMaskRight.png")), tileX, tileY);
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+
 
         /* Set up correspondences between TerrainTypes and their images */
         try {
@@ -71,7 +70,7 @@ public class MapPainter {
                 String imgname = line[1].trim();
                 for(TerrainType t : values)
                     if(t.name().equals(tt)) {
-                        images.set(t.ordinal(), ImageIO.read(new File("resource/map/" + imgname + ".png")));
+                        images.set(t.ordinal(), resizeImage(ImageIO.read(new File("resource/map/" + imgname + ".png")), tileX, tileY));
                         break;
                     }
             }
@@ -94,6 +93,12 @@ public class MapPainter {
         /* Calculate what type of masking is necessary */
         masking = new int[terrain.length][terrain[0].length];
         calculateMasking();
+    }
+
+    private BufferedImage resizeImage(BufferedImage img, int newSizeX, int newSizeY){
+        BufferedImage result = new BufferedImage(newSizeX, newSizeY, BufferedImage.TYPE_INT_ARGB);
+        result.getGraphics().drawImage(img, 0, 0, newSizeX, newSizeY, null);
+        return result;
     }
 
     private class MaskRequest {
@@ -258,7 +263,7 @@ public class MapPainter {
         return newImgIndex;
     }
 
-    public void paintMap(Graphics2D graphics, int left, int top, int width, int height, int tileX, int tileY){
+    public void paintMap(Graphics2D graphics, int left, int top, int width, int height){
         int bottom = top + height;
         int right = left + width;
 
