@@ -42,15 +42,18 @@ public class Map {
 			for(int j = 0; j < n; j++)
 				tileArray[i][j] = TerrainType.Grass;
 		double param = .005, radius = 4;
-		for (int i = 0; i < n; i++)
-			for(int j = 0; j < n; j++)
-				if(Math.random() < param) {
-					tileArray[i][j] = TerrainType.Dirt; // dirt "source"
-					int x = i, y = j;
-					for (int k = 0; k < n; k++)
-						for(int l = 0; l < n; l++)
-							if(Math.pow(x - k, 2) + Math.pow(y - l, 2) / 2 < Math.pow(radius, 2))
-								tileArray[l][k] = TerrainType.Dirt;
-				}
+		/* Loop through each tile type */
+		for(TerrainType t : TerrainType.values()) {
+			for (int i = 0; i < n; i++)
+				for(int j = 0; j < n; j++)
+					if(Math.random() < param) {
+						tileArray[i][j] = t;
+						int x = i, y = j;
+						for (int k = 0; k < n; k++)
+							for(int l = 0; l < n; l++)
+								if(Math.pow(x - k, 2) + Math.pow(y - l, 2) / 2 < Math.pow(radius, 2))
+									tileArray[l][k] = t;
+					}
+		}
 	}
 }

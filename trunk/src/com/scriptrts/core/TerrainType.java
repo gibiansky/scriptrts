@@ -4,5 +4,7 @@ public enum TerrainType {
 	Grass,
 	Dirt,
 	Sand,
-	Rock;
+	Rock,
+	Water,
+	DeepFire;
 }
