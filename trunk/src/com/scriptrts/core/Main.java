@@ -29,8 +29,9 @@ public class Main extends JPanel {
 
     /* Viewport properties */
     private Viewport viewport;
-
     private final static int DEFAULT_WIDTH = 800, DEFAULT_HEIGHT = 600;
+
+    private TerrainType paintbrush = TerrainType.DeepFire;
 
     /* Game data */
     private boolean initialized = false;
@@ -166,52 +167,19 @@ public class Main extends JPanel {
         initialized = true;
     }
 
-    /* Get the tile that is being clicked on */
-    private Point getClickedTile(Point point){
-        /* Convert map location into absolute coordinates on the map */
-        point.translate(viewport.getX(), viewport.getY());
-
-        int mouseX = (int) point.getX();
-        int mouseY = (int) point.getY();
-
-        int leftBoundary = (int) (viewport.getX() / tileX) - 1; 
-        int topBoundary = (int) (viewport.getY() / (tileY / 2)) - 1;
-        if(leftBoundary < 0) leftBoundary = 0;
-        if(topBoundary < 0) topBoundary = 0;
-
-        int rightBoundary = (int) ((viewport.getX() + viewport.getWidth()) / tileX) + 1;
-        int bottomBoundary = (int) ((viewport.getY() + viewport.getHeight()) / (tileY / 2)) + 1;
-        if(rightBoundary > n) rightBoundary = n;
-        if(bottomBoundary > n) bottomBoundary = n;
-
-        Polygon[][] visibleTiles = mapPainter.getVisibleTilePolygons(leftBoundary, topBoundary, rightBoundary - leftBoundary, bottomBoundary - topBoundary);
-
-        int tileLocX = -1, tileLocY = -1;
-        for(int i = 0; i < visibleTiles.length; i++){
-            for(int j = 0; j < visibleTiles[0].length; j++){
-                if(visibleTiles[i][j].contains(mouseX, mouseY)){
-                    tileLocY = i + topBoundary;
-                    tileLocX = j + leftBoundary;
-                }
-            }
-        }
-
-        return new Point(tileLocX, tileLocY);
-    }
-
     /* Update game state */
-    private TerrainType paintbrush = TerrainType.DeepFire;
     public void updateGame(){
         /* Try to accept and locate mouse clicks */
         if(manager.getMouseDown() && manager.getMouseMoved()){
             /* Get mouse location */
             Point point = manager.getMouseLocation();
-            Point tileLoc = getClickedTile(point);
+
+            /* Convert map location into absolute coordinates on the map */
+            Point tileLoc = mapPainter.getTileAtPoint(point, viewport);
+            if(tileLoc == null) return;
+
             int tileLocX = (int) tileLoc.getX();
             int tileLocY = (int) tileLoc.getY();
-
-            if(tileLocX < 0 || tileLocY < 0) return;
-            if(tileLocX >= n || tileLocY >= n) return;
 
             if(manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
                 TerrainType type = map.getTileArray()[tileLocY][tileLocX];
@@ -238,23 +206,12 @@ public class Main extends JPanel {
     protected void paintComponent(Graphics g) {
         if(!initialized) return;
 
-        /* Create a transformed graphics object to draw in perspective */
+        /* Move over to the viewport location */
         Graphics2D graphics = (Graphics2D) g;
         g.translate(-viewport.getX(), -viewport.getY());
 
-        int leftBoundary = (int) (viewport.getX() / tileX) - 1;
-        int topBoundary = (int) (viewport.getY() / (tileY / 2)) - 1;
-        if(leftBoundary < 0) leftBoundary = 0;
-        if(topBoundary < 0) topBoundary = 0;
-
-        int rightBoundary = (int) ((viewport.getX() + viewport.getWidth()) / tileX) + 1;
-        int bottomBoundary = (int) ((viewport.getY() + viewport.getHeight()) / (tileY / 2)) + 1;
-        if(rightBoundary > n) rightBoundary = n;
-        if(bottomBoundary > n) bottomBoundary = n;
-
         /* Paint the map using the map painter */
-        mapPainter.paintMap(graphics, leftBoundary, topBoundary, rightBoundary - leftBoundary, bottomBoundary - topBoundary);
-
+        mapPainter.paintMap(graphics, viewport);
     }
 
 }

@@ -1,5 +1,6 @@
 package com.scriptrts.core;
 
+import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Graphics2D;
 import java.awt.Color;
@@ -315,6 +316,55 @@ public class MapPainter {
     }
 
     /**
+     * Get the tile that is at a given point on the map
+     */
+    public Point getTileAtPoint(Point point, Viewport viewport){
+        /* Calculate boundaries of what the viewport sees */
+        int left = (int) (viewport.getX() / tileX) - 1;
+        int top = (int) (viewport.getY() / (tileY / 2)) - 1;
+        if(left < 0) left = 0;
+        if(top < 0) top = 0;
+
+        int right = (int) ((viewport.getX() + viewport.getWidth()) / tileX) + 1;
+        int bottom = (int) ((viewport.getY() + viewport.getHeight()) / (tileY / 2)) + 1;
+        if(right > toPaint.getN()) right = toPaint.getN();
+        if(bottom > toPaint.getN()) bottom = toPaint.getN();
+
+        /* Translate the point to be on the map coordinates instead of in screen coordinates */
+        point.translate(viewport.getX(), viewport.getY());
+        
+        /* Loop through visible tiles */
+        for(int i = top; i < bottom; i++) {
+            for(int j = left; j < right; j++) {
+                /*
+                 * Shift every other row to the right to create the zig-zag pattern going down 
+                 * We have to do this because we are using fake isometric perspective.
+                 */
+                int x;
+                if(i % 2 == 0){
+                    x = j*tileX;
+                } else {
+                    x = j*tileX + tileX/2;
+                }
+
+                int[] xpts = {
+                    tileX/2, tileX, tileX/2, 0
+                };
+                int[] ypts = {
+                    0, tileY/2, tileY, tileY/2
+                };
+                Polygon mainTile = new Polygon(xpts, ypts, 4);
+                mainTile.translate(x, i*tileY/2);
+                
+                if(mainTile.contains(point))
+                    return new Point(j, i);
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Signifies that the input map to this map painter was changed, and that the map painter
      * should change its internal state to reflect the change in the map.
      */
@@ -332,10 +382,17 @@ public class MapPainter {
     /**
      * Paint the specified part of the map onto the screen using the provided Graphics2D object
      */
-    public synchronized void paintMap(Graphics2D graphics, int left, int top, int width, int height){
-        /* Calculate the boundaries of the visible map */
-        int bottom = top + height;
-        int right = left + width;
+    public synchronized void paintMap(Graphics2D graphics, Viewport viewport){
+        /* Calculate boundaries of what the viewport sees */
+        int left = (int) (viewport.getX() / tileX) - 1;
+        int top = (int) (viewport.getY() / (tileY / 2)) - 1;
+        if(left < 0) left = 0;
+        if(top < 0) top = 0;
+
+        int right = (int) ((viewport.getX() + viewport.getWidth()) / tileX) + 1;
+        int bottom = (int) ((viewport.getY() + viewport.getHeight()) / (tileY / 2)) + 1;
+        if(right > toPaint.getN()) right = toPaint.getN();
+        if(bottom > toPaint.getN()) bottom = toPaint.getN();
 
         /* Only draw what we need to */
         for(int i = top; i < bottom; i++) {
@@ -367,52 +424,22 @@ public class MapPainter {
                     }
                 }
 
+                /* Draw debug lines and labels */
                 if(MapPainter.DEBUG){
                     graphics.setColor(Color.RED);
                     graphics.drawString("(" + i + ", " + j + ": " + terrain[i][j] + ")",  x + tileX/2 - 40, i*tileY/2 + tileY/2);
 
-                    int[] xpts = new int[]{tileX/2, tileX, tileX/2, 0};
-                    int[] ypts = new int[]{0, tileY/2, tileY, tileY/2};
+                    int[] xpts = {
+                        tileX/2, tileX, tileX/2, 0
+                    };
+                    int[] ypts = {
+                        0, tileY/2, tileY, tileY/2
+                    };
                     Polygon mainTile = new Polygon(xpts, ypts, 4);
                     mainTile.translate(x, i*tileY/2);
                     graphics.drawPolygon(mainTile);
                 }
             }
         }
-    }
-
-    /**
-     * Get an array of polygons that represent the tiles on the board. Used for detecting mouse clicks.
-     */
-    public Polygon[][] getVisibleTilePolygons(int left, int top, int width, int height){
-        /* Calculate the boundaries of the visible map */
-        int bottom = top + height;
-        int right = left + width;
-        
-        Polygon[][] polys = new Polygon[(bottom - top)][(right - left)];
-
-        /* Only draw what we need to */
-        for(int i = top; i < bottom; i++) {
-            for(int j = left; j < right; j++) {
-                /*
-                 * Shift every other row to the right to create the zig-zag pattern going down 
-                 * We have to do this because we are using fake isometric perspective.
-                 */
-                int x;
-                if(i % 2 == 0)
-                    x = j*tileX;
-                else 
-                    x = j*tileX + tileX/2;
-
-                int[] xpts = new int[]{tileX/2, tileX, tileX/2, 0};
-                int[] ypts = new int[]{0, tileY/2, tileY, tileY/2};
-                Polygon mainTile = new Polygon(xpts, ypts, 4);
-                mainTile.translate(x, i*tileY/2);
-
-                polys[i - top][j - left] = mainTile;
-            }
-        }
-
-        return polys;
     }
 }
