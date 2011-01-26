@@ -101,40 +101,19 @@ public class MapPainter {
             BufferedImage maskRight = ResourceManager.loadImage("resource/mask/TileMaskRight.png", MAX_TILE_X, MAX_TILE_Y);
 
             maskImages = new BufferedImage[]{maskTop, maskBottom, maskLeft, maskRight, maskTopLeft, maskTopRight, maskBottomLeft, maskBottomRight};
+
+
+            /* Load all images for textures */
+            HashMap<String, String> associations = ResourceManager.readAssociationFile("resource/map/textureTrans.dat");
+            TerrainType[] values = TerrainType.values();
+
+            /* Store the loaded image in the images array at the correct index */
+            for(TerrainType t : values)
+                images[t.ordinal()] = ResourceManager.loadImage("resource/map/" + associations.get(t.name()) + ".png", MAX_TILE_X, MAX_TILE_Y);
         } catch(IOException e){
             e.printStackTrace();
         }
 
-
-        /* Load the terrain textures using the texture data file */
-        try {
-            /* The format of the file we're reading is any number of lines, where the first word is 
-             * the name (in the enum) of the tile terrain. The first word is followed by a ", ", followed by
-             * the filename of the image texture (sans ".png"). For instance,
-             *      Dirt, Martian Rock
-             *      Grass, Prarie Grass
-             *      Water, Blue Aqua
-             *      ... and so on ...
-             */
-            BufferedReader reader = new BufferedReader(new FileReader("resource/map/textureTrans.dat"));
-            String str;
-            TerrainType[] values = TerrainType.values();
-            while ((str = reader.readLine()) != null) {
-                String[] line = str.split(",");
-                String tt = line[0].trim();
-                String imgname = line[1].trim();
-
-                /* Store the loaded image in the images array at the correct index */
-                for(TerrainType t : values)
-                    if(t.name().equals(tt)) {
-                        images[t.ordinal()] = ResourceManager.loadImage("resource/map/" + imgname + ".png", MAX_TILE_X, MAX_TILE_Y);
-                        break;
-                    }
-            }
-            reader.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         /* Convert terrain to ints instead of enums */
         TerrainType[][] terrainTypes = map.getTileArray();
@@ -294,7 +273,7 @@ public class MapPainter {
         if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
             if(terrain[i][j] < terrain[newIndexX][newIndexY])
                 return true;
-            
+
         return false;
     }
     private boolean isMaskedBottomRight(int i, int j, int[][] terrain){
@@ -303,7 +282,7 @@ public class MapPainter {
         if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
             if(terrain[i][j] < terrain[newIndexX][newIndexY])
                 return true;
-            
+
         return false;
     }
 
@@ -338,7 +317,7 @@ public class MapPainter {
 
         /* Translate the point to be on the map coordinates instead of in screen coordinates */
         point.translate(viewport.getX(), viewport.getY());
-        
+
         /* Loop through visible tiles */
         for(int i = top; i < bottom; i++) {
             for(int j = left; j < right; j++) {
@@ -361,7 +340,7 @@ public class MapPainter {
                 };
                 Polygon mainTile = new Polygon(xpts, ypts, 4);
                 mainTile.translate(x, i*tileY/2);
-                
+
                 if(mainTile.contains(point))
                     return new Point(j, i);
             }
