@@ -1,6 +1,6 @@
 package com.scriptrts.core;
 
-import javax.swing.*;
+import java.awt.Polygon;
 import java.awt.Graphics2D;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -136,21 +136,11 @@ public class MapPainter {
         /* Find the number of possible terrains in this map, 
          * so we know how much space to allocate for the masks
          */
-        int max = -1;
-        for(int i = 0; i < terrain.length; i++)
-            for(int j = 0; j < terrain[0].length; j++)
-                max = terrain[i][j] > max ? terrain[i][j] : max;
+        int max = images.length;
 
         /* Create the masks for each type of terrain */
         terrainMasks = new BufferedImage[max][MASKS.length];
         createTerrainMasks();
-
-        /* Disable masking by default */
-        masking = new int[terrain.length][terrain[0].length][8];
-        for(int i = 0; i < terrain.length; i++)
-            for(int j = 0; j < terrain[0].length; j++)
-                for(int k = 0; k < 8; k++)
-                    masking[i][j][k] = -1;
 
         /* Calculate what type of masking is necessary */
         calculateMasking();
@@ -202,6 +192,14 @@ public class MapPainter {
      * Calculate which tiles need to have masking on them and what type of masking to apply
      */
     private void calculateMasking() {
+        /* Disable masking by default */
+        masking = new int[terrain.length][terrain[0].length][8];
+        for(int i = 0; i < terrain.length; i++)
+            for(int j = 0; j < terrain[0].length; j++)
+                for(int k = 0; k < 8; k++)
+                    masking[i][j][k] = -1;
+
+
         /* Mask each tile separately */
         for(int i = 0; i < terrain.length; i++){
             for(int j = 0; j < terrain[0].length; j ++){
@@ -292,6 +290,20 @@ public class MapPainter {
     }
 
     /**
+     * Signifies that the input map to this map painter was changed, and that the map painter
+     * should change its internal state to reflect the change in the map.
+     */
+    public void update(){
+        TerrainType[][] terrainTypes = toPaint.getTileArray();
+        terrain = new int[terrainTypes.length][terrainTypes[0].length];
+        for(int i = 0; i < terrain.length; i++)
+            for(int j = 0; j < terrain[0].length; j++)
+                terrain[i][j] = terrainTypes[i][j].ordinal();
+
+        calculateMasking();
+    }
+
+    /**
      * Paint the specified part of the map onto the screen using the provided Graphics2D object
      */
     public void paintMap(Graphics2D graphics, int left, int top, int width, int height){
@@ -326,8 +338,54 @@ public class MapPainter {
                         graphics.drawImage(mask, x, i*tileY/2, tileX, tileY, null);
                     }
                 }
+
+                boolean debug = true;
+                if(debug){
+                    graphics.setColor(Color.RED);
+                    graphics.drawString("(" + i + ", " + j + ": " + terrain[i][j] + ")",  x + tileX/2 - 40, i*tileY/2 + tileY/2);
+
+                    int[] xpts = new int[]{tileX/2, tileX, tileX/2, 0};
+                    int[] ypts = new int[]{0, tileY/2, tileY, tileY/2};
+                    Polygon mainTile = new Polygon(xpts, ypts, 4);
+                    mainTile.translate(x, i*tileY/2);
+                    graphics.drawPolygon(mainTile);
+                }
             }
         }
     }
 
+    /**
+     * Get an array of polygons that represent the tiles on the board. Used for detecting mouse clicks.
+     */
+    public Polygon[][] getVisibleTilePolygons(int left, int top, int width, int height){
+        /* Calculate the boundaries of the visible map */
+        int bottom = top + height;
+        int right = left + width;
+        
+        Polygon[][] polys = new Polygon[(bottom - top)][(right - left)];
+
+        /* Only draw what we need to */
+        for(int i = top; i < bottom; i++) {
+            for(int j = left; j < right; j++) {
+                /*
+                 * Shift every other row to the right to create the zig-zag pattern going down 
+                 * We have to do this because we are using fake isometric perspective.
+                 */
+                int x;
+                if(i % 2 == 0)
+                    x = j*tileX;
+                else 
+                    x = j*tileX + tileX/2;
+
+                int[] xpts = new int[]{tileX/2, tileX, tileX/2, 0};
+                int[] ypts = new int[]{0, tileY/2, tileY, tileY/2};
+                Polygon mainTile = new Polygon(xpts, ypts, 4);
+                mainTile.translate(x, i*tileY/2);
+
+                polys[i - top][j - left] = mainTile;
+            }
+        }
+
+        return polys;
+    }
 }

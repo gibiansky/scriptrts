@@ -1,5 +1,6 @@
 package com.scriptrts.core;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -10,6 +11,7 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.Timer;
 import java.awt.Point;
+import java.awt.Polygon;
 import java.util.TimerTask;
 
 import javax.swing.JFrame;
@@ -30,6 +32,7 @@ public class Main extends JPanel {
     BufferedImage dirt, grass, maskTL;
     boolean initialized = false;
     MapPainter mapPainter;
+    Map map;
 
     /* Input manager */
     InputManager manager = InputManager.getInputManager();
@@ -46,7 +49,7 @@ public class Main extends JPanel {
 
         /* Check for fullscreen */
 //        boolean fullscreen = JOptionPane.showConfirmDialog(null, "Enable Full Screen display?", "Fullscreen?", JOptionPane.YES_NO_OPTION) == 0;
-        boolean fullscreen = false;
+        boolean fullscreen = true;
         if(fullscreen){
             /* Disable resizing and decorations */
             window.setUndecorated(true);
@@ -91,62 +94,95 @@ public class Main extends JPanel {
         /* Create and populate map with tiles */
         Map randomMap = new Map(n, ResourceDensity.Medium);
         randomMap.populateTiles();
+        map = randomMap;
         
         /* Create map painter */
         mapPainter = new MapPainter(randomMap, tileX, tileY);
 
         // set up key listeners
         window.addKeyListener(manager);
-        window.addMouseMotionListener(manager);
-        window.addMouseListener(manager);
+        addMouseMotionListener(manager);
+        addMouseListener(manager);
         manager.registerKeyCode(KeyEvent.VK_LEFT);
         manager.registerKeyCode(KeyEvent.VK_RIGHT);
         manager.registerKeyCode(KeyEvent.VK_UP);
         manager.registerKeyCode(KeyEvent.VK_DOWN);
+        manager.registerKeyCode(KeyEvent.VK_CONTROL);
 
         /* Done with initialization */
         initialized = true;
     }
 
+    /* Get the tile that is being clicked on */
+    private Point getClickedTile(Point point){
+
+        /* Convert map location into absolute coordinates on the map */
+        point.translate(viewportX, viewportY);
+
+        int mouseX = (int) point.getX();
+        int mouseY = (int) point.getY();
+
+        int leftBoundary = (int) (viewportX / tileX) - 1, topBoundary = (int) (viewportY / (tileY / 2)) - 1;
+        if(leftBoundary < 0) leftBoundary = 0;
+        if(topBoundary < 0) topBoundary = 0;
+
+        int rightBoundary = (int) ((viewportX + width) / tileX) + 1, bottomBoundary = (int) ((viewportY + height) / (tileY / 2)) + 1;
+        if(rightBoundary > n) rightBoundary = n;
+        if(bottomBoundary > n) bottomBoundary = n;
+
+        Polygon[][] visibleTiles = mapPainter.getVisibleTilePolygons(leftBoundary, topBoundary, rightBoundary - leftBoundary, bottomBoundary - topBoundary);
+
+        int tileLocX = -1, tileLocY = -1;
+        for(int i = 0; i < visibleTiles.length; i++)
+            for(int j = 0; j < visibleTiles[0].length; j++){
+                if(visibleTiles[i][j].contains(mouseX, mouseY)){
+                    tileLocY = i + topBoundary;
+                    tileLocX = j + leftBoundary;
+                }
+            }
+
+        return new Point(tileLocX, tileLocY);
+    }
+
     /* Update game state */
+    private TerrainType paintbrush = TerrainType.DeepFire;
     public void updateGame(){
         /* Try to accept and locate mouse clicks */
-        if(manager.getMouseClicked()){
+        if(manager.getMouseDown() && manager.getMouseMoved()){
             /* Get mouse location */
             Point point = manager.getMouseLocation();
-            int mouseX = (int) point.getX();
-            int mouseY = (int) point.getY();
+            Point tileLoc = getClickedTile(point);
+            int tileLocX = (int) tileLoc.getX();
+            int tileLocY = (int) tileLoc.getY();
 
-            /* Convert map location into absolute coordinates on the map */
-            point.translate(viewportX, viewportY);
-
-            /* Shift the mouse location over to the origin, so we can use shapes to determine the hit */
-            int shiftedMouseY = mouseY % tileY;
-            int tilesShiftedY = mouseY / tileY;
-            
-            int shiftedMouseX = mouseX % tileX;
-            int tilesShiftedX = mouseX / tileX;
-
-            System.out.println("Click: (" + shiftedMouseX + ", " + shiftedMouseY + ") shifted (" + tilesShiftedX + ", " + tilesShiftedY + ").");
+            if(manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
+                TerrainType type = map.getTileArray()[tileLocY][tileLocX];
+                paintbrush = type;
+                System.out.println("ctrl click " + type);
+            } else {
+                map.getTileArray()[tileLocY][tileLocX] = paintbrush;
+                mapPainter.update();
+                System.out.println("mouse down " + paintbrush);
+            }
         }
 
         /* Scrolling */
         int increment = 30;
         if(manager.getKeyCodeFlag(KeyEvent.VK_RIGHT)) {
             viewportX += increment;
-            if(viewportX >= n * tileX - width) viewportX = n * tileX - width;
+            //if(viewportX >= n * tileX - width) viewportX = n * tileX - width;
         }
         if(manager.getKeyCodeFlag(KeyEvent.VK_LEFT)) {
             viewportX -= increment;
-            if(viewportX <= tileX/2) viewportX = tileX / 2;
+            //if(viewportX <= tileX/2) viewportX = tileX / 2;
         }
         if(manager.getKeyCodeFlag(KeyEvent.VK_UP)) {
             viewportY -= increment;
-            if(viewportY <= tileY/2) viewportY = tileY / 2;
+            //if(viewportY <= tileY/2) viewportY = tileY / 2;
         }
         if(manager.getKeyCodeFlag(KeyEvent.VK_DOWN)) {
             viewportY += increment;
-            if(viewportY >= n * tileY/2 - height) viewportY = n * tileY/2 - height;
+            //if(viewportY >= n * tileY/2 - height) viewportY = n * tileY/2 - height;
         }
     }
 
@@ -168,6 +204,7 @@ public class Main extends JPanel {
 
         /* Paint the map using the map painter */
         mapPainter.paintMap(graphics, leftBoundary, topBoundary, rightBoundary - leftBoundary, bottomBoundary - topBoundary);
+
     }
 
 }
