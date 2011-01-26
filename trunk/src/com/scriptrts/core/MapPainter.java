@@ -18,49 +18,93 @@ import javax.imageio.ImageIO;
 
 public class MapPainter {
 
+    /**
+     * Map which this painter is created to draw on the screen
+     */
     private Map toPaint;
+
+    /**
+     * Array of integers representing the map, where each integer specifies the index of the corresponding texture
+     * in the list of texture images.
+     */
     private int[][] terrain;
-    private int[][] originalTerrain;
-    private ArrayList<BufferedImage> images = new ArrayList<BufferedImage>(TerrainType.values().length);
-    private int[][] masking;
+
+    /**
+     * The list of texture images which is used to draw the map on the board; the texture to draw on each tile is dictated
+     * by the index stored in the terrain integer array.
+     */
+    private BufferedImage[] images = new BufferedImage[TerrainType.values().length];
+
+    /**
+     * A data array indicating which tiles need to have transparent masks overlayed on them to avoid hard edges on the map.
+     * The first two indices are the x and y locations of the tile, and the third index is the type of mask (top corner, top left side, etc.)
+     * The contents of the array indicate which texture to overlay, or -1 if no texture is to be overlayed as a mask.
+     */
+    private int[][][] masking;
+
+    /**
+     * The horizontal and vertical size of the drawn tiles 
+     */
     private int tileX, tileY;
 
-    private ArrayList<MaskRequest> maskTypes = new ArrayList<MaskRequest>();
-    private ArrayList<Integer> imageIndices = new ArrayList<Integer>();
+    /**
+     * An array containing all possible masks that might need to be used. The first index is the type of texture, and the second is the mask type.
+     */
+    private BufferedImage[][] terrainMasks;
 
-    /* Side masks */
-    static BufferedImage maskTopLeft, maskTopRight, maskBottomLeft, maskBottomRight;
+    /**
+     * Flags that dictate the order that the masks are stored in the mask arrays 
+     */
+    private static final int MASK_TOP = 0, MASK_BOTTOM = 1, MASK_LEFT = 2, MASK_RIGHT = 3; 
+    private static final int MASK_TOP_LEFT = 4, MASK_TOP_RIGHT = 5, MASK_BOTTOM_LEFT = 6, MASK_BOTTOM_RIGHT = 7;
 
-    /* Corner masks */
-    static BufferedImage maskTop, maskBottom, maskLeft, maskRight;
+    /**
+     * An array which we can loop over to iterate over all mask types
+     */
+    private static final int[] MASKS = 
+    {MASK_TOP, MASK_BOTTOM, MASK_LEFT, MASK_RIGHT, MASK_TOP_LEFT, MASK_TOP_RIGHT, MASK_BOTTOM_LEFT, MASK_BOTTOM_RIGHT};
 
+    /**
+     * An array of black and white layer mask images that are applied to textures to create the necessary masks 
+     */
+    private static BufferedImage[] maskImages;
+
+    /**
+     * Constructor which takes a map and an initial tile size, and initializes all necessary elements of the painter
+     */
     public MapPainter(Map map, int tileX, int tileY){
+        /* Store fields */
         this.toPaint = map;
-        TerrainType[][] terrainTypes = map.getTileArray();
         this.tileX = tileX;
         this.tileY = tileY;
 
-        /* Grow the images list to the right size */
-        for(int i = 0; i < TerrainType.values().length; i++)
-            images.add(null);
-
-        /* Load masks */
+        /* Load the layer masks used to create the terrain masks */
         try {
-            maskTopLeft = resizeImage(ImageIO.read(new File("resource/mask/TileMaskTL.png")), tileX, tileY);
-            maskTopRight = resizeImage(ImageIO.read(new File("resource/mask/TileMaskTR.png")), tileX, tileY);
-            maskBottomLeft = resizeImage(ImageIO.read(new File("resource/mask/TileMaskBL.png")), tileX, tileY);
-            maskBottomRight = resizeImage(ImageIO.read(new File("resource/mask/TileMaskBR.png")), tileX, tileY);
-            maskTop = resizeImage(ImageIO.read(new File("resource/mask/TileMaskTop.png")), tileX, tileY);
-            maskBottom = resizeImage(ImageIO.read(new File("resource/mask/TileMaskBottom.png")), tileX, tileY);
-            maskLeft = resizeImage(ImageIO.read(new File("resource/mask/TileMaskLeft.png")), tileX, tileY);
-            maskRight = resizeImage(ImageIO.read(new File("resource/mask/TileMaskRight.png")), tileX, tileY);
+            BufferedImage maskTopLeft = ImageIO.read(new File("resource/mask/TileMaskTL.png"));
+            BufferedImage maskTopRight = ImageIO.read(new File("resource/mask/TileMaskTR.png"));
+            BufferedImage maskBottomLeft = ImageIO.read(new File("resource/mask/TileMaskBL.png"));
+            BufferedImage maskBottomRight = ImageIO.read(new File("resource/mask/TileMaskBR.png"));
+            BufferedImage maskTop = ImageIO.read(new File("resource/mask/TileMaskTop.png"));
+            BufferedImage maskBottom = ImageIO.read(new File("resource/mask/TileMaskBottom.png"));
+            BufferedImage maskLeft = ImageIO.read(new File("resource/mask/TileMaskLeft.png"));
+            BufferedImage maskRight = ImageIO.read(new File("resource/mask/TileMaskRight.png"));
+
+            maskImages = new BufferedImage[]{maskTop, maskBottom, maskLeft, maskRight, maskTopLeft, maskTopRight, maskBottomLeft, maskBottomRight};
         } catch(IOException e){
             e.printStackTrace();
         }
 
 
-        /* Set up correspondences between TerrainTypes and their images */
+        /* Load the terrain textures using the texture data file */
         try {
+            /* The format of the file we're reading is any number of lines, where the first word is 
+             * the name (in the enum) of the tile terrain. The first word is followed by a ", ", followed by
+             * the filename of the image texture (sans ".png"). For instance,
+             *      Dirt, Martian Rock
+             *      Grass, Prarie Grass
+             *      Water, Blue Aqua
+             *      ... and so on ...
+             */
             BufferedReader reader = new BufferedReader(new FileReader("resource/map/textureTrans.dat"));
             String str;
             TerrainType[] values = TerrainType.values();
@@ -68,9 +112,11 @@ public class MapPainter {
                 String[] line = str.split(",");
                 String tt = line[0].trim();
                 String imgname = line[1].trim();
+
+                /* Store the loaded image in the images array at the correct index */
                 for(TerrainType t : values)
                     if(t.name().equals(tt)) {
-                        images.set(t.ordinal(), resizeImage(ImageIO.read(new File("resource/map/" + imgname + ".png")), tileX, tileY));
+                        images[t.ordinal()] = ImageIO.read(new File("resource/map/" + imgname + ".png"));
                         break;
                     }
             }
@@ -79,66 +125,112 @@ public class MapPainter {
             e.printStackTrace();
         }
 
-        /* Convert terrain to ints */
+        /* Convert terrain to ints instead of enums */
+        TerrainType[][] terrainTypes = map.getTileArray();
         terrain = new int[terrainTypes.length][terrainTypes[0].length];
         for(int i = 0; i < terrain.length; i++)
             for(int j = 0; j < terrain[0].length; j++)
                 terrain[i][j] = terrainTypes[i][j].ordinal();
 
-        originalTerrain = new int[terrainTypes.length][terrainTypes[0].length];
+
+        /* Find the number of possible terrains in this map, 
+         * so we know how much space to allocate for the masks
+         */
+        int max = -1;
         for(int i = 0; i < terrain.length; i++)
             for(int j = 0; j < terrain[0].length; j++)
-                originalTerrain[i][j] = terrain[i][j];
+                max = terrain[i][j] > max ? terrain[i][j] : max;
+
+        /* Create the masks for each type of terrain */
+        terrainMasks = new BufferedImage[max][MASKS.length];
+        createTerrainMasks();
+
+        /* Disable masking by default */
+        for(int i = 0; i < terrain.length; i++)
+            for(int j = 0; j < terrain[0].length; j++)
+                for(int k = 0; k < 8; k++)
+                    masking[i][j][k] = -1;
 
         /* Calculate what type of masking is necessary */
-        masking = new int[terrain.length][terrain[0].length];
+        masking = new int[terrain.length][terrain[0].length][8];
         calculateMasking();
     }
 
-    private BufferedImage resizeImage(BufferedImage img, int newSizeX, int newSizeY){
-        BufferedImage result = new BufferedImage(newSizeX, newSizeY, BufferedImage.TYPE_INT_ARGB);
-        result.getGraphics().drawImage(img, 0, 0, newSizeX, newSizeY, null);
-        return result;
-    }
+    /**
+     * Initialize the terrain masks (the half-transparent images that are painted on the edges of tiles to make transitions smoother)
+     */
+    private void createTerrainMasks(){
+        /* For each type of terrain */
+        for(int i = 0; i < terrainMasks.length; i++){
+            /* Get the terrain image which will be turned into the mask */
+            BufferedImage originalImg = images.get(i);
 
-    private class MaskRequest {
-        int original, mask;
-        BufferedImage img;
+            /* For each type of mask */
+            for(int j = 0; j < terrainMasks[0].length; j++){
+                /* Get the black and white image that will be used to create the mask */
+                BufferedImage mask = maskImages[j];
 
-        public MaskRequest(int o, int m, BufferedImage i){
-            super();
-            original = o;
-            mask = m;
-            img = i;
+                /* Create the mask */
+                BufferedImage maskImg = new BufferedImage(originalImg.getWidth(), originalImg.getHeight(), BufferedImage.TYPE_INT_ARGB);
+                for(int pixel_i = 0; pixel_i < originalImg.getWidth(); pixel_i++){
+                    for(int pixel_j = 0; pixel_j < originalImg.getHeight(); pixel_j++){
+                        /* Get colors of mask image and mask itself */
+                        int color = originalImg.getRGB(pixel_i, pixel_j);
+                        int maskColor = mask.getRGB(pixel_i, pixel_j);
+
+                        /* Extract the pieces of the color */
+                        int alpha = ((maskColor & 0xFF000000) >> 24);
+                        int intensity = 255 - ((maskColor & 0x00FF0000) >> 16); 
+                        int red = ((color & 0x00FF0000) >> 16); 
+                        int green = ((color & 0x0000FF00) >> 8);
+                        int blue = ((color & 0x000000FF) >> 0); 
+
+                        /* Black means that the alpha is high, white means the alpha is low */
+                        int newColor = (intensity << 24) | (red << 16) | (green << 8) | blue;
+
+                        maskImg.setRGB(pixel_i, pixel_j, alpha == 0 ? color : newColor);
+                    }
+                }
+
+                /* Store resulting mask in the mask array */
+                terrainMasks[i][j] = maskImg;
+            }
         }
     }
 
+    /**
+     * Calculate which tiles need to have masking on them and what type of masking to apply
+     */
     private void calculateMasking() {
-        /* Mask sides going from the top right to bottom left */
-        ArrayList<MaskRequest> maskRequestsForTile = new ArrayList<MaskRequest>(8);
+        /* Mask each tile separately */
         for(int i = 0; i < terrain.length; i++){
             for(int j = 0; j < terrain[0].length; j ++){
-                /* Get rid of previous requests */
-                maskRequestsForTile.clear();
+                /* For each tile we proceed to:
+                 *      Check the tiles around it;
+                 *      If the tile around it has precedence over the tile we're examining,
+                 *          then we apply a mask in the direction of the tile.
+                 *      Repeat for all directions: 
+                 *          up, down, left, right; diagonal top-left, top-right, bottom-left, bottom-right.
+                 */
 
                 /* Top right side of the tile */
                 int newIndexX = i -1;
+
+                /* We have to change how we get the y index depending on
+                 * our x-index because every other row is shifted to the right */
                 int newIndexY = (i % 2 == 0 ? j : j + 1);
+
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
-                    if(originalTerrain[i][j] != originalTerrain[newIndexX][newIndexY]){
-                        if(originalTerrain[i][j] > originalTerrain[newIndexX][newIndexY])
-                            maskRequestsForTile.add(new MaskRequest(terrain[i][j], originalTerrain[newIndexX][newIndexY], maskTopRight));
-                    }
+                    if(terrain[i][j] > terrain[newIndexX][newIndexY])
+                        enableMasking(i, j, terrain[i][j], terrain[newIndexX][newIndexY], MASK_TOP_RIGHT);
                 }
 
                 /* Bottom left side of the tile */
                 newIndexX = i + 1;
                 newIndexY = (i % 2 == 0 ? j - 1: j);
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
-                    if(originalTerrain[i][j] != originalTerrain[newIndexX][newIndexY]){
-                        if(originalTerrain[i][j] > originalTerrain[newIndexX][newIndexY])
-                            maskRequestsForTile.add(new MaskRequest(terrain[i][j], originalTerrain[newIndexX][newIndexY], maskBottomLeft));
-                    }
+                    if(terrain[i][j] > terrain[newIndexX][newIndexY])
+                        enableMasking(i, j, terrain[i][j], terrain[newIndexX][newIndexY], MASK_BOTTOM_LEFT);
                 }
 
                 /* Mask sides going from the top left to bottom right */
@@ -146,139 +238,102 @@ public class MapPainter {
                 newIndexX = i - 1;
                 newIndexY = (i % 2 == 0 ? j - 1: j);
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
-                    if(originalTerrain[i][j] != originalTerrain[newIndexX][newIndexY]){
-                        if(originalTerrain[i][j] > originalTerrain[newIndexX][newIndexY])
-                            maskRequestsForTile.add(new MaskRequest(terrain[i][j], originalTerrain[newIndexX][newIndexY], maskTopLeft));
-                    }
+                    if(terrain[i][j] > terrain[newIndexX][newIndexY])
+                        enableMasking(i, j, terrain[i][j], terrain[newIndexX][newIndexY], MASK_TOP_LEFT);
                 }
 
                 /* Bottom right side of the tile */
                 newIndexX = i + 1;
                 newIndexY = (i % 2 == 0 ? j : j + 1);
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
-                    if(originalTerrain[i][j] != originalTerrain[newIndexX][newIndexY]){
-                        if(originalTerrain[i][j] > originalTerrain[newIndexX][newIndexY])
-                            maskRequestsForTile.add(new MaskRequest(terrain[i][j], originalTerrain[newIndexX][newIndexY], maskBottomRight));
-                    }
+                    if(terrain[i][j] > terrain[newIndexX][newIndexY])
+                        enableMasking(i, j, terrain[i][j], terrain[newIndexX][newIndexY], MASK_BOTTOM_RIGHT);
                 }
 
                 /* Top  corner */
                 newIndexX = i - 2;
                 newIndexY = j;
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
-                    if(originalTerrain[i][j] != originalTerrain[newIndexX][newIndexY]){
-                        if(originalTerrain[i][j] > originalTerrain[newIndexX][newIndexY])
-                            maskRequestsForTile.add(new MaskRequest(terrain[i][j], originalTerrain[newIndexX][newIndexY], maskTop));
-                    }
+                    if(terrain[i][j] > terrain[newIndexX][newIndexY])
+                        enableMasking(i, j, terrain[i][j], terrain[newIndexX][newIndexY], MASK_TOP);
                 }
 
                 /* Bottom corner */
                 newIndexX = i + 2;
                 newIndexY = j;
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
-                    if(originalTerrain[i][j] != originalTerrain[newIndexX][newIndexY]){
-                        if(originalTerrain[i][j] > originalTerrain[newIndexX][newIndexY])
-                            maskRequestsForTile.add(new MaskRequest(terrain[i][j], originalTerrain[newIndexX][newIndexY], maskBottom));
-                    }
+                    if(terrain[i][j] > terrain[newIndexX][newIndexY])
+                        enableMasking(i, j, terrain[i][j], terrain[newIndexX][newIndexY], MASK_BOTTOM);
                 }
 
                 /* Top  corner */
                 newIndexX = i;
                 newIndexY = j-1;
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
-                    if(originalTerrain[i][j] != originalTerrain[newIndexX][newIndexY]){
-                        if(originalTerrain[i][j] > originalTerrain[newIndexX][newIndexY])
-                            maskRequestsForTile.add(new MaskRequest(terrain[i][j], originalTerrain[newIndexX][newIndexY], maskLeft));
-                    }
+                    if(terrain[i][j] > terrain[newIndexX][newIndexY])
+                        enableMasking(i, j, terrain[i][j], terrain[newIndexX][newIndexY], MASK_LEFT);
                 }
 
                 /* Bottom corner */
                 newIndexX = i;
                 newIndexY = j+1;
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
-                    if(originalTerrain[i][j] != originalTerrain[newIndexX][newIndexY]){
-                        if(originalTerrain[i][j] > originalTerrain[newIndexX][newIndexY])
-                            maskRequestsForTile.add(new MaskRequest(terrain[i][j], originalTerrain[newIndexX][newIndexY], maskRight));
-                    }
+                    if(terrain[i][j] > terrain[newIndexX][newIndexY])
+                        enableMasking(i, j, terrain[i][j], terrain[newIndexX][newIndexY], MASK_RIGHT);
                 }
-
-                terrain[i][j] = combinedMask(maskRequestsForTile, terrain[i][j]);
             }
         }
     }
 
-    private int combinedMask(ArrayList<MaskRequest> requests, int terrain){
-        if(requests.isEmpty()) 
-            return terrain;
-
-        for(int i = 0; i < requests.size(); i++)
-            terrain = performMask(requests.get(i), terrain);
-        return terrain;
+    /**
+     * Enable masking for the given tile with a certain type of mask and a certain masking terrain
+     */
+    private void enableMasking(int i, int j, int maskingTerrain, int maskID){
+        masking[i][j][maskID] = maskingTerrain;
     }
 
-    private int performMask(MaskRequest req, int originalType){
-        int maskType = req.mask;
-        BufferedImage mask = req.img;
-        for(int i = 0; i < maskTypes.size(); i++)
-            if(maskTypes.get(i).original == originalType && maskTypes.get(i).mask == maskType && maskTypes.get(i).img == mask)
-                return imageIndices.get(i);
-
-        BufferedImage originalImg = images.get(originalType);
-        BufferedImage maskImg = images.get(maskType);
-
-        final BufferedImage result = new BufferedImage(originalImg.getWidth(), originalImg.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        Graphics drawer = result.getGraphics();
-
-        /* Create image by combining mask image and mask, then we will draw this image onto the original to create the result */
-        BufferedImage layerMask = new BufferedImage(originalImg.getWidth(), originalImg.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        for(int i = 0; i < originalImg.getWidth(); i++){
-            for(int j = 0; j < originalImg.getHeight(); j++){
-                /* Get colors of mask image and mask itself */
-                int color = maskImg.getRGB(i, j);
-                int maskColor = mask.getRGB(i, j);
-
-                int alpha = ((maskColor & 0xFF000000) >> 24);
-                int intensity = 255 - ((maskColor & 0x00FF0000) >> 16); 
-                int red = ((color & 0x00FF0000) >> 16); 
-                int green = ((color & 0x0000FF00) >> 8);
-                int blue = ((color & 0x000000FF) >> 0); 
-
-                int newColor = (intensity << 24) | (red << 16) | (green << 8) | blue;
-                layerMask.setRGB(i, j, alpha == 0 ? color : newColor);
-            }
-        }
-
-        drawer.drawImage(originalImg, 0, 0, null);
-        drawer.drawImage(layerMask, 0, 0, null);
-
-        /* return id of new thing */
-        int newImgIndex = images.size();
-        images.add(result);
-
-        /* before returning, add this to the cache */
-        MaskRequest mr = new MaskRequest(originalType, maskType, mask);
-        maskTypes.add(mr);
-        imageIndices.add(newImgIndex);
-
-        return newImgIndex;
+    /**
+     * Retrieve the mask image for this terrain and this type of mask
+     */
+    private BufferedImage getMask(int terrain, int maskID){
+        return terrainMasks[terrain][maskID];
     }
 
+    /**
+     * Paint the specified part of the map onto the screen using the provided Graphics2D object
+     */
     public void paintMap(Graphics2D graphics, int left, int top, int width, int height){
+        /* Calculate the boundaries of the visible map */
         int bottom = top + height;
         int right = left + width;
 
+        /* Only draw what we need to */
         for(int i = top; i < bottom; i++) {
             for(int j = left; j < right; j++) {
-                /* Draw the tile */
+                /*
+                 * Shift every other row to the right to create the zig-zag pattern going down 
+                 * We have to do this because we are using fake isometric perspective.
+                 */
                 int x;
                 if(i % 2 == 0)
                     x = j*tileX;
                 else 
                     x = j*tileX + tileX/2;
 
+                /* Draw the tile */
                 Image image = images.get(terrain[i][j]);
                 graphics.drawImage(image, x, i*tileY/2, tileX, tileY, null);
-                graphics.setColor(Color.RED);
+
+                /* Draw the masks on top of the tile */
+                for(int maskID : MASKS){
+                    int maskingTerrain = masking[i][j][maskID];
+
+                    /* If the terrain is less than zero, that means we don't need any masking at all */
+                    if(maskingTerrain >= 0){
+                        BufferedImage mask = getMask(maskingTerrain, maskID);
+                        graphics.drawImage(mask, x, i*tileY/2, tileX, tileY, null);
+                    }
+                }
             }
         }
     }
