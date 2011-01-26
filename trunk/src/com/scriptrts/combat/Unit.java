@@ -1,7 +1,6 @@
 package com.scriptrts.combat;
 
 import com.scriptrts.game.Construct;
-import com.scriptrts.game.Sprite;
 
 public abstract class Unit extends Construct {
     protected double movementSpeed;
@@ -9,8 +8,6 @@ public abstract class Unit extends Construct {
     // This is an int array because we may want different types of attack. 
     //ex.: [land_attack air_attack] or [attack1 attack2] or something depending on plot
     protected int[][] damage;
-    
-    protected Sprite sprite;
     
     // For weird-behaving units
     protected boolean water;
@@ -46,14 +43,6 @@ public abstract class Unit extends Construct {
 
     public void setDamage(int[][] damage) {
         this.damage = damage;
-    }
-
-    public Sprite getSprite() {
-        return sprite;
-    }
-
-    public void setSprite(Sprite sprite) {
-        this.sprite = sprite;
     }
 
     public boolean isWater() {
