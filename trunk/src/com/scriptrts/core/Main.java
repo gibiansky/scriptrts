@@ -1,5 +1,7 @@
 package com.scriptrts.core;
 
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -107,6 +109,13 @@ public class Main extends JPanel {
         /* Set window to be visible */
         window.setVisible(true);
 
+        /* Allow window resizing */
+        panel.addComponentListener(new ComponentAdapter(){
+            public void componentResized(ComponentEvent c){
+                panel.resized();
+            }
+        });
+
         /* Initialize the game */
         panel.initializeGame();
 
@@ -120,6 +129,12 @@ public class Main extends JPanel {
         };
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(updateTask, 0, (long) (1000 / fps));
+    }
+
+    /* Called when the window or drawing panel has changed size */
+    public void resized(){
+        viewport.resize(getWidth(), getHeight());
+        repaint();
     }
 
     /* Initialize game resources */
