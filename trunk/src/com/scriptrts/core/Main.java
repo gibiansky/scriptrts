@@ -18,32 +18,64 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import jargs.gnu.CmdLineParser;
+
 public class Main extends JPanel {
     /* Game properties */
-    final static int n = 128, tileX = 128, tileY = 64;
-    final static JFrame window = new JFrame("ScriptRTS");
+    private final static int n = 128, tileX = 128, tileY = 64;
+    private final static JFrame window = new JFrame("ScriptRTS");
 
     /* Viewport properties */
     private Viewport viewport;
 
-    final static int DEFAULT_WIDTH = 800, DEFAULT_HEIGHT = 600;
+    private final static int DEFAULT_WIDTH = 800, DEFAULT_HEIGHT = 600;
 
     /* Game data */
-    int[][] terrain;
-    BufferedImage dirt, grass, maskTL;
-    boolean initialized = false;
-    MapPainter mapPainter;
-    Map map;
+    private boolean initialized = false;
+    private MapPainter mapPainter;
+    private Map map;
+
+    /* Use fullscreen? */
+    private static boolean fullscreen =  false;
+    
+    /* Debug mode? */
+    private static boolean DEBUG = false;
+    
 
     /* Input manager */
-    InputManager manager = InputManager.getInputManager();
+    private InputManager manager = InputManager.getInputManager();
 
     /* Create a new JPanel Main object with double buffering enabled */
     public Main() {
         super(true);
     }
 
+    private static void parseOptions(String[] args){
+        /* Create parser */
+        CmdLineParser parser = new CmdLineParser();
+        CmdLineParser.Option debugOpt = parser.addBooleanOption('d', "debug");
+        CmdLineParser.Option fullscreenOpt = parser.addBooleanOption('f', "fullscreen");
+
+        /* Parse */
+        try {
+            parser.parse(args);
+        }
+        catch ( CmdLineParser.OptionException e ) {
+            System.err.println(e.getMessage());
+            System.exit(2);
+        }
+
+        /* Interpret arguments */
+        DEBUG = (Boolean) parser.getOptionValue(debugOpt, Boolean.FALSE);
+        fullscreen = (Boolean) parser.getOptionValue(fullscreenOpt, Boolean.FALSE);
+
+        MapPainter.DEBUG = DEBUG;
+    }
+
     public static void main(String... args) {
+        /* Parse command-line options */
+        parseOptions(args);
+
         /* Create window of default size */
         int width = DEFAULT_WIDTH;
         int height = DEFAULT_HEIGHT;
@@ -52,8 +84,6 @@ public class Main extends JPanel {
         window.setSize(width, height);
 
         /* Check for fullscreen */
-        //        boolean fullscreen = JOptionPane.showConfirmDialog(null, "Enable Full Screen display?", "Fullscreen?", JOptionPane.YES_NO_OPTION) == 0;
-        boolean fullscreen =  false;
         if(fullscreen){
             /* Disable resizing and decorations */
             window.setUndecorated(true);
