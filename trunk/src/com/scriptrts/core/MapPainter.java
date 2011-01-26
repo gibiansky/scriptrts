@@ -56,7 +56,12 @@ public class MapPainter {
     /**
      * The maximum size for the tiles
      */
-    private static final int MAX_TILE_X = 256, MAX_TILE_Y = 128;
+    public static final int MAX_TILE_X = 256, MAX_TILE_Y = 128;
+
+    /**
+     * The minimum size for the tiles
+     */
+    public static final int MIN_TILE_X = 32, MIN_TILE_Y = 16;
 
     /**
      * An array containing all possible masks that might need to be used. The first index is the type of texture, and the second is the mask type.
@@ -298,6 +303,14 @@ public class MapPainter {
      */
     private BufferedImage getMask(int terrain, int maskID){
         return terrainMasks[terrain][maskID];
+    }
+
+    /**
+     * Set the tile size to use for this map painter
+     */
+    public synchronized void setTileSize(int tileSizeX, int tileSizeY){
+        tileX = tileSizeX;
+        tileY = tileSizeY;
     }
 
     /**

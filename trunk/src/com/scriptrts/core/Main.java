@@ -24,7 +24,7 @@ import jargs.gnu.CmdLineParser;
 
 public class Main extends JPanel {
     /* Game properties */
-    private final static int n = 128, tileX = 128, tileY = 64;
+    private static int n = 128, tileX = 128, tileY = 64;
     private final static JFrame window = new JFrame("ScriptRTS");
 
     /* Viewport properties */
@@ -157,6 +157,7 @@ public class Main extends JPanel {
         window.addKeyListener(manager);
         addMouseMotionListener(manager);
         addMouseListener(manager);
+        addMouseWheelListener(manager);
         manager.registerKeyCode(KeyEvent.VK_LEFT);
         manager.registerKeyCode(KeyEvent.VK_RIGHT);
         manager.registerKeyCode(KeyEvent.VK_UP);
@@ -187,6 +188,31 @@ public class Main extends JPanel {
             } else {
                 map.getTileArray()[tileLocY][tileLocX] = paintbrush;
                 mapPainter.update();
+            }
+        }
+
+        /* Zooming */
+        if(manager.getMouseScrolled()){
+            int zoomLevel = -manager.getMouseScrollDistance();
+            
+            /* Calculate new tile sizes */
+            int newTileX = tileX, newTileY = tileY;
+            if(zoomLevel > 0){
+                newTileX *= 2;
+                newTileY *= 2;
+            } else if(zoomLevel < 0) {
+                newTileX /= 2;
+                newTileY /= 2;
+            }
+
+            if(newTileX <= MapPainter.MAX_TILE_X && newTileY <= MapPainter.MAX_TILE_Y && 
+                    newTileX >= MapPainter.MIN_TILE_X && newTileY >= MapPainter.MIN_TILE_Y){
+                /* Update tile size in main class, map painter, and viewport */
+                tileX = newTileX;
+                tileY = newTileY;
+                viewport.setViewportLocationLimits(tileX / 2, tileY / 2, n * tileX, n * tileY / 2);
+                viewport.translate(0, 0);
+                mapPainter.setTileSize(tileX, tileY);
             }
         }
 
