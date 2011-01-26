@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import javax.imageio.ImageIO;
+import com.scriptrts.util.ResourceManager;
 
 public class MapPainter {
     /**
@@ -53,6 +54,11 @@ public class MapPainter {
     private int tileX, tileY;
 
     /**
+     * The maximum size for the tiles
+     */
+    private static final int MAX_TILE_X = 256, MAX_TILE_Y = 128;
+
+    /**
      * An array containing all possible masks that might need to be used. The first index is the type of texture, and the second is the mask type.
      */
     private BufferedImage[][] terrainMasks;
@@ -85,14 +91,14 @@ public class MapPainter {
 
         /* Load the layer masks used to create the terrain masks */
         try {
-            BufferedImage maskTopLeft = ImageIO.read(new File("resource/mask/TileMaskTL.png"));
-            BufferedImage maskTopRight = ImageIO.read(new File("resource/mask/TileMaskTR.png"));
-            BufferedImage maskBottomLeft = ImageIO.read(new File("resource/mask/TileMaskBL.png"));
-            BufferedImage maskBottomRight = ImageIO.read(new File("resource/mask/TileMaskBR.png"));
-            BufferedImage maskTop = ImageIO.read(new File("resource/mask/TileMaskTop.png"));
-            BufferedImage maskBottom = ImageIO.read(new File("resource/mask/TileMaskBottom.png"));
-            BufferedImage maskLeft = ImageIO.read(new File("resource/mask/TileMaskLeft.png"));
-            BufferedImage maskRight = ImageIO.read(new File("resource/mask/TileMaskRight.png"));
+            BufferedImage maskTopLeft = ResourceManager.loadImage("resource/mask/TileMaskTL.png", MAX_TILE_X, MAX_TILE_Y);
+            BufferedImage maskTopRight = ResourceManager.loadImage("resource/mask/TileMaskTR.png", MAX_TILE_X, MAX_TILE_Y);
+            BufferedImage maskBottomLeft = ResourceManager.loadImage("resource/mask/TileMaskBL.png", MAX_TILE_X, MAX_TILE_Y);
+            BufferedImage maskBottomRight = ResourceManager.loadImage("resource/mask/TileMaskBR.png", MAX_TILE_X, MAX_TILE_Y);
+            BufferedImage maskTop = ResourceManager.loadImage("resource/mask/TileMaskTop.png", MAX_TILE_X, MAX_TILE_Y);
+            BufferedImage maskBottom = ResourceManager.loadImage("resource/mask/TileMaskBottom.png", MAX_TILE_X, MAX_TILE_Y);
+            BufferedImage maskLeft = ResourceManager.loadImage("resource/mask/TileMaskLeft.png", MAX_TILE_X, MAX_TILE_Y);
+            BufferedImage maskRight = ResourceManager.loadImage("resource/mask/TileMaskRight.png", MAX_TILE_X, MAX_TILE_Y);
 
             maskImages = new BufferedImage[]{maskTop, maskBottom, maskLeft, maskRight, maskTopLeft, maskTopRight, maskBottomLeft, maskBottomRight};
         } catch(IOException e){
@@ -121,7 +127,7 @@ public class MapPainter {
                 /* Store the loaded image in the images array at the correct index */
                 for(TerrainType t : values)
                     if(t.name().equals(tt)) {
-                        images[t.ordinal()] = ImageIO.read(new File("resource/map/" + imgname + ".png"));
+                        images[t.ordinal()] = ResourceManager.loadImage("resource/map/" + imgname + ".png", MAX_TILE_X, MAX_TILE_Y);
                         break;
                     }
             }

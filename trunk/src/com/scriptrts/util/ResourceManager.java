@@ -17,69 +17,46 @@ import com.scriptrts.core.TerrainType;
 
 public class ResourceManager {
 
-	private static ResourceManager manager = new ResourceManager();
-	
-	private HashMap<TerrainType, BufferedImage> tiles;
-	private HashMap<SpriteType, BufferedImage> sprites;
+	private static HashMap<String, BufferedImage> imageCache = new HashMap<String, BufferedImage>();
 	
 	/**
-	 * Loads textures and sprites
-	 * @return whether the textures have been loaded successfully
+	 * Load a scaled image texture from the provided filename
+     * @param filename image filename
+     * @param width horizontal size
+     * @param height vertical size
+     * @return scaled version of the image
 	 */
-	public boolean loadTiles(int tileWidth, int tileHeight) {
-		/* Load necessary textures */
-		System.out.println("Loading textures");
-		/* Set up correspondences between TerrainTypes and their images */
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader("resource/map/textureTrans.dat"));
-			String str;
-			TerrainType[] values = TerrainType.values();
-		    while ((str = reader.readLine()) != null) {
-		        String[] line = str.split(",");
-		        String tt = line[0].trim();
-		        String imgname = line[1].trim();
-		        for(TerrainType t : values)
-		        	if(t.name().equals(tt)) {
-		        		BufferedImage temp = ImageIO.read(new File("resource/map/" + imgname + ".png"));
-		        		BufferedImage tileImg = new BufferedImage(tileWidth, tileHeight, BufferedImage.TYPE_INT_ARGB);
-		        		Graphics2D g2 = (Graphics2D) tileImg.getGraphics();
-		        		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		        		g2.drawImage(temp, 0, 0, tileWidth, tileHeight, null);
-		        		g2.dispose();
-		        		tiles.put(t, tileImg);
-		        		break;
-		        	}
-		    }
-		    reader.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return false;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
-		return true;
-	}
-	
-	/**
-	 * Retrieves the image for the requested terrain tile
-	 * @param type the terrain type for the tile
-	 * @return the image of the given terrain type
-	 */
-	public BufferedImage getTileImage(TerrainType type) {
-		return tiles.get(type);
-	}
-	
-	/**
-	 * Retrieves the image for the requested unit
-	 * @param type the unit
-	 * @return the sprite for the unit
-	 */
-	public BufferedImage getSpriteImage(SpriteType type) {
-		return sprites.get(type);
-	}
-	
-	public static ResourceManager getResourceManager() {
-		return manager;
-	}
+	public static BufferedImage loadImage(String filename, int width, int height) throws IOException {
+        String id = filename + " (" + width + ", " + height + ")";
+        if(imageCache.containsKey(id))
+            return imageCache.get(id);
+
+        BufferedImage unscaledTexture = ResourceManager.loadImage(filename);
+
+        BufferedImage scaledImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = (Graphics2D) scaledImage.getGraphics();
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.drawImage(unscaledTexture, 0, 0, width, height, null);
+        g.dispose();
+
+        imageCache.put(id, scaledImage);
+        return scaledImage;
+    }
+
+    /**
+     * Reads an image from a file
+     * @param filename image filename
+     * @return BufferedImage read from the file
+     */
+	public static BufferedImage loadImage(String filename) throws IOException {
+        if(imageCache.containsKey(filename))
+            return imageCache.get(filename);
+        
+        BufferedImage image = ImageIO.read(new File(filename));
+
+        imageCache.put(filename + " (" + image.getWidth() + ", " + image.getHeight() + ")", image);
+        imageCache.put(filename, image);
+        return image;
+    }
+
 }
