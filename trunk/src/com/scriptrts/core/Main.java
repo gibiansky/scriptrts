@@ -207,12 +207,21 @@ public class Main extends JPanel {
 
             if(newTileX <= MapPainter.MAX_TILE_X && newTileY <= MapPainter.MAX_TILE_Y && 
                     newTileX >= MapPainter.MIN_TILE_X && newTileY >= MapPainter.MIN_TILE_Y){
+                /* Remember what we were looking at before */
+                Point topLeft = mapPainter.getTileAtPoint(new Point(0, 0), viewport);
+
                 /* Update tile size in main class, map painter, and viewport */
                 tileX = newTileX;
                 tileY = newTileY;
                 viewport.setViewportLocationLimits(tileX / 2, tileY / 2, n * tileX, n * tileY / 2);
                 viewport.translate(0, 0);
                 mapPainter.setTileSize(tileX, tileY);
+
+                /* What are we looking at now? */
+                Point topLeftUpdated = mapPainter.getTileAtPoint(new Point(0, 0), viewport);
+
+                /* Shift back to what we were looking at before, approximately */
+                viewport.translate((int)(topLeft.x - topLeftUpdated.x), (int)(topLeft.y - topLeftUpdated.y));
             }
         }
 
