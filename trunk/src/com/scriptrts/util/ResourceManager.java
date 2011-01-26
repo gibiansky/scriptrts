@@ -1,5 +1,7 @@
 package com.scriptrts.util;
 
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,7 +26,7 @@ public class ResourceManager {
 	 * Loads textures and sprites
 	 * @return whether the textures have been loaded successfully
 	 */
-	public boolean loadTextures() {
+	public boolean loadTiles(int tileWidth, int tileHeight) {
 		/* Load necessary textures */
 		System.out.println("Loading textures");
 		/* Set up correspondences between TerrainTypes and their images */
@@ -38,7 +40,13 @@ public class ResourceManager {
 		        String imgname = line[1].trim();
 		        for(TerrainType t : values)
 		        	if(t.name().equals(tt)) {
-		        		tiles.put(t, ImageIO.read(new File("resource/map/" + imgname + ".png")));
+		        		BufferedImage temp = ImageIO.read(new File("resource/map/" + imgname + ".png"));
+		        		BufferedImage tileImg = new BufferedImage(tileWidth, tileHeight, BufferedImage.TYPE_INT_ARGB);
+		        		Graphics2D g2 = (Graphics2D) tileImg.getGraphics();
+		        		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		        		g2.drawImage(temp, 0, 0, tileWidth, tileHeight, null);
+		        		g2.dispose();
+		        		tiles.put(t, tileImg);
 		        		break;
 		        	}
 		    }
