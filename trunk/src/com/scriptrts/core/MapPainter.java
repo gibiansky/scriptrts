@@ -146,13 +146,13 @@ public class MapPainter {
         createTerrainMasks();
 
         /* Disable masking by default */
+        masking = new int[terrain.length][terrain[0].length][8];
         for(int i = 0; i < terrain.length; i++)
             for(int j = 0; j < terrain[0].length; j++)
                 for(int k = 0; k < 8; k++)
                     masking[i][j][k] = -1;
 
         /* Calculate what type of masking is necessary */
-        masking = new int[terrain.length][terrain[0].length][8];
         calculateMasking();
     }
 
@@ -163,7 +163,7 @@ public class MapPainter {
         /* For each type of terrain */
         for(int i = 0; i < terrainMasks.length; i++){
             /* Get the terrain image which will be turned into the mask */
-            BufferedImage originalImg = images.get(i);
+            BufferedImage originalImg = images[i];
 
             /* For each type of mask */
             for(int j = 0; j < terrainMasks[0].length; j++){
@@ -220,67 +220,59 @@ public class MapPainter {
                  * our x-index because every other row is shifted to the right */
                 int newIndexY = (i % 2 == 0 ? j : j + 1);
 
-                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
+                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
                     if(terrain[i][j] > terrain[newIndexX][newIndexY])
-                        enableMasking(i, j, terrain[i][j], terrain[newIndexX][newIndexY], MASK_TOP_RIGHT);
-                }
+                        enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_TOP_RIGHT);
 
                 /* Bottom left side of the tile */
                 newIndexX = i + 1;
                 newIndexY = (i % 2 == 0 ? j - 1: j);
-                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
+                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
                     if(terrain[i][j] > terrain[newIndexX][newIndexY])
-                        enableMasking(i, j, terrain[i][j], terrain[newIndexX][newIndexY], MASK_BOTTOM_LEFT);
-                }
+                        enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_BOTTOM_LEFT);
 
                 /* Mask sides going from the top left to bottom right */
                 /* Top left side of the tile */
                 newIndexX = i - 1;
                 newIndexY = (i % 2 == 0 ? j - 1: j);
-                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
+                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
                     if(terrain[i][j] > terrain[newIndexX][newIndexY])
-                        enableMasking(i, j, terrain[i][j], terrain[newIndexX][newIndexY], MASK_TOP_LEFT);
-                }
+                        enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_TOP_LEFT);
 
                 /* Bottom right side of the tile */
                 newIndexX = i + 1;
                 newIndexY = (i % 2 == 0 ? j : j + 1);
-                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
+                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
                     if(terrain[i][j] > terrain[newIndexX][newIndexY])
-                        enableMasking(i, j, terrain[i][j], terrain[newIndexX][newIndexY], MASK_BOTTOM_RIGHT);
-                }
+                        enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_BOTTOM_RIGHT);
 
                 /* Top  corner */
                 newIndexX = i - 2;
                 newIndexY = j;
-                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
+                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
                     if(terrain[i][j] > terrain[newIndexX][newIndexY])
-                        enableMasking(i, j, terrain[i][j], terrain[newIndexX][newIndexY], MASK_TOP);
-                }
+                        enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_TOP);
 
                 /* Bottom corner */
                 newIndexX = i + 2;
                 newIndexY = j;
-                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
+                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
                     if(terrain[i][j] > terrain[newIndexX][newIndexY])
-                        enableMasking(i, j, terrain[i][j], terrain[newIndexX][newIndexY], MASK_BOTTOM);
-                }
+                        enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_BOTTOM);
 
                 /* Top  corner */
                 newIndexX = i;
                 newIndexY = j-1;
-                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
+                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
                     if(terrain[i][j] > terrain[newIndexX][newIndexY])
-                        enableMasking(i, j, terrain[i][j], terrain[newIndexX][newIndexY], MASK_LEFT);
-                }
+                        enableMasking(i, j,  terrain[newIndexX][newIndexY], MASK_LEFT);
 
                 /* Bottom corner */
                 newIndexX = i;
                 newIndexY = j+1;
-                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
+                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
                     if(terrain[i][j] > terrain[newIndexX][newIndexY])
-                        enableMasking(i, j, terrain[i][j], terrain[newIndexX][newIndexY], MASK_RIGHT);
-                }
+                        enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_RIGHT);
             }
         }
     }
@@ -321,7 +313,7 @@ public class MapPainter {
                     x = j*tileX + tileX/2;
 
                 /* Draw the tile */
-                Image image = images.get(terrain[i][j]);
+                Image image = images[terrain[i][j]];
                 graphics.drawImage(image, x, i*tileY/2, tileX, tileY, null);
 
                 /* Draw the masks on top of the tile */
