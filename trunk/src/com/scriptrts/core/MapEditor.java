@@ -18,10 +18,10 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-public class Main extends JPanel {
+public class MapEditor extends JPanel {
     /* Game properties */
     final static int n = 128, tileX = 128, tileY = 64;
-    final static JFrame window = new JFrame("ScriptRTS");
+    final static JFrame window = new JFrame("ScriptRTS Map Editor");
 
     /* Viewport properties */
     private Viewport viewport;
@@ -38,8 +38,8 @@ public class Main extends JPanel {
     /* Input manager */
     InputManager manager = InputManager.getInputManager();
 
-    /* Create a new JPanel Main object with double buffering enabled */
-    public Main() {
+    /* Create a new JPanel MapEditor object with double buffering enabled */
+    public MapEditor() {
         super(true);
     }
 
@@ -71,7 +71,7 @@ public class Main extends JPanel {
         }
 
         /* Add graphics location */
-        final Main panel = new Main();
+        final MapEditor panel = new MapEditor();
         window.getContentPane().add(panel);
 
         /* Set window to be visible */
@@ -98,6 +98,7 @@ public class Main extends JPanel {
         viewport = new Viewport(getWidth(), getHeight());
         viewport.translate(tileX / 2, tileY / 2);
         viewport.setViewportLocationLimits(tileX / 2, tileY / 2, n * tileX, n * tileY / 2);
+        System.out.println(viewport);
 
         /* Create and populate map with tiles */
         Map randomMap = new Map(n, ResourceDensity.Medium);
@@ -164,9 +165,6 @@ public class Main extends JPanel {
             Point tileLoc = getClickedTile(point);
             int tileLocX = (int) tileLoc.getX();
             int tileLocY = (int) tileLoc.getY();
-
-            if(tileLocX < 0 || tileLocY < 0) return;
-            if(tileLocX >= n || tileLocY >= n) return;
 
             if(manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
                 TerrainType type = map.getTileArray()[tileLocY][tileLocX];

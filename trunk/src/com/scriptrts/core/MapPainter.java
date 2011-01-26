@@ -17,6 +17,10 @@ import java.util.HashMap;
 import javax.imageio.ImageIO;
 
 public class MapPainter {
+    /**
+     * Whether or not to draw debug lines on the map. Initialized to false;
+     */
+    public static boolean DEBUG = false;
 
     /**
      * Map which this painter is created to draw on the screen
@@ -219,14 +223,14 @@ public class MapPainter {
                 int newIndexY = (i % 2 == 0 ? j : j + 1);
 
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
-                    if(terrain[i][j] > terrain[newIndexX][newIndexY])
+                    if(terrain[i][j] < terrain[newIndexX][newIndexY])
                         enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_TOP_RIGHT);
 
                 /* Bottom left side of the tile */
                 newIndexX = i + 1;
                 newIndexY = (i % 2 == 0 ? j - 1: j);
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
-                    if(terrain[i][j] > terrain[newIndexX][newIndexY])
+                    if(terrain[i][j] < terrain[newIndexX][newIndexY])
                         enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_BOTTOM_LEFT);
 
                 /* Mask sides going from the top left to bottom right */
@@ -234,45 +238,66 @@ public class MapPainter {
                 newIndexX = i - 1;
                 newIndexY = (i % 2 == 0 ? j - 1: j);
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
-                    if(terrain[i][j] > terrain[newIndexX][newIndexY])
+                    if(terrain[i][j] < terrain[newIndexX][newIndexY])
                         enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_TOP_LEFT);
 
                 /* Bottom right side of the tile */
                 newIndexX = i + 1;
                 newIndexY = (i % 2 == 0 ? j : j + 1);
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
-                    if(terrain[i][j] > terrain[newIndexX][newIndexY])
+                    if(terrain[i][j] < terrain[newIndexX][newIndexY])
                         enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_BOTTOM_RIGHT);
 
                 /* Top  corner */
                 newIndexX = i - 2;
                 newIndexY = j;
-                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
-                    if(terrain[i][j] > terrain[newIndexX][newIndexY])
+                if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
+                    if(terrain[i][j] < terrain[newIndexX][newIndexY]) {
                         enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_TOP);
+                    }
+                }
 
                 /* Bottom corner */
                 newIndexX = i + 2;
                 newIndexY = j;
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
-                    if(terrain[i][j] > terrain[newIndexX][newIndexY])
+                    if(terrain[i][j] < terrain[newIndexX][newIndexY])
                         enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_BOTTOM);
 
                 /* Top  corner */
                 newIndexX = i;
                 newIndexY = j-1;
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
-                    if(terrain[i][j] > terrain[newIndexX][newIndexY])
+                    if(terrain[i][j] < terrain[newIndexX][newIndexY])
                         enableMasking(i, j,  terrain[newIndexX][newIndexY], MASK_LEFT);
 
                 /* Bottom corner */
                 newIndexX = i;
                 newIndexY = j+1;
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
-                    if(terrain[i][j] > terrain[newIndexX][newIndexY])
+                    if(terrain[i][j] < terrain[newIndexX][newIndexY])
                         enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_RIGHT);
             }
         }
+    }
+
+    private boolean isMaskedBottomLeft(int i, int j, int[][] terrain){
+        int newIndexX = i + 1;
+        int newIndexY = (i % 2 == 0 ? j - 1: j);
+        if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
+            if(terrain[i][j] < terrain[newIndexX][newIndexY])
+                return true;
+            
+        return false;
+    }
+    private boolean isMaskedBottomRight(int i, int j, int[][] terrain){
+        int newIndexX = i + 1;
+        int newIndexY = (i % 2 == 0 ? j : j + 1);
+        if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
+            if(terrain[i][j] < terrain[newIndexX][newIndexY])
+                return true;
+            
+        return false;
     }
 
     /**
@@ -293,20 +318,21 @@ public class MapPainter {
      * Signifies that the input map to this map painter was changed, and that the map painter
      * should change its internal state to reflect the change in the map.
      */
-    public void update(){
+    public synchronized void update(){
         TerrainType[][] terrainTypes = toPaint.getTileArray();
         terrain = new int[terrainTypes.length][terrainTypes[0].length];
         for(int i = 0; i < terrain.length; i++)
             for(int j = 0; j < terrain[0].length; j++)
                 terrain[i][j] = terrainTypes[i][j].ordinal();
 
+        /* Prevent it from redrawing while masking calculations aren't complete */
         calculateMasking();
     }
 
     /**
      * Paint the specified part of the map onto the screen using the provided Graphics2D object
      */
-    public void paintMap(Graphics2D graphics, int left, int top, int width, int height){
+    public synchronized void paintMap(Graphics2D graphics, int left, int top, int width, int height){
         /* Calculate the boundaries of the visible map */
         int bottom = top + height;
         int right = left + width;
@@ -329,18 +355,19 @@ public class MapPainter {
                 graphics.drawImage(image, x, i*tileY/2, tileX, tileY, null);
 
                 /* Draw the masks on top of the tile */
-                for(int maskID : MASKS){
-                    int maskingTerrain = masking[i][j][maskID];
+                for(int texType = 0; texType < images.length; texType++){
+                    for(int maskID : MASKS){
+                        int maskingTerrain = masking[i][j][maskID];
 
-                    /* If the terrain is less than zero, that means we don't need any masking at all */
-                    if(maskingTerrain >= 0){
-                        BufferedImage mask = getMask(maskingTerrain, maskID);
-                        graphics.drawImage(mask, x, i*tileY/2, tileX, tileY, null);
+                        /* If the terrain is less than zero, that means we don't need any masking at all */
+                        if(maskingTerrain == texType){
+                            BufferedImage mask = getMask(maskingTerrain, maskID);
+                            graphics.drawImage(mask, x, i*tileY/2, tileX, tileY, null);
+                        }
                     }
                 }
 
-                boolean debug = true;
-                if(debug){
+                if(MapPainter.DEBUG){
                     graphics.setColor(Color.RED);
                     graphics.drawString("(" + i + ", " + j + ": " + terrain[i][j] + ")",  x + tileX/2 - 40, i*tileY/2 + tileY/2);
 
