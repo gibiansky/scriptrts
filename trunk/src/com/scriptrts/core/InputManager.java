@@ -123,7 +123,6 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     /* Mouse wheel listener */
     public void mouseWheelMoved(MouseWheelEvent e){
         mouseWheelScroll += e.getWheelRotation();
-        System.out.println("UPDATE");
     }
 
 

@@ -44,10 +44,10 @@ public class Main extends JPanel {
 
     /* Use fullscreen? */
     private static boolean fullscreen =  false;
-    
+
     /* Debug mode? */
     private static boolean DEBUG = false;
-    
+
 
     /* Input manager */
     private InputManager manager = InputManager.getInputManager();
@@ -213,7 +213,7 @@ public class Main extends JPanel {
         /* Zooming */
         if(manager.getMouseScrolled()){
             int zoomLevel = -manager.getMouseScrollDistance();
-            
+
             /* Calculate new tile sizes */
             int newTileX = mapPainter.getTileWidth(), newTileY = mapPainter.getTileHeight();
             if(zoomLevel > 0){
@@ -227,18 +227,20 @@ public class Main extends JPanel {
             /* Remember what we were looking at before */
             Point topLeft = mapPainter.getTileAtPoint(new Point(0, 0), viewport);
 
-            /* Try to resize the tiles */
-            if(mapPainter.setTileSize(newTileX, newTileY)){
-                /* Prevent the viewport from going off the map */
-                viewport.setViewportLocationLimits(newTileX / 2, newTileY / 2, n * newTileX, n * newTileY / 2);
-                viewport.translate(0, 0);
+            /* Make sure map isn't smaller than screen at new zoom level */
+            if(newTileX * map.getN() > viewport.getWidth() && newTileY / 2 * map.getN() > viewport.getHeight())
+                /* Try to resize the tiles */
+                if(mapPainter.setTileSize(newTileX, newTileY)){
+                    /* Prevent the viewport from going off the map */
+                    viewport.setViewportLocationLimits(newTileX / 2, newTileY / 2, n * newTileX, n * newTileY / 2);
+                    viewport.translate(0, 0);
 
-                /* What are we looking at now? */
-                Point topLeftUpdated = mapPainter.getTileAtPoint(new Point(0, 0), viewport);
+                    /* What are we looking at now? */
+                    Point topLeftUpdated = mapPainter.getTileAtPoint(new Point(0, 0), viewport);
 
-                /* Shift back to what we were looking at before, approximately */
-                viewport.translate((int)(topLeft.x - topLeftUpdated.x) * newTileX, (int)(topLeft.y - topLeftUpdated.y) * newTileY);
-            }
+                    /* Shift back to what we were looking at before, approximately */
+                    viewport.translate((int)(topLeft.x - topLeftUpdated.x) * newTileX, (int)(topLeft.y - topLeftUpdated.y) * newTileY);
+                }
         }
 
         /* Scrolling */
@@ -254,24 +256,24 @@ public class Main extends JPanel {
     }
 
     @Override
-    protected void paintComponent(Graphics g) {
-        if(!initialized) return;
+        protected void paintComponent(Graphics g) {
+            if(!initialized) return;
 
-        long t = System.currentTimeMillis();
-        long diff = t - prevTime;
-        prevTime = t;
-        if(Math.random() < .1)
-            System.out.println("FPS " + (1000/diff));
+            long t = System.currentTimeMillis();
+            long diff = t - prevTime;
+            prevTime = t;
+            if(Math.random() < .03)
+                System.out.println("FPS " + (1000/diff));
 
-        /* Move over to the viewport location */
-        Graphics2D graphics = (Graphics2D) g;
-        g.translate(-viewport.getX(), -viewport.getY());
+            /* Move over to the viewport location */
+            Graphics2D graphics = (Graphics2D) g;
+            g.translate(-viewport.getX(), -viewport.getY());
 
-        /* Paint the map using the map painter */
-        mapPainter.paintMap(graphics, viewport);
+            /* Paint the map using the map painter */
+            mapPainter.paintMap(graphics, viewport);
 
-        /* On top of the map, paint all the units and buildings */
-        unitPainter.paintUnits(graphics, viewport);
-    }
+            /* On top of the map, paint all the units and buildings */
+            unitPainter.paintUnits(graphics, viewport);
+        }
 
 }

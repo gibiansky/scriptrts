@@ -1,6 +1,7 @@
 package com.scriptrts.core;
 
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.Polygon;
 import java.awt.Graphics2D;
 import java.awt.Color;
@@ -40,6 +41,7 @@ public class MapPainter {
      * by the index stored in the terrain integer array.
      */
     private BufferedImage[] images = new BufferedImage[TerrainType.values().length];
+    private BufferedImage[] scaledImages = new BufferedImage[TerrainType.values().length];
 
     /**
      * A data array indicating which tiles need to have transparent masks overlayed on them to avoid hard edges on the map.
@@ -67,6 +69,7 @@ public class MapPainter {
      * An array containing all possible masks that might need to be used. The first index is the type of texture, and the second is the mask type.
      */
     private BufferedImage[][] terrainMasks;
+    private BufferedImage[][] scaledTerrainMasks;
 
     /**
      * Flags that dictate the order that the masks are stored in the mask arrays 
@@ -113,8 +116,10 @@ public class MapPainter {
             TerrainType[] values = TerrainType.values();
 
             /* Store the loaded image in the images array at the correct index */
-            for(TerrainType t : values)
+            for(TerrainType t : values) {
                 images[t.ordinal()] = ResourceManager.loadImage("resource/map/" + associations.get(t.name()) + ".png", MAX_TILE_X, MAX_TILE_Y);
+                scaledImages[t.ordinal()] = images[t.ordinal()];
+            }
         } catch(IOException e){
             e.printStackTrace();
         }
@@ -135,6 +140,7 @@ public class MapPainter {
 
         /* Create the masks for each type of terrain */
         terrainMasks = new BufferedImage[max][MASKS.length];
+        scaledTerrainMasks = new BufferedImage[max][MASKS.length];
         createTerrainMasks();
 
         /* Calculate what type of masking is necessary */
@@ -179,6 +185,7 @@ public class MapPainter {
 
                 /* Store resulting mask in the mask array */
                 terrainMasks[i][j] = maskImg;
+                scaledTerrainMasks[i][j] = maskImg;
             }
         }
     }
@@ -302,7 +309,7 @@ public class MapPainter {
      * Retrieve the mask image for this terrain and this type of mask
      */
     private BufferedImage getMask(int terrain, int maskID){
-        return terrainMasks[terrain][maskID];
+        return scaledTerrainMasks[terrain][maskID];
     }
 
     /**
@@ -311,14 +318,57 @@ public class MapPainter {
      * false if provided tile size was invalid.
      */
     public synchronized boolean setTileSize(int tileSizeX, int tileSizeY){
+        boolean different = (tileSizeX != tileX || tileSizeY != tileY);
         if(tileSizeX <= MapPainter.MAX_TILE_X && tileSizeY <= MapPainter.MAX_TILE_Y) 
             if(tileSizeX >= MapPainter.MIN_TILE_X && tileSizeY >= MapPainter.MIN_TILE_Y) {
                 tileX = tileSizeX;
                 tileY = tileSizeY;
+
+                if(different)
+                    scaleImagesInBackground();
                 return true;
             }
 
         return false;
+    }
+
+    /**
+     * Creates a background thread to rescale all the images
+     */
+    private synchronized void scaleImagesInBackground(){
+        /* Set all images to be full size until we rescale */
+        for(int i = 0; i < images.length; i++)
+            scaledImages[i] = images[i];
+
+        for(int i = 0; i < terrainMasks.length; i++)
+            for(int j = 0; j < terrainMasks[0].length; j++)
+                scaledTerrainMasks[i][j] = terrainMasks[i][j];
+
+        /* Resize in background */
+        Thread scaler = new Thread(){
+            public void run(){
+                for(int i = 0; i < images.length; i++)
+                    scaledImages[i] = resizeImage(images[i], tileX, tileY);
+
+                for(int i = 0; i < terrainMasks.length; i++)
+                    for(int j = 0; j < terrainMasks[0].length; j++)
+                        scaledTerrainMasks[i][j] = resizeImage(terrainMasks[i][j], tileX, tileY);
+            }
+        };
+        scaler.setPriority(Thread.MIN_PRIORITY);
+        scaler.start();
+    }
+
+    /**
+     * Resizes an image to be of desired size
+     */
+    private BufferedImage resizeImage(Image img, int width, int height){
+        BufferedImage scaledImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = (Graphics2D) scaledImage.getGraphics();
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.drawImage(img, 0, 0, width, height, null);
+        g.dispose();
+        return scaledImage;
     }
 
     /**
@@ -435,24 +485,24 @@ public class MapPainter {
                     x = j*tileX + tileX/2;
 
                 /* Draw the tile */
-                Image image = images[terrain[i][j]];
+                Image image = scaledImages[terrain[i][j]];
                 graphics.drawImage(image, x, i*tileY/2, tileX, tileY, null);
 
 
                 /* Don't mask above a certain zoom level */
-                if(tileX > 32)
-                /* Draw the masks on top of the tile */
-                for(int texType = 0; texType < images.length; texType++){
-                    for(int maskID : MASKS){
-                        int maskingTerrain = masking[i][j][maskID];
+                if(tileX > 16 && tileY > 8)
+                    /* Draw the masks on top of the tile */
+                    for(int texType = 0; texType < images.length; texType++){
+                        for(int maskID : MASKS){
+                            int maskingTerrain = masking[i][j][maskID];
 
-                        /* If the terrain is less than zero, that means we don't need any masking at all */
-                        if(maskingTerrain == texType){
-                            BufferedImage mask = getMask(maskingTerrain, maskID);
-                            graphics.drawImage(mask, x, i*tileY/2, tileX, tileY, null);
+                            /* If the terrain is less than zero, that means we don't need any masking at all */
+                            if(maskingTerrain == texType){
+                                BufferedImage mask = getMask(maskingTerrain, maskID);
+                                graphics.drawImage(mask, x, i*tileY/2, tileX, tileY, null);
+                            }
                         }
                     }
-                }
 
                 /* Draw debug lines and labels */
                 if(MapPainter.DEBUG){
