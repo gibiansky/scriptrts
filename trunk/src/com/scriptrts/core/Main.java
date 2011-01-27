@@ -22,9 +22,11 @@ import javax.swing.JPanel;
 
 import jargs.gnu.CmdLineParser;
 
+import com.scriptrts.game.*;
+
 public class Main extends JPanel {
     /* Game properties */
-    private static int n = 128, tileX = 128, tileY = 64;
+    private static final int n = 128;
     private final static JFrame window = new JFrame("ScriptRTS");
 
     /* Viewport properties */
@@ -36,6 +38,8 @@ public class Main extends JPanel {
     /* Game data */
     private boolean initialized = false;
     private MapPainter mapPainter;
+    private UnitGrid unitGrid;
+    private UnitPainter unitPainter;
     private Map map;
 
     /* Use fullscreen? */
@@ -134,24 +138,31 @@ public class Main extends JPanel {
 
     /* Called when the window or drawing panel has changed size */
     public void resized(){
-        viewport.resize(getWidth(), getHeight());
+        if(viewport != null)
+            viewport.resize(getWidth(), getHeight());
         repaint();
     }
 
     /* Initialize game resources */
     public void initializeGame(){
-        /* Create the viewport */
-        viewport = new Viewport(getWidth(), getHeight());
-        viewport.translate(tileX / 2, tileY / 2);
-        viewport.setViewportLocationLimits(tileX / 2, tileY / 2, n * tileX, n * tileY / 2);
-
         /* Create and populate map with tiles */
         Map randomMap = new Map(n, ResourceDensity.Medium);
         randomMap.populateTiles();
         map = randomMap;
 
         /* Create map painter */
-        mapPainter = new MapPainter(randomMap, tileX, tileY);
+        mapPainter = new MapPainter(randomMap, 128, 64);
+        int tileX = mapPainter.getTileWidth();
+        int tileY = mapPainter.getTileHeight();
+
+        /* Create the unit grid and unit painter */
+        unitGrid = new UnitGrid(UnitPainter.SPACES_PER_TILE * n);
+        unitPainter = new UnitPainter(unitGrid, mapPainter);
+
+        /* Create the viewport */
+        viewport = new Viewport(getWidth(), getHeight());
+        viewport.translate(tileX / 2, tileY / 2);
+        viewport.setViewportLocationLimits(tileX / 2, tileY / 2, n * tileX, n * tileY / 2);
 
         // set up key listeners
         window.addKeyListener(manager);
@@ -196,7 +207,7 @@ public class Main extends JPanel {
             int zoomLevel = -manager.getMouseScrollDistance();
             
             /* Calculate new tile sizes */
-            int newTileX = tileX, newTileY = tileY;
+            int newTileX = mapPainter.getTileWidth(), newTileY = mapPainter.getTileHeight();
             if(zoomLevel > 0){
                 newTileX *= 2;
                 newTileY *= 2;
@@ -205,23 +216,20 @@ public class Main extends JPanel {
                 newTileY /= 2;
             }
 
-            if(newTileX <= MapPainter.MAX_TILE_X && newTileY <= MapPainter.MAX_TILE_Y && 
-                    newTileX >= MapPainter.MIN_TILE_X && newTileY >= MapPainter.MIN_TILE_Y){
-                /* Remember what we were looking at before */
-                Point topLeft = mapPainter.getTileAtPoint(new Point(0, 0), viewport);
+            /* Remember what we were looking at before */
+            Point topLeft = mapPainter.getTileAtPoint(new Point(0, 0), viewport);
 
-                /* Update tile size in main class, map painter, and viewport */
-                tileX = newTileX;
-                tileY = newTileY;
-                viewport.setViewportLocationLimits(tileX / 2, tileY / 2, n * tileX, n * tileY / 2);
+            /* Try to resize the tiles */
+            if(mapPainter.setTileSize(newTileX, newTileY)){
+                /* Prevent the viewport from going off the map */
+                viewport.setViewportLocationLimits(newTileX / 2, newTileY / 2, n * newTileX, n * newTileY / 2);
                 viewport.translate(0, 0);
-                mapPainter.setTileSize(tileX, tileY);
 
                 /* What are we looking at now? */
                 Point topLeftUpdated = mapPainter.getTileAtPoint(new Point(0, 0), viewport);
 
                 /* Shift back to what we were looking at before, approximately */
-                viewport.translate((int)(topLeft.x - topLeftUpdated.x), (int)(topLeft.y - topLeftUpdated.y));
+                viewport.translate((int)(topLeft.x - topLeftUpdated.x) * newTileX, (int)(topLeft.y - topLeftUpdated.y) * newTileY);
             }
         }
 
@@ -247,6 +255,9 @@ public class Main extends JPanel {
 
         /* Paint the map using the map painter */
         mapPainter.paintMap(graphics, viewport);
+
+        /* On top of the map, paint all the units and buildings */
+        unitPainter.paintUnits(graphics, viewport);
     }
 
 }

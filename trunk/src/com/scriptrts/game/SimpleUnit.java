@@ -4,10 +4,11 @@ import java.awt.image.BufferedImage;
 
 public class SimpleUnit {
 
-	private BufferedImage sprite;
+	public BufferedImage sprite;
 	private SpriteState state;
 	private int speed;
 	private int x, y;
+    public int unitLocation;
 	private Direction direction;
 	
 	/**

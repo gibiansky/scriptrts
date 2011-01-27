@@ -51,7 +51,7 @@ public class MapPainter {
     /**
      * The horizontal and vertical size of the drawn tiles 
      */
-    private int tileX, tileY;
+    private int tileX = 128, tileY = 64;
 
     /**
      * The maximum size for the tiles
@@ -306,11 +306,40 @@ public class MapPainter {
     }
 
     /**
-     * Set the tile size to use for this map painter
+     * Attempt to set the tile size to use for this map painter
+     * @return true if tile size was set; 
+     * false if provided tile size was invalid.
      */
-    public synchronized void setTileSize(int tileSizeX, int tileSizeY){
-        tileX = tileSizeX;
-        tileY = tileSizeY;
+    public synchronized boolean setTileSize(int tileSizeX, int tileSizeY){
+        if(tileSizeX <= MapPainter.MAX_TILE_X && tileSizeY <= MapPainter.MAX_TILE_Y) 
+            if(tileSizeX >= MapPainter.MIN_TILE_X && tileSizeY >= MapPainter.MIN_TILE_Y) {
+                tileX = tileSizeX;
+                tileY = tileSizeY;
+                return true;
+            }
+
+        return false;
+    }
+
+    /**
+     * Get the width of the tiles
+     */
+    public int getTileWidth(){
+        return tileX;
+    }
+
+    /**
+     * Get the height of the tiles
+     */
+    public int getTileHeight(){
+        return tileY;
+    }
+
+    /**
+     * Get the map this painter draws
+     */
+    public Map getMap(){
+        return toPaint;
     }
 
     /**
