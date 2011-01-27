@@ -1,7 +1,8 @@
 package com.scriptrts.control;
 
-import com.scriptrts.game.*;
-import java.util.*;
+import java.util.ArrayList;
+
+import com.scriptrts.game.Entity;
 
 public class Selection {
 

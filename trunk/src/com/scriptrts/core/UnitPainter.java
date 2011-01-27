@@ -1,9 +1,13 @@
 package com.scriptrts.core;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
+
+import com.scriptrts.game.Direction;
+import com.scriptrts.game.SimpleUnit;
+import com.scriptrts.game.UnitGrid;
+import com.scriptrts.game.UnitTile;
 import com.scriptrts.util.ResourceManager;
-import com.scriptrts.game.*;
-import com.scriptrts.combat.*;
 
 public class UnitPainter {
 

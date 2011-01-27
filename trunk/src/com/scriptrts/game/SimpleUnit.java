@@ -10,7 +10,7 @@ public class SimpleUnit {
 	private SpriteState state;
 	private int speed;
 	private int x, y;
-    private UnitLocation unitLocation;
+    private UnitLocation unitLocation, dLoc;
 	private Direction direction;
 	
 	public SimpleUnit(BufferedImage sprite, int speed, int x, int y, UnitLocation unitLocation, Direction direction) {
@@ -22,6 +22,12 @@ public class SimpleUnit {
 		this.direction = direction;
 	}
 
+	public void move() {
+		this.dLoc = UnitLocation.East;
+		if(unitLocation != dLoc)
+			state = SpriteState.Moving;
+	}
+	
 	/**
 	 * @return the state
 	 */
