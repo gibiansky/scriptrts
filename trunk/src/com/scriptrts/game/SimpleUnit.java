@@ -2,26 +2,23 @@ package com.scriptrts.game;
 
 import java.awt.image.BufferedImage;
 
+import com.scriptrts.core.UnitLocation;
+
 public class SimpleUnit {
 
-	public BufferedImage sprite;
+	private BufferedImage sprite;
 	private SpriteState state;
 	private int speed;
 	private int x, y;
-    public int unitLocation;
+    private UnitLocation unitLocation;
 	private Direction direction;
 	
-	/**
-	 * @param sprite
-	 * @param speed
-	 * @param x
-	 * @param y
-	 */
-	public SimpleUnit(BufferedImage sprite, int speed, int x, int y, Direction direction) {
+	public SimpleUnit(BufferedImage sprite, int speed, int x, int y, UnitLocation unitLocation, Direction direction) {
 		this.sprite = sprite;
 		this.speed = speed;
 		this.x = x;
 		this.y = y;
+		this.unitLocation = unitLocation;
 		this.direction = direction;
 	}
 
@@ -93,6 +90,34 @@ public class SimpleUnit {
 	 */
 	public void setDirection(Direction direction) {
 		this.direction = direction;
+	}
+
+	/**
+	 * @return the sprite
+	 */
+	public BufferedImage getSprite() {
+		return sprite;
+	}
+
+	/**
+	 * @param sprite the sprite to set
+	 */
+	public void setSprite(BufferedImage sprite) {
+		this.sprite = sprite;
+	}
+
+	/**
+	 * @return the unitLocation
+	 */
+	public UnitLocation getUnitLocation() {
+		return unitLocation;
+	}
+
+	/**
+	 * @param unitLocation the unitLocation to set
+	 */
+	public void setUnitLocation(UnitLocation unitLocation) {
+		this.unitLocation = unitLocation;
 	}
 	
 }

@@ -56,4 +56,15 @@ public class Map {
 					}
 		}
 	}
+
+	public void populateTiles2() {
+		for (int i = 0; i < n; i++)
+			for(int j = 0; j < n; j++)
+				tileArray[i][j] = TerrainType.Grass;
+		double probability, radius;
+		/* Loop through each tile type */
+		for(TerrainType t : TerrainType.values()) {
+			probability = 0;
+		}
+	}
 }
