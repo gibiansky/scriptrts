@@ -48,6 +48,9 @@ public class Main extends JPanel {
     /* Debug mode? */
     private static boolean DEBUG = false;
 
+    /* Use FPS logging or fixed FPS? */
+    private static boolean fpsLogging = false;
+
 
     /* Input manager */
     private InputManager manager = InputManager.getInputManager();
@@ -62,6 +65,7 @@ public class Main extends JPanel {
         CmdLineParser parser = new CmdLineParser();
         CmdLineParser.Option debugOpt = parser.addBooleanOption('d', "debug");
         CmdLineParser.Option fullscreenOpt = parser.addBooleanOption('f', "fullscreen");
+        CmdLineParser.Option fpsLogOpt = parser.addBooleanOption('l', "logfps");
 
         /* Parse */
         try {
@@ -75,6 +79,7 @@ public class Main extends JPanel {
         /* Interpret arguments */
         DEBUG = (Boolean) parser.getOptionValue(debugOpt, Boolean.FALSE);
         fullscreen = (Boolean) parser.getOptionValue(fullscreenOpt, Boolean.FALSE);
+        fpsLogging = (Boolean) parser.getOptionValue(fpsLogOpt,  Boolean.FALSE);
 
         MapPainter.DEBUG = DEBUG;
     }
@@ -133,14 +138,18 @@ public class Main extends JPanel {
             }
         };
         Timer timer = new Timer();
-        //timer.scheduleAtFixedRate(updateTask, 0, (long) (1000 / fps));
-        new Thread(){
-            public void run(){
-                while(true){
-                    updateTask.run();
+        
+        if(fpsLogging){
+            new Thread(){
+                public void run(){
+                    while(true){
+                        updateTask.run();
+                    }
                 }
-            }
-        }.start();
+            }.start();
+        }
+        else
+            timer.scheduleAtFixedRate(updateTask, 0, (long) (1000 / fps));
     }
 
     /* Called when the window or drawing panel has changed size */
@@ -259,11 +268,15 @@ public class Main extends JPanel {
         protected void paintComponent(Graphics g) {
             if(!initialized) return;
 
-            long t = System.currentTimeMillis();
-            long diff = t - prevTime;
-            prevTime = t;
-            if(Math.random() < .03)
-                System.out.println("FPS " + (1000/diff));
+            if(fpsLogging){
+                long t = System.currentTimeMillis();
+                long diff = t - prevTime;
+                prevTime = t;
+                if(Math.random() < .03){
+                    if(diff == 0) diff = 1;
+                    System.out.println("FPS: " + (1000/diff));
+                }
+            }
 
             /* Move over to the viewport location */
             Graphics2D graphics = (Graphics2D) g;
