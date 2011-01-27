@@ -37,9 +37,10 @@ public class UnitPainter {
 			/* Initialize the rider at the middle of the terrain tile (5,5), facing E.
 			 *(Direction, at the moment, doesn't change. */
 			SimpleUnit rider = new SimpleUnit(ResourceManager.loadImage("resource/unit/rider/FemaleRider.png"),
-					1, 5, 5, UnitLocation.C, Direction.East);
+					1, 5, 5, UnitLocation.Center, Direction.East);
+
 			/* Place the rider in the unit tile */
-			tile.units[0] = rider;
+			tile.units[UnitLocation.Center.ordinal()] = rider;
 			/* Put the unit tile in the UnitGrid (to be associated with terrain tiles)*/
 			grid.unitGrid[5][5] = tile;
 		} catch (Exception e) {
@@ -108,39 +109,39 @@ public class UnitPainter {
 		int tileY = mapPainter.getTileHeight();
 		int tileBackX = 0, tileBackY = 0;
 		switch(unit.getUnitLocation()){
-		case SW:
+		case Northwest:
 			tileBackX = tileX / 2;
 			tileBackY = 0;
 			break;
-		case W:
+		case West:
 			tileBackX = tileX / 3;
 			tileBackY = tileY / 6;
 			break;
-		case S:
+		case North:
 			tileBackX = 2 * tileX / 3;
 			tileBackY = tileY / 6;
 			break;
-		case NW:
+		case Southwest:
 			tileBackX = tileX / 6;
 			tileBackY = tileY / 3;
 			break;
-		case C:
+		case Center:
 			tileBackX = tileX / 2;
 			tileBackY = tileY / 3;
 			break;
-		case SE:
+		case Northeast:
 			tileBackX = 5*tileX / 6;
 			tileBackY = tileY / 3;
 			break;
-		case N:
+		case South:
 			tileBackX = tileX / 3;
 			tileBackY = tileY / 2;
 			break;
-		case E:
+		case East:
 			tileBackX = 2 * tileX / 3;
 			tileBackY = tileY / 2;
 			break;
-		case NE:
+		case Southeast:
 			tileBackX = tileX / 2;
 			tileBackY = 2 * tileY / 3;
 		default:

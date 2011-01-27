@@ -5,9 +5,9 @@ package com.scriptrts.core;
  *
  */
 public enum UnitLocation {
-	SW,
-	W, S, 
-	NW, C, SE, 
-	N, E,
-	NE;  
+             Northwest,
+        West,           North,
+    Southwest,  Center,     Northeast,
+        South,          East,
+             Southeast;
 }
