@@ -126,14 +126,21 @@ public class Main extends JPanel {
 
         /* Start game loop */
         float fps = 30;
-        TimerTask updateTask = new TimerTask(){
+        final TimerTask updateTask = new TimerTask(){
             public void run(){
                 panel.updateGame();
-                window.repaint();
+                panel.repaint();
             }
         };
         Timer timer = new Timer();
-        timer.scheduleAtFixedRate(updateTask, 0, (long) (1000 / fps));
+        //timer.scheduleAtFixedRate(updateTask, 0, (long) (1000 / fps));
+        new Thread(){
+            public void run(){
+                while(true){
+                    updateTask.run();
+                }
+            }
+        }.start();
     }
 
     /* Called when the window or drawing panel has changed size */
@@ -180,6 +187,7 @@ public class Main extends JPanel {
     }
 
     /* Update game state */
+    private long prevTime = System.nanoTime();
     public void updateGame(){
         /* Try to accept and locate mouse clicks */
         if(manager.getMouseDown() && manager.getMouseMoved()){
@@ -248,6 +256,12 @@ public class Main extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         if(!initialized) return;
+
+        long t = System.currentTimeMillis();
+        long diff = t - prevTime;
+        prevTime = t;
+        if(Math.random() < .1)
+            System.out.println("FPS " + (1000/diff));
 
         /* Move over to the viewport location */
         Graphics2D graphics = (Graphics2D) g;

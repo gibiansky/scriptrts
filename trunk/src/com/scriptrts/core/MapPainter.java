@@ -56,12 +56,12 @@ public class MapPainter {
     /**
      * The maximum size for the tiles
      */
-    public static final int MAX_TILE_X = 256, MAX_TILE_Y = 128;
+    public static final int MAX_TILE_X = 128, MAX_TILE_Y = 64;
 
     /**
      * The minimum size for the tiles
      */
-    public static final int MIN_TILE_X = 32, MIN_TILE_Y = 16;
+    public static final int MIN_TILE_X = 16, MIN_TILE_Y = 8;
 
     /**
      * An array containing all possible masks that might need to be used. The first index is the type of texture, and the second is the mask type.
@@ -438,6 +438,9 @@ public class MapPainter {
                 Image image = images[terrain[i][j]];
                 graphics.drawImage(image, x, i*tileY/2, tileX, tileY, null);
 
+
+                /* Don't mask above a certain zoom level */
+                if(tileX > 32)
                 /* Draw the masks on top of the tile */
                 for(int texType = 0; texType < images.length; texType++){
                     for(int maskID : MASKS){
@@ -470,3 +473,4 @@ public class MapPainter {
         }
     }
 }
+
