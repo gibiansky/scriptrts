@@ -2,6 +2,7 @@ package com.scriptrts.core;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 
 import com.scriptrts.game.Direction;
 import com.scriptrts.game.SimpleUnit;
@@ -34,15 +35,16 @@ public class UnitPainter {
 
 		mapPainter = m;
 		grid = g;
-
+		
 		try {
 			UnitTile tile = new UnitTile();
 			tile.units = new SimpleUnit[9];
+			/* Retrieve rider sprites */
+			BufferedImage[] sprites = {ResourceManager.loadImage("resource/unit/rider/FemaleRider.png"),
+					ResourceManager.loadImage("resource/unit/rider/FemaleRiderMoving.png")};
 			/* Initialize the rider at the middle of the terrain tile (5,5), facing E.
 			 *(Direction, at the moment, doesn't change. */
-			SimpleUnit rider = new SimpleUnit(ResourceManager.loadImage("resource/unit/rider/FemaleRider.png"),
-					1, 5, 5, UnitLocation.Center, Direction.East);
-
+			SimpleUnit rider = new SimpleUnit(sprites, 1, 5, 5, UnitLocation.Center, Direction.East);
 			/* Place the rider in the unit tile */
 			tile.units[UnitLocation.Center.ordinal()] = rider;
 			/* Put the unit tile in the UnitGrid (to be associated with terrain tiles)*/
@@ -154,7 +156,7 @@ public class UnitPainter {
 		}
 
 		/* Make the back of the unit agree with the back of the tile */
-		graphics.drawImage(unit.getSprite(), tileLocX + tileBackX - unitBackX, tileLocY + tileBackY - unitBackY, null);
+		graphics.drawImage(unit.getCurrentSprite(), tileLocX + tileBackX - unitBackX, tileLocY + tileBackY - unitBackY, null);
 		graphics.setColor(Color.blue);
 	}
 

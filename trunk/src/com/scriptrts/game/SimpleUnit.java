@@ -6,26 +6,36 @@ import com.scriptrts.core.UnitLocation;
 
 public class SimpleUnit {
 
-	private BufferedImage sprite;
+	private BufferedImage[] sprites;
+	private BufferedImage currentSprite;
 	private SpriteState state;
 	private int speed;
 	private int x, y;
     private UnitLocation unitLocation, dLoc;
 	private Direction direction;
 	
-	public SimpleUnit(BufferedImage sprite, int speed, int x, int y, UnitLocation unitLocation, Direction direction) {
-		this.sprite = sprite;
+	public SimpleUnit(BufferedImage[] sprites, int speed, int x, int y, UnitLocation unitLocation, Direction direction) {
+		this.sprites = sprites;
 		this.speed = speed;
 		this.x = x;
 		this.y = y;
 		this.unitLocation = unitLocation;
 		this.direction = direction;
+		state = SpriteState.Idle;
+		this.setCurrentSprite(sprites[SpriteState.Idle.ordinal()]);
 	}
 
 	public void move() {
 		this.dLoc = UnitLocation.East;
-		if(unitLocation != dLoc)
+		if(unitLocation != dLoc) {
 			state = SpriteState.Moving;
+			currentSprite = sprites[state.ordinal()];
+		}
+	}
+	
+	public void idle() {
+		state = SpriteState.Idle;
+		currentSprite = sprites[state.ordinal()];
 	}
 	
 	/**
@@ -101,15 +111,15 @@ public class SimpleUnit {
 	/**
 	 * @return the sprite
 	 */
-	public BufferedImage getSprite() {
-		return sprite;
+	public BufferedImage[] getSprites() {
+		return sprites;
 	}
 
 	/**
 	 * @param sprite the sprite to set
 	 */
-	public void setSprite(BufferedImage sprite) {
-		this.sprite = sprite;
+	public void setSprites(BufferedImage[] sprites) {
+		this.sprites = sprites;
 	}
 
 	/**
@@ -124,6 +134,20 @@ public class SimpleUnit {
 	 */
 	public void setUnitLocation(UnitLocation unitLocation) {
 		this.unitLocation = unitLocation;
+	}
+
+	/**
+	 * @param currentSprite the currentSprite to set
+	 */
+	public void setCurrentSprite(BufferedImage currentSprite) {
+		this.currentSprite = currentSprite;
+	}
+
+	/**
+	 * @return the currentSprite
+	 */
+	public BufferedImage getCurrentSprite() {
+		return currentSprite;
 	}
 	
 }
