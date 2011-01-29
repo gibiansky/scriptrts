@@ -390,15 +390,11 @@ public class MapPainter {
      */
     public Point getTileAtPoint(Point point, Viewport viewport){
         /* Calculate boundaries of what the viewport sees */
-        int left = (int) (viewport.getX() / tileX) - 1;
-        int top = (int) (viewport.getY() / (tileY / 2)) - 1;
-        if(left < 0) left = 0;
-        if(top < 0) top = 0;
-
-        int right = (int) ((viewport.getX() + viewport.getWidth()) / tileX) + 1;
-        int bottom = (int) ((viewport.getY() + viewport.getHeight()) / (tileY / 2)) + 1;
-        if(right > toPaint.getN()) right = toPaint.getN();
-        if(bottom > toPaint.getN()) bottom = toPaint.getN();
+        getViewportTileBounds(mapBoundsPaintArray, viewport);
+        int left    = mapBoundsPaintArray[0];
+        int top     = mapBoundsPaintArray[1];
+        int right   = mapBoundsPaintArray[2];
+        int bottom  = mapBoundsPaintArray[3];
 
         /* Translate the point to be on the map coordinates instead of in screen coordinates */
         point.translate(viewport.getX(), viewport.getY());
@@ -452,17 +448,14 @@ public class MapPainter {
     /**
      * Paint the specified part of the map onto the screen using the provided Graphics2D object
      */
+    private int[] mapBoundsPaintArray = new int[4];
     public synchronized void paintMap(Graphics2D graphics, Viewport viewport){
         /* Calculate boundaries of what the viewport sees */
-        int left = (int) (viewport.getX() / tileX) - 1;
-        int top = (int) (viewport.getY() / (tileY / 2)) - 1;
-        if(left < 0) left = 0;
-        if(top < 0) top = 0;
-
-        int right = (int) ((viewport.getX() + viewport.getWidth()) / tileX) + 1;
-        int bottom = (int) ((viewport.getY() + viewport.getHeight()) / (tileY / 2)) + 1;
-        if(right > toPaint.getN()) right = toPaint.getN();
-        if(bottom > toPaint.getN()) bottom = toPaint.getN();
+        getViewportTileBounds(mapBoundsPaintArray, viewport);
+        int left    = mapBoundsPaintArray[0];
+        int top     = mapBoundsPaintArray[1];
+        int right   = mapBoundsPaintArray[2];
+        int bottom  = mapBoundsPaintArray[3];
 
         /* Only draw what we need to */
         for(int i = top; i < bottom; i++) {
@@ -514,6 +507,28 @@ public class MapPainter {
                 }
             }
         }
+    }
+
+    /**
+     * Get the bounds on the viewport in terms of tiles
+     */
+    public void getViewportTileBounds(int[] bounds, Viewport viewport){
+        if(bounds.length != 4) return;	
+
+        int left = (int) (viewport.getX() / tileX) - 1;
+        int top = (int) (viewport.getY() / (tileY / 2)) - 1;
+        if(left < 0) left = 0;
+        if(top < 0) top = 0;
+
+        int right = (int) ((viewport.getX() + viewport.getWidth()) / tileX) + 1;
+        int bottom = (int) ((viewport.getY() + viewport.getHeight()) / (tileY / 2)) + 1;
+        if(right > toPaint.getN()) right = toPaint.getN();
+        if(bottom > toPaint.getN()) bottom = toPaint.getN();
+
+        bounds[0] = left;
+        bounds[1] = top;
+        bounds[2] = right;
+        bounds[3] = bottom;
     }
 }
 

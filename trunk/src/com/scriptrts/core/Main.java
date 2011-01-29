@@ -204,7 +204,7 @@ public class Main extends JPanel {
 	private long prevTime = System.nanoTime();
 	public void updateGame(){
 		/* Try to accept and locate mouse clicks */
-		if(manager.getMouseDown() && manager.getMouseMoved()){
+		if(false && manager.getMouseDown() && manager.getMouseMoved()){
 			/* Get mouse location */
 			Point point = manager.getMouseLocation();
 
@@ -215,6 +215,9 @@ public class Main extends JPanel {
 			int tileLocX = (int) tileLoc.getX();
 			int tileLocY = (int) tileLoc.getY();
 
+
+            /* Paint on the map */
+            /*
 			if(manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
 				TerrainType type = map.getTileArray()[tileLocY][tileLocX];
 				paintbrush = type;
@@ -222,8 +225,22 @@ public class Main extends JPanel {
 				map.getTileArray()[tileLocY][tileLocX] = paintbrush;
 				mapPainter.update();
 			}
+            */
 		}
 
+        if(manager.getMouseClicked()){
+            /* Get mouse location */
+            Point point = manager.getMouseLocation();
+
+
+            /* Select the unit */
+            SimpleUnit unitSelected = unitPainter.getUnitAtPoint(point, viewport);
+            if(unitSelected != null)
+                if(unitSelected.isSelected())
+                    unitSelected.deselect();
+                else
+                    unitSelected.select();
+        }
 		/* Detect unit commands */
 		if(manager.getKeyCodeFlag(KeyEvent.VK_W)) {
 			unit.move();

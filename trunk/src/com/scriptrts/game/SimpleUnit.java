@@ -13,6 +13,7 @@ public class SimpleUnit {
 	private int x, y;
     public UnitLocation unitLocation, dLoc;
 	private Direction direction;
+    private boolean selected;
 	
 	public SimpleUnit(BufferedImage[] sprites, int speed, int x, int y, UnitLocation unitLocation, Direction direction) {
 		this.sprites = sprites;
@@ -24,6 +25,16 @@ public class SimpleUnit {
 		state = SpriteState.Idle;
 		this.setCurrentSprite(sprites[SpriteState.Idle.ordinal()]);
 	}
+
+    public boolean isSelected(){
+        return selected;
+    }
+    public void select(){
+        selected = true;
+    }
+    public void deselect(){
+        selected = false;
+    }
 
     private double animCounter = 0;
     public double getAnimationCounter(){
