@@ -272,6 +272,8 @@ public class Main extends JPanel {
 			viewport.translate(0, -increment);
 		if(manager.getKeyCodeFlag(KeyEvent.VK_DOWN))
 			viewport.translate(0, increment);
+
+        unitPainter.update();
 	}
 
 	@Override

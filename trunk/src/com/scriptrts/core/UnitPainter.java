@@ -3,6 +3,7 @@ package com.scriptrts.core;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.awt.Point;
 
 import com.scriptrts.game.Direction;
 import com.scriptrts.game.SimpleUnit;
@@ -54,6 +55,51 @@ public class UnitPainter {
 		}
 	}
 
+
+    /**
+     * Updates unit positions and animations
+     */
+    public void update(){
+        int n = mapPainter.getMap().getN();
+        for(int i = 0; i < n; i++){
+            for(int j = 0; j < n; j++){
+                UnitTile tile = grid.unitGrid[i][j];
+                if(tile != null){
+                    updateUnitTile(i, j);
+                }
+            }
+        }
+    }
+
+    private void updateUnitTile(int i, int j){
+        UnitTile tile = grid.unitGrid[i][j];
+        for(UnitLocation loc : UnitLocation.values()){
+            SimpleUnit unit = tile.units[loc.ordinal()];
+            if(unit != null && unit.unitLocation == loc){
+                updateUnit(i, j, loc);
+            }
+        }
+    }
+
+    private void updateUnit(int i, int j, UnitLocation loc){
+        int fps = 30;
+        
+        UnitTile tile = grid.unitGrid[i][j];
+        SimpleUnit unit = tile.units[loc.ordinal()];
+
+        /* Unit speed is in subtiles per second */
+        int uSpeed = unit.getSpeed();
+        double subtilesMovedPerFrame = (double)(uSpeed) /* subtiles per second */ / fps /* times seconds */;
+
+        int subtilesMoved = unit.incrementAnimationCounter(subtilesMovedPerFrame);
+
+        /* Move it however many subtiles it wants to be moved */
+        while(subtilesMoved > 0){
+            grid.moveUnitOneTile(unit);
+            subtilesMoved--;
+        }
+    }
+
 	/**
 	 * Paints all visible units onto the screen
 	 */
@@ -101,59 +147,68 @@ public class UnitPainter {
 			if(unit != null && unit.getUnitLocation() == loc)
 				paintUnit(graphics, unit, x, y);
 		}
-
-		//		for(int subtile = 0; subtile < SPACES_PER_TILE * SPACES_PER_TILE; subtile++){
-		//			SimpleUnit unit = tile.units[subtile];
-		//			if(unit != null && unit.unitLocation == subtile){
-		//				paintUnit(graphics, unit, x, y);
-		//			}
 	}
 
+    private Point getTileBackLocation(UnitLocation loc){
+        int tileBackX, tileBackY;
+		int tileX = mapPainter.getTileWidth();
+		int tileY = mapPainter.getTileHeight();
+        switch(loc){
+            case Northwest:
+                tileBackX = tileX / 2;
+                tileBackY = 0;
+                break;
+            case West:
+                tileBackX = tileX / 3;
+                tileBackY = tileY / 6;
+                break;
+            case North:
+                tileBackX = 2 * tileX / 3;
+                tileBackY = tileY / 6;
+                break;
+            case Southwest:
+                tileBackX = tileX / 6;
+                tileBackY = tileY / 3;
+                break;
+            case Center:
+                tileBackX = tileX / 2;
+                tileBackY = tileY / 3;
+                break;
+            case Northeast:
+                tileBackX = 5*tileX / 6;
+                tileBackY = tileY / 3;
+                break;
+            case South:
+                tileBackX = tileX / 3;
+                tileBackY = tileY / 2;
+                break;
+            case East:
+                tileBackX = 2 * tileX / 3;
+                tileBackY = tileY / 2;
+                break;
+            case Southeast:
+                tileBackX = tileX / 2;
+                tileBackY = 2 * tileY / 3;
+            default:
+                tileBackX = -1000;
+                tileBackY = -1000;
+                break;
+        }
+
+        /* TODO: we don't need to create a new point... just have these be private global variables... */
+        return new Point(tileBackX, tileBackY);
+    }
+
 	private void paintUnit(Graphics2D graphics, SimpleUnit unit, int tileLocX, int tileLocY){
+        double percentMovedFromTile = unit.getAnimationCounter();
 		int unitBackX = 28, unitBackY = 48;
 		int tileX = mapPainter.getTileWidth();
 		int tileY = mapPainter.getTileHeight();
-		int tileBackX = 0, tileBackY = 0;
-		switch(unit.getUnitLocation()){
-		case Northwest:
-			tileBackX = tileX / 2;
-			tileBackY = 0;
-			break;
-		case West:
-			tileBackX = tileX / 3;
-			tileBackY = tileY / 6;
-			break;
-		case North:
-			tileBackX = 2 * tileX / 3;
-			tileBackY = tileY / 6;
-			break;
-		case Southwest:
-			tileBackX = tileX / 6;
-			tileBackY = tileY / 3;
-			break;
-		case Center:
-			tileBackX = tileX / 2;
-			tileBackY = tileY / 3;
-			break;
-		case Northeast:
-			tileBackX = 5*tileX / 6;
-			tileBackY = tileY / 3;
-			break;
-		case South:
-			tileBackX = tileX / 3;
-			tileBackY = tileY / 2;
-			break;
-		case East:
-			tileBackX = 2 * tileX / 3;
-			tileBackY = tileY / 2;
-			break;
-		case Southeast:
-			tileBackX = tileX / 2;
-			tileBackY = 2 * tileY / 3;
-		default:
-			break;
+        Point backStartSubtile = getTileBackLocation(unit.getUnitLocation());
+        Point backShift = Direction.getShift(mapPainter, unit.getDirection());
+		int tileBackX = (int)(backStartSubtile.getX()  + percentMovedFromTile * backShift.getX());
+		int tileBackY = (int)(backStartSubtile.getY()  + percentMovedFromTile * backShift.getY());
 
-		}
 
 		/* Make the back of the unit agree with the back of the tile */
 		graphics.drawImage(unit.getCurrentSprite(), tileLocX + tileBackX - unitBackX, tileLocY + tileBackY - unitBackY, null);

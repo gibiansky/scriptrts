@@ -11,7 +11,7 @@ public class SimpleUnit {
 	private SpriteState state;
 	private int speed;
 	private int x, y;
-    private UnitLocation unitLocation, dLoc;
+    public UnitLocation unitLocation, dLoc;
 	private Direction direction;
 	
 	public SimpleUnit(BufferedImage[] sprites, int speed, int x, int y, UnitLocation unitLocation, Direction direction) {
@@ -24,6 +24,29 @@ public class SimpleUnit {
 		state = SpriteState.Idle;
 		this.setCurrentSprite(sprites[SpriteState.Idle.ordinal()]);
 	}
+
+    private double animCounter = 0;
+    public double getAnimationCounter(){
+        return animCounter;
+    }
+    /* returns how many tile movements it finished */
+    public int incrementAnimationCounter(double inc){
+        animCounter += inc;
+
+        if(animCounter >= 1){
+            int retVal = (int) (animCounter);
+            animCounter -= retVal;
+            return retVal;
+        }
+
+        return 0;
+
+    }
+    public void resetAnimationCounter(){
+        animCounter = 0;
+    }
+
+
 
 	public void move() {
 		this.dLoc = UnitLocation.East;
@@ -149,5 +172,4 @@ public class SimpleUnit {
 	public BufferedImage getCurrentSprite() {
 		return currentSprite;
 	}
-	
 }
