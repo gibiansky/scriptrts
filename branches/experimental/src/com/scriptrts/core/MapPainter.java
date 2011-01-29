@@ -452,15 +452,15 @@ public class MapPainter {
     public synchronized void paintMap(Graphics2D graphics, Viewport viewport){
         /* Calculate boundaries of what the viewport sees */
         getViewportTileBounds(mapBoundsPaintArray, viewport);
-        int east    = mapBoundsPaintArray[0];
-        int north   = mapBoundsPaintArray[1];
-        int west    = mapBoundsPaintArray[2];
-        int south   = mapBoundsPaintArray[3];
+        int west    = mapBoundsPaintArray[0];
+        int east   = mapBoundsPaintArray[1];
+        int south    = mapBoundsPaintArray[2];
+        int north   = mapBoundsPaintArray[3];
 
         /* Only draw what we need to */
         int n = toPaint.getN();
-        for(int i = 0; i < n; i++) {
-            for(int j = 0; j < n; j++) {
+        for(int i = west; i < east; i++) {
+            for(int j = south; j < north; j++) {
                 /*
                  * Calculate the locations of the back corners of the tiles.
                  */
@@ -469,7 +469,6 @@ public class MapPainter {
 
                 /* Draw the tile */
                 Image image = scaledImages[terrain[i][j]];
-                if(i >= east && i < west && j >= north && j < south)
                 graphics.drawImage(image, x - tileX / 2, y, tileX, tileY, null);
 
 
@@ -492,8 +491,6 @@ public class MapPainter {
                 /* Draw debug lines and labels */
                 if(MapPainter.DEBUG){
                     graphics.setColor(Color.RED);
-                    if(i >= east && i < west && j >= north && j < south)
-                        graphics.setColor(Color.BLUE);
                     graphics.drawString("(" + i + ", " + j + ": " + terrain[i][j] + ")",  x - 50, y + tileY/2);
 
                     int[] xpts = {
@@ -508,6 +505,8 @@ public class MapPainter {
                 }
             }
         }
+
+
     }
 
     /**
