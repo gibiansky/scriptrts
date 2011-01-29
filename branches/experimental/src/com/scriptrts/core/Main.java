@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
@@ -25,7 +26,7 @@ import com.scriptrts.game.UnitGrid;
 
 public class Main extends JPanel {
 	/* Game properties */
-	private static final int n = 128;
+	private static final int n = 32;
 	private final static JFrame window = new JFrame("ScriptRTS");
 
 	/* Viewport properties */
@@ -181,9 +182,14 @@ public class Main extends JPanel {
 		unit = unitGrid.unitGrid[5][5].units[UnitLocation.Center.ordinal()];
 
 		/* Create the viewport */
-		viewport = new Viewport(getWidth(), getHeight());
-		viewport.translate(tileX / 2, tileY / 2);
-		viewport.setViewportLocationLimits(tileX / 2, tileY / 2, n * tileX, n * tileY / 2);
+		viewport = new Viewport(getWidth(), getHeight(), map.getN() * mapPainter.getTileWidth(), map.getN() * mapPainter.getTileHeight());
+        int totalWidth = map.getN() * mapPainter.getTileWidth();
+        int totalHeight = map.getN() * mapPainter.getTileHeight();
+		viewport.translate(totalWidth / 2, totalHeight / 2);
+        int[] limitxPts = {0, totalWidth/2 - viewport.getWidth()/2, totalWidth - viewport.getWidth(), totalWidth/2 - viewport.getWidth()/2};
+        int[] limityPts = {totalHeight/2 - viewport.getHeight()/2, 0, totalHeight/2 - viewport.getHeight()/2,  totalHeight - viewport.getHeight()};
+        Polygon limitingPolygon = new Polygon(limitxPts, limityPts, 4);
+		viewport.setViewportLocationLimits(limitingPolygon);
 
 		// set up key listeners
 		window.addKeyListener(manager);
@@ -287,8 +293,14 @@ public class Main extends JPanel {
 				/* Try to resize the tiles */
 				if(mapPainter.setTileSize(newTileX, newTileY)){
 					/* Prevent the viewport from going off the map */
-					viewport.setViewportLocationLimits(newTileX / 2, newTileY / 2, n * newTileX, n * newTileY / 2);
-					viewport.translate(0, 0);
+                    int totalWidth = map.getN() * mapPainter.getTileWidth();
+                    int totalHeight = map.getN() * mapPainter.getTileHeight();
+                    int[] limitxPts = {0, totalWidth/2 - viewport.getWidth()/2, totalWidth - viewport.getWidth(), totalWidth/2 - viewport.getWidth()/2};
+                    int[] limityPts = {totalHeight/2 - viewport.getHeight()/2, 0, totalHeight/2 - viewport.getHeight()/2,  totalHeight - viewport.getHeight()};
+                    Polygon limitingPolygon = new Polygon(limitxPts, limityPts, 4);
+                    viewport.setViewportLocationLimits(limitingPolygon);
+                    viewport.setMapSize(map.getN() * mapPainter.getTileWidth(), map.getN() * mapPainter.getTileHeight());
+                    viewport.translate(0, 0);
 
 					/* What are we looking at now? */
 					Point topLeftUpdated = mapPainter.getTileAtPoint(new Point(0, 0), viewport);

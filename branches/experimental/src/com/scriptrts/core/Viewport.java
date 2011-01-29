@@ -1,6 +1,8 @@
 package com.scriptrts.core;
 
 import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.geom.Point2D;
 
 public class Viewport {
     /**
@@ -21,43 +23,107 @@ public class Viewport {
     /**
      * Limits on the area that the viewport can be looking at
      */
-    private int lowLimitX, lowLimitY, highLimitX, highLimitY;
+    private Polygon limit;
+
+    /**
+     * Map limits used to determine which quad we're in 
+     */
+    private int mapX, mapY;
 
     /**
      * Create a new viewport
      */
-    public Viewport(int w, int h){
+    public Viewport(int w, int h, int mapSizeX, int mapSizeY){
         super();
 
         width = w;
         height = h;
+        mapX = mapSizeX;
+        mapY = mapSizeY;
+    }
+
+    /**
+     * Set map size 
+     */
+    public void setMapSize(int mapSizeX, int mapSizeY){
+        mapX = mapSizeX;
+        mapY = mapSizeY;
     }
 
     /**
      * Move the viewport by the specified deltas
      */
     public void translate(int deltaX, int deltaY){
+
+        int origY = y;
+        int origX = x;
         x += deltaX;
         y += deltaY;
 
+        boolean movingX = Math.abs(deltaX) > Math.abs(deltaY);
+
         /* Prevent viewport from moving outside specified range */
-        if(viewportMotionLimited){
-            if(x > highLimitX - width) x = highLimitX - width;
-            if(x < lowLimitX) x = lowLimitX;
-            if(y > highLimitY - height) y = highLimitY - height;
-            if(y < lowLimitY) y = lowLimitY;
+        if(viewportMotionLimited && !limit.contains(x, y)){
+            /* If this is due to being in a corner, just don't apply the movement */
+            for(int i = 0; i < limit.npoints; i++){
+                int threshold = 10;
+                if(Point2D.distanceSq(x, y, limit.xpoints[i], limit.ypoints[i]) <= threshold * threshold){
+                    x -= deltaX;
+                    y -= deltaY;
+                    return;
+                }
+            }
+
+            /* If we're not in a corner, do sliding movements */
+            int increments = 0;
+            while(!limit.contains(x, y)){
+                increments++;
+
+                /* No infinite looping */
+                if(increments >= 200){
+                    x = origX;
+                    y = origY;
+                    return;
+                }
+
+                /* Top */
+                if(origY < mapY / 2){
+                    /* Left */
+                    if(origX < mapX / 2){
+                        if(movingX) y++;
+                        else x++;
+                    }
+                    /* Right */
+                    else {
+                        if(movingX) y++;
+                        else x--;
+                    }
+                }
+
+                /* Bottom */
+                else {
+                    /* Left */
+                    if(origX < mapX / 2){
+                        if(movingX) y--;
+                        else x++;
+                    }
+                    /* Right */
+                    else {
+                        if(movingX) y--;
+                        else x--;
+                    }
+                }
+            }
         }
+
     }
 
     /**
      * Set viewport motion limits
      */
-    public void setViewportLocationLimits(int xLow, int yLow, int xHigh, int yHigh){
+    public void setViewportLocationLimits(Polygon limit){
         viewportMotionLimited = true;
-        lowLimitX = xLow;
-        lowLimitY = yLow;
-        highLimitX = xHigh;
-        highLimitY = yHigh;
+        this.limit = limit;
     }
 
     /**

@@ -505,8 +505,6 @@ public class MapPainter {
                 }
             }
         }
-
-
     }
 
     /**
@@ -514,18 +512,6 @@ public class MapPainter {
      */
     public void getViewportTileBounds(int[] bounds, Viewport viewport){
         if(bounds.length != 4) return;	
-
-        /*
-        int left = (int) (viewport.getX() / tileX) - 1;
-        int top = (int) (viewport.getY() / (tileY / 2)) - 1;
-        if(left < 0) left = 0;
-        if(top < 0) top = 0;
-
-        int right = (int) ((viewport.getX() + viewport.getWidth()) / tileX) + 1;
-        int bottom = (int) ((viewport.getY() + viewport.getHeight()) / (tileY / 2)) + 1;
-        if(right > toPaint.getN()) right = toPaint.getN();
-        if(bottom > toPaint.getN()) bottom = toPaint.getN();
-        */
 
         double x = viewport.getX();
         double y = viewport.getY();
@@ -566,8 +552,6 @@ public class MapPainter {
         bounds[1] = iMax;
         bounds[2] = jMin;
         bounds[3] = jMax;
-
-        System.out.println(java.util.Arrays.toString(bounds));
     }
 }
 
