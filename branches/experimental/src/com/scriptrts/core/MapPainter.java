@@ -458,8 +458,9 @@ public class MapPainter {
         int south   = mapBoundsPaintArray[3];
 
         /* Only draw what we need to */
-        for(int i = east; i < west; i++) {
-            for(int j = north; j < south; j++) {
+        int n = toPaint.getN();
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < n; j++) {
                 /*
                  * Calculate the locations of the back corners of the tiles.
                  */
@@ -490,6 +491,8 @@ public class MapPainter {
                 /* Draw debug lines and labels */
                 if(MapPainter.DEBUG){
                     graphics.setColor(Color.RED);
+                    if(i >= east && i < west && j >= north && j < south)
+                        graphics.setColor(Color.BLUE);
                     graphics.drawString("(" + i + ", " + j + ": " + terrain[i][j] + ")",  x - 50, y + tileY/2);
 
                     int[] xpts = {
