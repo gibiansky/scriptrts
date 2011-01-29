@@ -469,6 +469,7 @@ public class MapPainter {
 
                 /* Draw the tile */
                 Image image = scaledImages[terrain[i][j]];
+                if(i >= east && i < west && j >= north && j < south)
                 graphics.drawImage(image, x - tileX / 2, y, tileX, tileY, null);
 
 
