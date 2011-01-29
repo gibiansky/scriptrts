@@ -45,6 +45,7 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     private Point mouseLocation = new Point(0, 0);
     private boolean mousePressed = false;
     private boolean mouseClicked = false;
+    private boolean mouseBeingDragged = false;
     private int mouseWheelScroll = 0;
 
     public boolean getMouseMoved(){
@@ -53,8 +54,12 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
         return ret;
     }
 
+    public boolean getMouseDragged(){
+        return mouseBeingDragged;
+    }
+
     public Point getMouseLocation(){
-        return mouseLocation;
+        return new Point(mouseLocation);
     }
 
     public boolean getMouseClicked(){
@@ -90,6 +95,7 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
         mouseLocation.y = mouse.getY();
     }
     public void mouseExited(MouseEvent mouse){
+        mouseBeingDragged = false;
         mouseLocation.x = mouse.getX();
         mouseLocation.y = mouse.getY();
     }
@@ -106,11 +112,13 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     }
     public void mouseReleased(MouseEvent mouse){
         mousePressed = false;
+        mouseBeingDragged = false;
         mouseLocation.x = mouse.getX();
         mouseLocation.y = mouse.getY();
     }
     public void mouseDragged(MouseEvent mouse){
         mouseMovement = true;
+        mouseBeingDragged = true;
         mouseLocation.x = mouse.getX();
         mouseLocation.y = mouse.getY();
     }

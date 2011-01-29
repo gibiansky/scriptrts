@@ -198,6 +198,30 @@ public class UnitPainter {
         return new Point(tileBackX, tileBackY);
     }
 
+	private void paintUnit(Graphics2D graphics, SimpleUnit unit, int tileLocX, int tileLocY){
+        double percentMovedFromTile = unit.getAnimationCounter();
+		int unitBackX = 28, unitBackY = 48;
+		int tileX = mapPainter.getTileWidth();
+		int tileY = mapPainter.getTileHeight();
+        Point backStartSubtile = getTileBackLocation(unit.getUnitLocation());
+        Point backShift = Direction.getShift(mapPainter, unit.getDirection());
+		int tileBackX = (int)(backStartSubtile.getX()  + percentMovedFromTile * backShift.getX());
+		int tileBackY = (int)(backStartSubtile.getY()  + percentMovedFromTile * backShift.getY());
+
+
+		/* Make the back of the unit agree with the back of the tile */
+        int xLoc = tileLocX + tileBackX - unitBackX;
+        int yLoc = tileLocY + tileBackY - unitBackY;
+        BufferedImage sprite = unit.getCurrentSprite();
+		graphics.drawImage(sprite, xLoc, yLoc, null);
+
+        /* Display selected units differently */
+        if(unit.isSelected()){
+            graphics.setColor(Color.RED);
+            graphics.drawRect(xLoc, yLoc, sprite.getWidth(), sprite.getHeight());
+        }
+	}
+
     private ArrayList<Shape> unitPolys = new ArrayList<Shape>();
     private ArrayList<SimpleUnit> unitsWithPolys = new ArrayList<SimpleUnit>();
     public SimpleUnit getUnitAtPoint(Point point, Viewport viewport){
@@ -209,6 +233,7 @@ public class UnitPainter {
         int bottom  = mapBoundsArray[3];
 
         /* Translate the point to be on the map coordinates instead of in screen coordinates */
+        point = new Point(point);
         point.translate(viewport.getX(), viewport.getY());
 
         /* Clear polygons from previous click */
@@ -227,6 +252,48 @@ public class UnitPainter {
                 return unitsWithPolys.get(i);
 
         return null;
+    }
+
+    public SimpleUnit[] getUnitsInRect(Point topLeft, Point bottomRight, Viewport viewport){
+        /* Calculate viewport boundaries */
+        mapPainter.getViewportTileBounds(mapBoundsArray, viewport);
+        int left    = mapBoundsArray[0];
+        int top     = mapBoundsArray[1];
+        int right   = mapBoundsArray[2];
+        int bottom  = mapBoundsArray[3];
+
+        /* Translate the points to be on the map coordinates instead of in screen coordinates */
+        topLeft = new Point(topLeft);
+        topLeft.translate(viewport.getX(), viewport.getY());
+        bottomRight = new Point(bottomRight);
+        bottomRight.translate(viewport.getX(), viewport.getY());
+
+        /* Clear polygons from previous click */
+        unitPolys.clear();
+        unitsWithPolys.clear();
+
+        /* Loop through visible tiles. Loop backwards, because units in front take precedence. */
+        for(int i = bottom - 1; i >= top; i--) {
+            for(int j = left; j < right; j++) {
+                addVisibleUnitPolysInTile(unitPolys, unitsWithPolys, i, j);
+            }
+        }
+
+        Rectangle rect = new Rectangle(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
+
+        int count = 0;
+        for(int i = 0; i < unitPolys.size(); i++)
+            if(rect.intersects(unitPolys.get(i).getBounds()))
+                count++;
+
+        SimpleUnit[] selected = new SimpleUnit[count];
+
+        count = 0;
+        for(int i = 0; i < unitPolys.size(); i++)
+            if(rect.intersects(unitPolys.get(i).getBounds()))
+                selected[count++] = unitsWithPolys.get(i);
+
+        return selected;
     }
 
     public void addVisibleUnitPolysInTile(ArrayList<Shape> polys, ArrayList<SimpleUnit> unitPolys, int i, int j){
@@ -270,32 +337,6 @@ public class UnitPainter {
         unitPolys.add(unit);
     }
 
-    public SimpleUnit[] getUnitsInRect(Point topLeft, Point bottomRight, Viewport viewport){
-        return null;
-    }
 
-	private void paintUnit(Graphics2D graphics, SimpleUnit unit, int tileLocX, int tileLocY){
-        double percentMovedFromTile = unit.getAnimationCounter();
-		int unitBackX = 28, unitBackY = 48;
-		int tileX = mapPainter.getTileWidth();
-		int tileY = mapPainter.getTileHeight();
-        Point backStartSubtile = getTileBackLocation(unit.getUnitLocation());
-        Point backShift = Direction.getShift(mapPainter, unit.getDirection());
-		int tileBackX = (int)(backStartSubtile.getX()  + percentMovedFromTile * backShift.getX());
-		int tileBackY = (int)(backStartSubtile.getY()  + percentMovedFromTile * backShift.getY());
-
-
-		/* Make the back of the unit agree with the back of the tile */
-        int xLoc = tileLocX + tileBackX - unitBackX;
-        int yLoc = tileLocY + tileBackY - unitBackY;
-        BufferedImage sprite = unit.getCurrentSprite();
-		graphics.drawImage(sprite, xLoc, yLoc, null);
-
-        /* Display selected units differently */
-        if(unit.isSelected()){
-            graphics.setColor(Color.RED);
-            graphics.drawRect(xLoc, yLoc, sprite.getWidth(), sprite.getHeight());
-        }
-	}
 
 }
