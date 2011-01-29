@@ -207,41 +207,41 @@ public class MapPainter {
                  */
 
                 /* Top right side of the tile */
-                int newIndexX = i -1;
+                int newIndexX = i;
 
                 /* We have to change how we get the y index depending on
                  * our x-index because every other row is shifted to the right */
-                int newIndexY = (i % 2 == 0 ? j : j + 1);
+                int newIndexY = j + 1;
 
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
                     if(terrain[i][j] < terrain[newIndexX][newIndexY])
                         enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_TOP_RIGHT);
 
                 /* Bottom left side of the tile */
-                newIndexX = i + 1;
-                newIndexY = (i % 2 == 0 ? j - 1: j);
+                newIndexX = i;
+                newIndexY = j - 1;
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
                     if(terrain[i][j] < terrain[newIndexX][newIndexY])
                         enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_BOTTOM_LEFT);
 
                 /* Mask sides going from the top left to bottom right */
                 /* Top left side of the tile */
-                newIndexX = i - 1;
-                newIndexY = (i % 2 == 0 ? j - 1: j);
+                newIndexX = i -1;
+                newIndexY = j;
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
                     if(terrain[i][j] < terrain[newIndexX][newIndexY])
                         enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_TOP_LEFT);
 
                 /* Bottom right side of the tile */
                 newIndexX = i + 1;
-                newIndexY = (i % 2 == 0 ? j : j + 1);
+                newIndexY = j;
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
                     if(terrain[i][j] < terrain[newIndexX][newIndexY])
                         enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_BOTTOM_RIGHT);
 
                 /* Top  corner */
-                newIndexX = i - 2;
-                newIndexY = j;
+                newIndexX = i - 1;
+                newIndexY = j + 1;
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length){
                     if(terrain[i][j] < terrain[newIndexX][newIndexY]) {
                         enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_TOP);
@@ -249,22 +249,22 @@ public class MapPainter {
                 }
 
                 /* Bottom corner */
-                newIndexX = i + 2;
-                newIndexY = j;
+                newIndexX = i + 1;
+                newIndexY = j - 1;
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
                     if(terrain[i][j] < terrain[newIndexX][newIndexY])
                         enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_BOTTOM);
 
-                /* Top  corner */
-                newIndexX = i;
-                newIndexY = j-1;
+                /* Left  corner */
+                newIndexX = i - 1;
+                newIndexY = j - 1;
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
                     if(terrain[i][j] < terrain[newIndexX][newIndexY])
                         enableMasking(i, j,  terrain[newIndexX][newIndexY], MASK_LEFT);
 
-                /* Bottom corner */
-                newIndexX = i;
-                newIndexY = j+1;
+                /* Right corner */
+                newIndexX = i + 1;
+                newIndexY = j + 1;
                 if(newIndexX >= 0 && newIndexX < terrain.length && newIndexY >= 0 && newIndexY < terrain[0].length)
                     if(terrain[i][j] < terrain[newIndexX][newIndexY])
                         enableMasking(i, j, terrain[newIndexX][newIndexY], MASK_RIGHT);
@@ -473,7 +473,6 @@ public class MapPainter {
 
 
                 /* Don't mask above a certain zoom level */
-                if(0 != 0)
                 if(tileX > 16 && tileY > 8)
                     /* Draw the masks on top of the tile */
                     for(int texType = 0; texType < images.length; texType++){
