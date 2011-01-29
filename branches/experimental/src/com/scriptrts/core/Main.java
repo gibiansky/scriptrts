@@ -327,6 +327,9 @@ public class Main extends JPanel {
 			}
 		}
 
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, 2000, 2000);
+
 		/* Move over to the viewport location */
 		Graphics2D graphics = (Graphics2D) g;
 		g.translate(-viewport.getX(), -viewport.getY());
@@ -335,7 +338,7 @@ public class Main extends JPanel {
 		mapPainter.paintMap(graphics, viewport);
 
 		/* On top of the map, paint all the units and buildings */
-		unitPainter.paintUnits(graphics, viewport);
+		//unitPainter.paintUnits(graphics, viewport);
 
         /* Draw selection */
         drawSelection(graphics);
