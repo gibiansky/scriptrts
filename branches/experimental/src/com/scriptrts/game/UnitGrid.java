@@ -18,6 +18,9 @@ public class UnitGrid {
 
     public void moveUnitOneTile(SimpleUnit unit){
         Direction d = unit.getDirection();
+        if(d == null) 
+            return;
+
         int delX = 0, delY = 0;
         switch(d){
             case North:
@@ -54,6 +57,8 @@ public class UnitGrid {
         unit.setX(unit.getX() + delX);
         unit.setY(unit.getY() + delY);
         setUnit(unit, unit.getX(), unit.getY());
+
+        unit.updateDirection();
     }
 
     public SimpleUnit getUnit(int i, int j){

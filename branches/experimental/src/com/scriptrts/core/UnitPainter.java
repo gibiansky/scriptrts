@@ -41,6 +41,82 @@ public class UnitPainter {
 			 *(Direction, at the moment, doesn't change. */
 			SimpleUnit spaceship = new SimpleUnit(sprites, 3, 210, 186, Direction.East);
 
+            /* LOLLER CATS */
+            spaceship.addToPath(Direction.East);
+            spaceship.addToPath(Direction.East);
+            spaceship.addToPath(Direction.East);
+            spaceship.addToPath(Direction.East);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.South);
+            spaceship.addToPath(Direction.South);
+            spaceship.addToPath(Direction.South);
+            spaceship.addToPath(Direction.Southeast);
+            spaceship.addToPath(Direction.Southeast);
+            spaceship.addToPath(Direction.Southeast);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.South);
+            spaceship.addToPath(Direction.South);
+            spaceship.addToPath(Direction.South);
+            spaceship.addToPath(Direction.Southeast);
+            spaceship.addToPath(Direction.Southeast);
+            spaceship.addToPath(Direction.Southeast);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.East);
+            spaceship.addToPath(Direction.East);
+            spaceship.addToPath(Direction.East);
+            spaceship.addToPath(Direction.East);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.South);
+            spaceship.addToPath(Direction.South);
+            spaceship.addToPath(Direction.South);
+            spaceship.addToPath(Direction.Southeast);
+            spaceship.addToPath(Direction.Southeast);
+            spaceship.addToPath(Direction.Southeast);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.West);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.North);
+            spaceship.addToPath(Direction.South);
+            spaceship.addToPath(Direction.South);
+ 
+
 			/* Put the unit tile in the UnitGrid (to be associated with terrain tiles)*/
 			grid.setUnit(spaceship, 210, 186);
 		} catch (Exception e) {

@@ -13,6 +13,9 @@ public enum Direction {
 	Northwest;
 
     public static Point getShift(MapPainter mapPainter, Direction direction){
+        if(direction == null)
+            return new Point(0, 0);
+
 		int tileX = mapPainter.getTileWidth();
 		int tileY = mapPainter.getTileHeight();
 

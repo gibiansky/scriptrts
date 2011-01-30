@@ -1,20 +1,28 @@
 package com.scriptrts.game;
 
+import java.util.Queue;
+import java.util.LinkedList;
+import java.util.Collections;
+
 public class SimpleUnit {
 
 	private Sprite[] sprites;
 	private SpriteState state;
 	private int speed;
 	private int x, y;
+	private Direction previousDirection;
 	private Direction direction;
     private boolean selected;
+    private Queue<Direction> path = new LinkedList<Direction>();
+    private double animCounter = 0;
 	
 	public SimpleUnit(Sprite[] sprites, int speed, int x, int y, Direction direction) {
 		this.sprites = sprites;
 		this.speed = speed;
 		this.x = x;
 		this.y = y;
-		this.direction = direction;
+		this.direction = null;
+        previousDirection = direction;
 		state = SpriteState.Idle;
 	}
 
@@ -28,7 +36,6 @@ public class SimpleUnit {
         selected = false;
     }
 
-    private double animCounter = 0;
     public double getAnimationCounter(){
         return animCounter;
     }
@@ -49,6 +56,56 @@ public class SimpleUnit {
         animCounter = 0;
     }
 
+
+    /**
+     * Update the direction based on the path the unit wants to take.
+     */
+    public void updateDirection(){
+        /* If we have no more directions, stop. */
+        if(path == null || path.peek() == null){
+            if(direction != null)
+                previousDirection = direction;
+            direction = null;
+        }
+        else {
+            previousDirection = direction;
+            direction = path.poll();
+        }
+    }
+
+    /**
+     * Get the path this unit is going to take
+     */
+    public Queue<Direction> getPath(){
+        return (Queue<Direction>) Collections.unmodifiableCollection(path);
+    }
+
+    /**
+     * Set the path this unit is going to take
+     */
+    public void setPath(Queue<Direction> path){
+        this.path =  path;
+        if(direction == null && path != null && path.peek() != null)
+            direction = path.poll();
+    }
+
+    /**
+     * Append to the path this unit will take
+     */
+    public void addToPath(Direction d){
+        if(direction == null)
+            direction = d;
+        else
+            path.add(d);
+    }
+
+    /**
+     * Append to the path this unit will take
+     */
+    public void addToPath(Queue<Direction> additionalPath){
+        while(additionalPath != null && additionalPath.peek() != null)
+            addToPath(additionalPath.poll());
+    }
 
 	/**
 	 * @return the state
@@ -131,6 +188,9 @@ public class SimpleUnit {
 	 * @return the currentSprite
 	 */
 	public Sprite getCurrentSprite() {
-		return sprites[direction.ordinal()];
+        if(direction != null)
+            return sprites[direction.ordinal()];
+        else
+            return sprites[previousDirection.ordinal()];
 	}
 }
