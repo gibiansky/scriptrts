@@ -213,7 +213,7 @@ public class Main extends JPanel {
     private boolean prev = false;
 	public void updateGame(){
 		/* Try to accept and locate mouse clicks */
-		if(false && manager.getMouseDown() && manager.getMouseMoved()){
+		if(manager.getMouseDown() && manager.getMouseMoved()){
 			/* Get mouse location */
 			Point point = manager.getMouseLocation();
 
@@ -226,45 +226,45 @@ public class Main extends JPanel {
 
 
             /* Paint on the map */
-            /*
 			if(manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
 				TerrainType type = map.getTileArray()[tileLocY][tileLocX];
 				paintbrush = type;
-			} else {
-				map.getTileArray()[tileLocY][tileLocX] = paintbrush;
-				mapPainter.update();
-			}
-            */
-		}
-
-        if(manager.getMouseDown() && !prev){
-            /* Get mouse location */
-            Point point = manager.getMouseLocation();
-            topLeftSelection = point;
-        }
-
-        /*
-        System.out.println("CLICK: " + clicked);
-        System.out.println("DRAGGED: " + manager.getMouseDragged());
-        System.out.println("DOWN: " + manager.getMouseDown());
-        */
-
-        if(manager.getMouseDragged() && topLeftSelection != null){
-            Point point = manager.getMouseLocation();
-            bottomRightSelection = point;
-
-            SimpleUnit[] selectedUnits = unitPainter.getUnitsInRect(topLeftSelection, bottomRightSelection, viewport);
-
-            for(SimpleUnit unit : selectedUnits){
-                if(!unit.isSelected())
-                    unit.select();
+            } else {
+                map.getTileArray()[tileLocY][tileLocX] = paintbrush;
+                mapPainter.update();
             }
-        } else if(!manager.getMouseDown()){
-            topLeftSelection = null;
-            bottomRightSelection = null;
         }
 
-        prev = manager.getMouseDown();
+        if(0 != 0){
+            if(manager.getMouseDown() && !prev){
+                /* Get mouse location */
+                Point point = manager.getMouseLocation();
+                topLeftSelection = point;
+            }
+
+            /*
+               System.out.println("CLICK: " + clicked);
+               System.out.println("DRAGGED: " + manager.getMouseDragged());
+               System.out.println("DOWN: " + manager.getMouseDown());
+               */
+
+            if(manager.getMouseDragged() && topLeftSelection != null){
+                Point point = manager.getMouseLocation();
+                bottomRightSelection = point;
+
+                SimpleUnit[] selectedUnits = unitPainter.getUnitsInRect(topLeftSelection, bottomRightSelection, viewport);
+
+                for(SimpleUnit unit : selectedUnits){
+                    if(!unit.isSelected())
+                        unit.select();
+                }
+            } else if(!manager.getMouseDown()){
+                topLeftSelection = null;
+                bottomRightSelection = null;
+            }
+
+            prev = manager.getMouseDown();
+        }
 
 		/* Detect unit commands */
 		if(manager.getKeyCodeFlag(KeyEvent.VK_W)) {

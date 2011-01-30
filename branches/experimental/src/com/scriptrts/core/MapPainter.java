@@ -391,27 +391,23 @@ public class MapPainter {
     public Point getTileAtPoint(Point point, Viewport viewport){
         /* Calculate boundaries of what the viewport sees */
         getViewportTileBounds(mapBoundsPaintArray, viewport);
-        int left    = mapBoundsPaintArray[0];
-        int top     = mapBoundsPaintArray[1];
-        int right   = mapBoundsPaintArray[2];
-        int bottom  = mapBoundsPaintArray[3];
+        int west    = mapBoundsPaintArray[0];
+        int east     = mapBoundsPaintArray[1];
+        int south   = mapBoundsPaintArray[2];
+        int north  = mapBoundsPaintArray[3];
 
         /* Translate the point to be on the map coordinates instead of in screen coordinates */
         point.translate(viewport.getX(), viewport.getY());
 
         /* Loop through visible tiles */
-        for(int i = top; i < bottom; i++) {
-            for(int j = left; j < right; j++) {
+        for(int i = west; i < east; i++) {
+            for(int j = south; j < north; j++) {
                 /*
                  * Shift every other row to the right to create the zig-zag pattern going down 
                  * We have to do this because we are using fake isometric perspective.
                  */
-                int x;
-                if(i % 2 == 0){
-                    x = j*tileX;
-                } else {
-                    x = j*tileX + tileX/2;
-                }
+                int x = (i+j+1)*tileX/2;
+                int y = tileY * toPaint.getN() / 2 + (i - j - 1) * tileY / 2;
 
                 int[] xpts = {
                     tileX/2, tileX, tileX/2, 0
@@ -420,7 +416,7 @@ public class MapPainter {
                     0, tileY/2, tileY, tileY/2
                 };
                 Polygon mainTile = new Polygon(xpts, ypts, 4);
-                mainTile.translate(x, i*tileY/2);
+                mainTile.translate(x - tileX / 2, y);
 
                 if(mainTile.contains(point))
                     return new Point(j, i);
