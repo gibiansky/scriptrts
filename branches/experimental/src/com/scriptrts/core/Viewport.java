@@ -31,6 +31,16 @@ public class Viewport {
     private int mapX, mapY;
 
     /**
+     * Default constructor
+     */
+    public Viewport(){
+    	width = 0;
+    	height = 0;
+    	mapX = 0;
+    	mapY = 0;
+    }
+    
+    /**
      * Create a new viewport
      */
     public Viewport(int w, int h, int mapSizeX, int mapSizeY){
@@ -41,7 +51,15 @@ public class Viewport {
         mapX = mapSizeX;
         mapY = mapSizeY;
     }
-
+    
+    /**
+     * Set dimensions
+     */
+    public void setDim(int w, int h){
+    	width = w;
+    	height = h;
+    }
+    
     /**
      * Set map size 
      */

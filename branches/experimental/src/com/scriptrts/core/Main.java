@@ -94,7 +94,7 @@ public class Main extends JPanel {
 		/* Create window of default size */
 		int width = DEFAULT_WIDTH;
 		int height = DEFAULT_HEIGHT;
-
+		
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setSize(width, height);
 
@@ -182,7 +182,8 @@ public class Main extends JPanel {
 		//unit = unitGrid.unitGrid[5][5].units[UnitLocation.Center.ordinal()];
 
 		/* Create the viewport */
-		viewport = new Viewport(getWidth(), getHeight(), map.getN() * mapPainter.getTileWidth(), map.getN() * mapPainter.getTileHeight());
+		viewport = new Viewport();
+		viewport.setDim(getWidth(), getHeight());
         int totalWidth = map.getN() * mapPainter.getTileWidth();
         int totalHeight = map.getN() * mapPainter.getTileHeight();
 		viewport.translate(totalWidth / 2, totalHeight / 2);
@@ -193,6 +194,7 @@ public class Main extends JPanel {
             totalHeight/2 - viewport.getHeight()/2, 0, totalHeight/2 - viewport.getHeight()/2,  totalHeight - viewport.getHeight()
         };
         Polygon limitingPolygon = new Polygon(limitxPts, limityPts, 4);
+        viewport.setMapSize(limitxPts[2] - limitxPts[0], limityPts[3] - limityPts[1]);
 		viewport.setViewportLocationLimits(limitingPolygon);
 
 		// set up key listeners
@@ -306,7 +308,8 @@ public class Main extends JPanel {
                     };
                     Polygon limitingPolygon = new Polygon(limitxPts, limityPts, 4);
                     viewport.setViewportLocationLimits(limitingPolygon);
-                    viewport.setMapSize(map.getN() * mapPainter.getTileWidth(), map.getN() * mapPainter.getTileHeight());
+                    viewport.setMapSize(limitxPts[2] - limitxPts[0], limityPts[3] - limityPts[1]);
+                    //viewport.setMapSize(map.getN() * mapPainter.getTileWidth(), map.getN() * mapPainter.getTileHeight());
 
                     if(topLeft != null){
                         Point newLoc = mapPainter.getTileCoordinates((int) topLeft.x, (int) topLeft.y);
