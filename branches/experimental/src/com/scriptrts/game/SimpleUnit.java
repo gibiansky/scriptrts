@@ -1,19 +1,15 @@
 package com.scriptrts.game;
 
-import java.awt.image.BufferedImage;
-
-import com.scriptrts.core.UnitLocation;
-
 public class SimpleUnit {
 
-	private BufferedImage[] sprites;
+	private Sprite[] sprites;
 	private SpriteState state;
 	private int speed;
 	private int x, y;
 	private Direction direction;
     private boolean selected;
 	
-	public SimpleUnit(BufferedImage[] sprites, int speed, int x, int y, Direction direction) {
+	public SimpleUnit(Sprite[] sprites, int speed, int x, int y, Direction direction) {
 		this.sprites = sprites;
 		this.speed = speed;
 		this.x = x;
@@ -60,6 +56,13 @@ public class SimpleUnit {
 	public SpriteState getState() {
 		return state;
 	}
+
+    /**
+     * @return array of sprites this unit may use
+     */
+    public Sprite[] getSprites(){
+        return sprites;
+    }
 
 	/**
 	 * @param state the state to set
@@ -125,23 +128,9 @@ public class SimpleUnit {
 	}
 
 	/**
-	 * @return the sprite
-	 */
-	public BufferedImage[] getSprites() {
-		return sprites;
-	}
-
-	/**
-	 * @param sprite the sprite to set
-	 */
-	public void setSprites(BufferedImage[] sprites) {
-		this.sprites = sprites;
-	}
-
-	/**
 	 * @return the currentSprite
 	 */
-	public BufferedImage getCurrentSprite() {
+	public Sprite getCurrentSprite() {
 		return sprites[direction.ordinal()];
 	}
 }

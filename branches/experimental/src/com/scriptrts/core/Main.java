@@ -282,12 +282,15 @@ public class Main extends JPanel {
 
 			/* Calculate new tile sizes */
 			int newTileX = mapPainter.getTileWidth(), newTileY = mapPainter.getTileHeight();
+            double zoom = 1;
 			if(zoomLevel > 0){
 				newTileX *= 2;
 				newTileY *= 2;
+                zoom = 2;
 			} else if(zoomLevel < 0) {
 				newTileX /= 2;
 				newTileY /= 2;
+                zoom = 0.5;
 			}
 
 			/* Remember what we were looking at before */
@@ -309,7 +312,6 @@ public class Main extends JPanel {
                     Polygon limitingPolygon = new Polygon(limitxPts, limityPts, 4);
                     viewport.setViewportLocationLimits(limitingPolygon);
                     viewport.setMapSize(limitxPts[2] - limitxPts[0], limityPts[3] - limityPts[1]);
-                    //viewport.setMapSize(map.getN() * mapPainter.getTileWidth(), map.getN() * mapPainter.getTileHeight());
 
                     if(topLeft != null){
                         Point newLoc = mapPainter.getTileCoordinates((int) topLeft.x, (int) topLeft.y);
@@ -318,6 +320,9 @@ public class Main extends JPanel {
                         /* Make sure we're not violating bounds */
                         viewport.translate(0, 1);
                     }
+
+                    /* Also update the unit painter */
+                    unitPainter.zoom(zoom);
 				}
 		}
 

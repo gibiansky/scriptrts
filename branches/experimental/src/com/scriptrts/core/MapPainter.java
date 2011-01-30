@@ -318,7 +318,6 @@ public class MapPainter {
                 tileX = tileSizeX;
                 tileY = tileSizeY;
 
-                System.out.println("scalte tile");
                 if(different)
                     scaleImagesInBackground();
                 return true;

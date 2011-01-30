@@ -6,9 +6,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.awt.Point;
 
-import com.scriptrts.game.Direction;
-import com.scriptrts.game.SimpleUnit;
-import com.scriptrts.game.UnitGrid;
+import com.scriptrts.game.*;
 import com.scriptrts.util.ResourceManager;
 
 public class UnitPainter {
@@ -34,9 +32,10 @@ public class UnitPainter {
 		
 		try {
 			/* Retrieve spaceship sprites */
-			BufferedImage[] sprites = new BufferedImage[8];
+			Sprite[] sprites = new Sprite[8];
             for(Direction d : Direction.values()){
-                sprites[d.ordinal()] = ResourceManager.loadImage("resource/unit/spaceship/Ship" + d.name() + ".png");
+                BufferedImage img = ResourceManager.loadImage("resource/unit/spaceship/Ship" + d.name() + ".png");
+                sprites[d.ordinal()]  = new Sprite(img, 0.3, 87, 25);
             }
 			/* Initialize the rider at the middle of the terrain tile (5,5), facing E.
 			 *(Direction, at the moment, doesn't change. */
@@ -60,6 +59,18 @@ public class UnitPainter {
             for(int j = 0; j < n; j++){
                 if(grid.getUnit(i, j) != null)
                     updateUnit(i, j);
+            }
+        }
+    }
+
+    public void zoom(double scale){
+        /* Loop over all unit positions, scale where there are units */
+        int n = mapPainter.getMap().getN() * UnitGrid.SPACES_PER_TILE;
+        for(int i = 0; i < n; i++){
+            for(int j = 0; j < n; j++){
+                if(grid.getUnit(i, j) != null)
+                    for(Sprite s : grid.getUnit(i, j).getSprites())
+                        s.scale(scale);
             }
         }
     }
@@ -197,7 +208,6 @@ public class UnitPainter {
 	private void paintUnit(Graphics2D graphics, SimpleUnit unit, int tileLocX, int tileLocY){
         double percentMovedFromTile = unit.getAnimationCounter();
 
-		int unitBackX = 87, unitBackY = 25;
 
 		int tileX = mapPainter.getTileWidth();
 		int tileY = mapPainter.getTileHeight();
@@ -216,11 +226,11 @@ public class UnitPainter {
 
 
 		/* Make the back of the unit agree with the back of the tile */
-        int xLoc = tileLocX + tileBackX - unitBackX;
-        int yLoc = tileLocY + tileBackY - unitBackY;
+        int xLoc = tileLocX + tileBackX;
+        int yLoc = tileLocY + tileBackY;
 
-        BufferedImage sprite = unit.getCurrentSprite();
-		graphics.drawImage(sprite, xLoc, yLoc, null);
+        Sprite sprite = unit.getCurrentSprite();
+		sprite.draw(graphics, xLoc, yLoc);
 
         /* Display selected units differently */
         if(unit.isSelected()){
