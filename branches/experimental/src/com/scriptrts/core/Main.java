@@ -54,7 +54,6 @@ public class Main extends JPanel {
 	/* Use FPS logging or fixed FPS? */
 	private static boolean fpsLogging = false;
 
-
 	/* Input manager */
 	private InputManager manager = InputManager.getInputManager();
 
@@ -133,7 +132,7 @@ public class Main extends JPanel {
 		panel.initializeGame();
 
 		/* Start game loop */
-		float fps = 30;
+		float fps = Main.getFPS();
 		final TimerTask updateTask = new TimerTask(){
 			public void run(){
 				panel.updateGame();
@@ -154,6 +153,14 @@ public class Main extends JPanel {
 		else
 			timer.scheduleAtFixedRate(updateTask, 0, (long) (1000 / fps));
 	}
+
+    /**
+     * Get the frames per second (FPS) that this game should run at
+     * @return fps number of frames and updates per second
+     */
+    public static int getFPS(){
+        return 30;
+    }
 
 	/* Called when the window or drawing panel has changed size */
 	public void resized(){
@@ -227,16 +234,16 @@ public class Main extends JPanel {
 			Point tileLoc = mapPainter.getTileAtPoint(point, viewport);
 			if(tileLoc == null) return;
 
-			int tileLocX = (int) tileLoc.getX();
-			int tileLocY = (int) tileLoc.getY();
+			int tileLocX = tileLoc.x;
+			int tileLocY = tileLoc.y;
 
 
             /* Paint on the map */
 			if(manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
-				TerrainType type = map.getTileArray()[tileLocY][tileLocX];
+				TerrainType type = map.getTileArray()[tileLocX][tileLocY];
 				paintbrush = type;
             } else {
-                map.getTileArray()[tileLocY][tileLocX] = paintbrush;
+                map.getTileArray()[tileLocX][tileLocY] = paintbrush;
                 mapPainter.update();
             }
         }
@@ -247,11 +254,14 @@ public class Main extends JPanel {
             topLeftSelection = point;
 
             SimpleUnit unit = unitPainter.getUnitAtPoint(point, viewport);
-            if(unit != null)
+            if(unit != null) {
                 if(unit.isSelected())
                     unit.deselect();
                 else 
                     unit.select();
+            }
+
+            Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
         }
 
         if(manager.getMouseDragged() && topLeftSelection != null){
@@ -314,8 +324,8 @@ public class Main extends JPanel {
                     viewport.setMapSize(limitxPts[2] - limitxPts[0], limityPts[3] - limityPts[1]);
 
                     if(topLeft != null){
-                        Point newLoc = mapPainter.getTileCoordinates((int) topLeft.x, (int) topLeft.y);
-                        viewport.setLocation((int) newLoc.x, (int) newLoc.y);
+                        Point newLoc = mapPainter.getTileCoordinates(topLeft.x, topLeft.y);
+                        viewport.setLocation(newLoc.x, newLoc.y);
 
                         /* Make sure we're not violating bounds */
                         viewport.translate(0, 1);

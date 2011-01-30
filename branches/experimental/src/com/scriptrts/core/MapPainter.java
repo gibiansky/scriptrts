@@ -409,6 +409,9 @@ public class MapPainter {
         int south   = mapBoundsPaintArray[2];
         int north  = mapBoundsPaintArray[3];
 
+        /* Avoid modifying original point object */
+        point = new Point(point);
+
         /* Translate the point to be on the map coordinates instead of in screen coordinates */
         point.translate(viewport.getX(), viewport.getY());
 
@@ -432,7 +435,7 @@ public class MapPainter {
                 mainTile.translate(x - tileX / 2, y);
 
                 if(mainTile.contains(point))
-                    return new Point(j, i);
+                    return new Point(i, j);
             }
         }
 

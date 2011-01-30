@@ -19,12 +19,10 @@ public class Sprite {
     }
 
     public void draw(Graphics2D graphics, int tileBackX, int tileBackY){
-        int w = (int) (getWidth() * scale);
-        int h = (int) (getHeight() * scale);
         int bX = (int) (spriteBackX * scale);
         int bY = (int) (spriteBackY * scale);
 
-        graphics.drawImage(image, tileBackX - bX, tileBackY - bY, w, h, null);
+        graphics.drawImage(image, tileBackX - bX, tileBackY - bY, getWidth(), getHeight(), null);
     }
 
     public void scale(double scaleFactor){
@@ -32,16 +30,16 @@ public class Sprite {
     }
 
     public int getWidth(){
-        return image.getWidth();
+        return (int) (image.getWidth() * scale);
     }
 
     public int getHeight(){
-        return image.getHeight();
+        return (int) (image.getHeight() * scale);
     }
 
     public Rectangle getBounds(int tileBackX, int tileBackY){
-        int xLoc = tileBackX - spriteBackX;
-        int yLoc = tileBackY - spriteBackY;
+        int xLoc = (int) (tileBackX - spriteBackX * scale);
+        int yLoc = (int) (tileBackY - spriteBackY * scale);
         return new Rectangle(xLoc, yLoc, getWidth(), getHeight());
     }
 }

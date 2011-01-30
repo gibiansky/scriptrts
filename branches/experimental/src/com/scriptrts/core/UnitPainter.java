@@ -48,6 +48,21 @@ public class UnitPainter {
 		}
 	}
 
+    /**
+     * Change the zoom level by resizing all units
+     * @param scale to apply to all sprites and images
+     */
+    public void zoom(double scale){
+        /* Loop over all unit positions, scale where there are units */
+        int n = mapPainter.getMap().getN() * UnitGrid.SPACES_PER_TILE;
+        for(int i = 0; i < n; i++){
+            for(int j = 0; j < n; j++){
+                if(grid.getUnit(i, j) != null)
+                    for(Sprite s : grid.getUnit(i, j).getSprites())
+                        s.scale(scale);
+            }
+        }
+    }
 
     /**
      * Updates unit positions and animations
@@ -63,20 +78,14 @@ public class UnitPainter {
         }
     }
 
-    public void zoom(double scale){
-        /* Loop over all unit positions, scale where there are units */
-        int n = mapPainter.getMap().getN() * UnitGrid.SPACES_PER_TILE;
-        for(int i = 0; i < n; i++){
-            for(int j = 0; j < n; j++){
-                if(grid.getUnit(i, j) != null)
-                    for(Sprite s : grid.getUnit(i, j).getSprites())
-                        s.scale(scale);
-            }
-        }
-    }
-
+    /**
+     * Update the unit at the given location 
+     * @param i x coordinate in unit grid
+     * @param j y coordinate in unit grid
+     */
     private void updateUnit(int i, int j){
-        int fps = 30;
+        /* Get fps */
+        int fps = Main.getFPS();
         
         SimpleUnit unit = grid.getUnit(i, j);
 
@@ -137,13 +146,19 @@ public class UnitPainter {
 
     private Point getTileBackLocation(SimpleUnit unit){
         int tileBackX, tileBackY;
-		int tileX = mapPainter.getTileWidth();
-		int tileY = mapPainter.getTileHeight();
 
         /* Which piece of the terrain tile it's in */
         int a = unit.getX() % UnitGrid.SPACES_PER_TILE;
         int b = unit.getY() % UnitGrid.SPACES_PER_TILE;
 
+        return getUnitTileBackLocation(a, b);
+    }
+
+    private Point getUnitTileBackLocation(int a, int b){
+		int tileX = mapPainter.getTileWidth();
+		int tileY = mapPainter.getTileHeight();
+
+        int tileBackX, tileBackY;
         /* Bottom row */
         if(b == 0){
             /* South west */
@@ -206,8 +221,8 @@ public class UnitPainter {
     }
 
 	private void paintUnit(Graphics2D graphics, SimpleUnit unit, int tileLocX, int tileLocY){
+        /* How far the unit has moved from its current tile to its destination */
         double percentMovedFromTile = unit.getAnimationCounter();
-
 
 		int tileX = mapPainter.getTileWidth();
 		int tileY = mapPainter.getTileHeight();
@@ -224,7 +239,6 @@ public class UnitPainter {
 		int tileBackX = (int)(backStartSubtile.getX()  + percentMovedFromTile * backShift.getX());
 		int tileBackY = (int)(backStartSubtile.getY()  + percentMovedFromTile * backShift.getY());
 
-
 		/* Make the back of the unit agree with the back of the tile */
         int xLoc = tileLocX + tileBackX;
         int yLoc = tileLocY + tileBackY;
@@ -235,43 +249,40 @@ public class UnitPainter {
         /* Display selected units differently */
         if(unit.isSelected()){
             graphics.setColor(Color.RED);
-            graphics.drawRect(xLoc, yLoc, sprite.getWidth(), sprite.getHeight());
+            Rectangle bounds = sprite.getBounds(xLoc, yLoc);
+            graphics.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
         }
 	}
 
-    private ArrayList<Shape> unitPolys = new ArrayList<Shape>();
-    private ArrayList<SimpleUnit> unitsWithPolys = new ArrayList<SimpleUnit>();
+    /**
+     * Get the unit that is visible at the given point
+     * @param point point in the viewport
+     * @param viewport viewport that is being used to display the map
+     */
     public SimpleUnit getUnitAtPoint(Point point, Viewport viewport){
-        /* Calculate viewport boundaries */
-        mapPainter.getViewportTileBounds(mapBoundsArray, viewport);
-        int west    = mapBoundsArray[0];
-        int east    = mapBoundsArray[1];
-        int south   = mapBoundsArray[2];
-        int north   = mapBoundsArray[3];
+        /* Treat a point as a very small rectangle of height and width 1 pixel */
+        Point deltaPoint = new Point(point);
+        point.translate(1, 1);
 
-        /* Translate the point to be on the map coordinates instead of in screen coordinates */
-        point = new Point(point);
-        point.translate(viewport.getX(), viewport.getY());
-
-        /* Clear polygons from previous click */
-        unitPolys.clear();
-        unitsWithPolys.clear();
-
-        /* Loop through visible tiles. Loop backwards, because units in front take precedence. */
-        for(int j = south; j <= north; j++)
-            for(int b = 0; b < UnitGrid.SPACES_PER_TILE; b++)
-                for(int i = west; i < east; i++) 
-                    for(int a = 0; a < UnitGrid.SPACES_PER_TILE; a++)
-                        addVisibleUnitPoly(unitPolys, unitsWithPolys, i * 3 + a, j * 3 + b);
-
-        for(int i = 0; i < unitPolys.size(); i++)
-            if(unitPolys.get(i).getBounds().contains(point))
-                return unitsWithPolys.get(i);
-
-        return null;
+        /* Return the foremost unit */
+        SimpleUnit[] unitsAtPoint = getUnitsInRect(point, deltaPoint, viewport);
+        if(unitsAtPoint.length == 0) 
+            return null;
+        else 
+            return unitsAtPoint[0];
     }
 
+    /**
+     * Get the unit that is visible inside a given rectangle on the viewport
+     * @param topLeft top left bound point of the rectangle
+     * @param bottomRight bottom right bound point of the rectangle
+     * @param viewport viewport that is being used to display the map
+     */
     public SimpleUnit[] getUnitsInRect(Point topLeft, Point bottomRight, Viewport viewport){
+        /* Store unit bounds and units on screen */
+        ArrayList<Shape> unitPolys = new ArrayList<Shape>();
+        ArrayList<SimpleUnit> unitsWithPolys = new ArrayList<SimpleUnit>();
+
         /* Calculate viewport boundaries */
         mapPainter.getViewportTileBounds(mapBoundsArray, viewport);
         int west    = mapBoundsArray[0];
@@ -279,12 +290,15 @@ public class UnitPainter {
         int south   = mapBoundsArray[2];
         int north   = mapBoundsArray[3];
 
-        /* Translate the points to be on the map coordinates instead of in screen coordinates */
+        /* Avoid modifying the input points, in case they will be used later by the caller */
         topLeft = new Point(topLeft);
-        topLeft.translate(viewport.getX(), viewport.getY());
         bottomRight = new Point(bottomRight);
+
+        /* Translate the points to be on the map coordinates instead of in screen coordinates */
+        topLeft.translate(viewport.getX(), viewport.getY());
         bottomRight.translate(viewport.getX(), viewport.getY());
 
+        /* Rearrange coordinates so the top left point really is the top left, and bottom right really is bottom right */
         if(topLeft.x > bottomRight.x){
             int temp = topLeft.x;
             topLeft.x = bottomRight.x;
@@ -307,15 +321,17 @@ public class UnitPainter {
                     for(int a = 0; a < UnitGrid.SPACES_PER_TILE; a++)
                         addVisibleUnitPoly(unitPolys, unitsWithPolys, i * 3 + a, j * 3 + b);
 
+        /* Bounds inside which we're looking for units */
         Rectangle rect = new Rectangle(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
 
+        /* Cound units inside bounds */
         int count = 0;
         for(int i = 0; i < unitPolys.size(); i++)
             if(rect.intersects(unitPolys.get(i).getBounds()))
                 count++;
 
+        /* Put units we've counted inside an array */
         SimpleUnit[] selected = new SimpleUnit[count];
-
         count = 0;
         for(int i = 0; i < unitPolys.size(); i++)
             if(rect.intersects(unitPolys.get(i).getBounds()))
@@ -324,6 +340,7 @@ public class UnitPainter {
         return selected;
     }
 
+    /* Add units that are visible in a given unit tile to the list of visible units */
     private void addVisibleUnitPoly(ArrayList<Shape> unitShapes, ArrayList<SimpleUnit> addedUnits, int i, int j){
         SimpleUnit unit = grid.getUnit(i, j);
         if(unit == null) return;
@@ -344,9 +361,8 @@ public class UnitPainter {
         int tileLocX = x - tileX / 2;
         int tileLocY = y;
 
-        double percentMovedFromTile = unit.getAnimationCounter();
 
-		int unitBackX = 87, unitBackY = 25;
+        double percentMovedFromTile = unit.getAnimationCounter();
 
         /* Find the back point of the tile it's currently placed in */
         Point backStartSubtile = getTileBackLocation(unit);
@@ -360,19 +376,61 @@ public class UnitPainter {
 		int tileBackX = (int)(backStartSubtile.getX()  + percentMovedFromTile * backShift.getX());
 		int tileBackY = (int)(backStartSubtile.getY()  + percentMovedFromTile * backShift.getY());
 
-		/* Make the back of the unit agree with the back of the tile */
-        int xLoc = tileLocX + tileBackX - unitBackX;
-        int yLoc = tileLocY + tileBackY - unitBackY;
+		/* The location of the tile image we're drawing on */
+        int xLoc = tileLocX + tileBackX;
+        int yLoc = tileLocY + tileBackY;
 
-		/* Get the image bounding box */
-        int width = unit.getCurrentSprite().getWidth();
-        int height = unit.getCurrentSprite().getHeight();
-		Rectangle boundingBox = new Rectangle(xLoc, yLoc, width, height );
+        Sprite sprite = unit.getCurrentSprite();
+        Rectangle boundingBox = sprite.getBounds(xLoc, yLoc);
 
         unitShapes.add(boundingBox);
         addedUnits.add(unit);
     }
 
+    /**
+     * Find which part of the map tile was clicked on, in unit tile coordinates
+     * @param point point to examing
+     * @param viewport viewport through which map is being displayed
+     */
+    public Point unitTileAtPoint(Point point, Viewport viewport){
+        Point mapCoords = mapPainter.getTileAtPoint(point, viewport);
+        int iMap = mapCoords.x;
+        int jMap = mapCoords.y;
 
+        /* Avoid modifying original point object */
+        point = new Point(point);
+
+        /* Translate the point to be on the map coordinates instead of in screen coordinates */
+        point.translate(viewport.getX(), viewport.getY());
+
+        /* Find where this map tile is drawn */
+        Point mapTileDrawnAt = mapPainter.getTileCoordinates(iMap, jMap);
+
+        /* Translate point to be in the tile, ignoring viewport and map coordinates */
+        point.translate(-mapTileDrawnAt.x, -mapTileDrawnAt.y);
+
+        /* Now we can just draw a map tile and look at the coordinates of the point to figure out which part of the tile it's in */
+        int tileX = mapPainter.getTileWidth();
+        int tileY = mapPainter.getTileHeight();
+
+        /* Try each unit tile in this map tile, return if the point is inside */
+        System.out.println(point);
+        for(int a = 0; a < UnitGrid.SPACES_PER_TILE; a++)
+            for(int b = 0; b < UnitGrid.SPACES_PER_TILE; b++) {
+                Point backCorner = getUnitTileBackLocation(a, b);
+                int[] xpts = {
+                    backCorner.x, backCorner.x + tileX / 2, backCorner.x, backCorner.x - tileX / 2
+                };
+                int[] ypts = {
+                    backCorner.y, backCorner.y + tileY / 2, backCorner.y + tileY, backCorner.y + tileY / 2
+                };
+
+                if(new Polygon(xpts, ypts, 4).contains(point))
+                    return new Point(a + iMap * UnitGrid.SPACES_PER_TILE, b + jMap * UnitGrid.SPACES_PER_TILE);
+            }
+
+
+        return null;
+    }
 
 }
