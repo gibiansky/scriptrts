@@ -175,19 +175,23 @@ public class Main extends JPanel {
 		int tileY = mapPainter.getTileHeight();
 
 		/* Create the unit grid and unit painter */
-		unitGrid = new UnitGrid(UnitPainter.SPACES_PER_TILE * n);
+		unitGrid = new UnitGrid(n);
 		unitPainter = new UnitPainter(unitGrid, mapPainter);
 
 		/* Retrieve the unit we will be controlling */
-		unit = unitGrid.unitGrid[5][5].units[UnitLocation.Center.ordinal()];
+		//unit = unitGrid.unitGrid[5][5].units[UnitLocation.Center.ordinal()];
 
 		/* Create the viewport */
 		viewport = new Viewport(getWidth(), getHeight(), map.getN() * mapPainter.getTileWidth(), map.getN() * mapPainter.getTileHeight());
         int totalWidth = map.getN() * mapPainter.getTileWidth();
         int totalHeight = map.getN() * mapPainter.getTileHeight();
 		viewport.translate(totalWidth / 2, totalHeight / 2);
-        int[] limitxPts = {0, totalWidth/2 - viewport.getWidth()/2, totalWidth - viewport.getWidth(), totalWidth/2 - viewport.getWidth()/2};
-        int[] limityPts = {totalHeight/2 - viewport.getHeight()/2, 0, totalHeight/2 - viewport.getHeight()/2,  totalHeight - viewport.getHeight()};
+        int[] limitxPts = {
+            0, totalWidth/2 - viewport.getWidth()/2, totalWidth - viewport.getWidth(), totalWidth/2 - viewport.getWidth()/2
+        };
+        int[] limityPts = {
+            totalHeight/2 - viewport.getHeight()/2, 0, totalHeight/2 - viewport.getHeight()/2,  totalHeight - viewport.getHeight()
+        };
         Polygon limitingPolygon = new Polygon(limitxPts, limityPts, 4);
 		viewport.setViewportLocationLimits(limitingPolygon);
 
@@ -242,11 +246,6 @@ public class Main extends JPanel {
                 topLeftSelection = point;
             }
 
-            /*
-               System.out.println("CLICK: " + clicked);
-               System.out.println("DRAGGED: " + manager.getMouseDragged());
-               System.out.println("DOWN: " + manager.getMouseDown());
-               */
 
             if(manager.getMouseDragged() && topLeftSelection != null){
                 Point point = manager.getMouseLocation();
@@ -268,7 +267,7 @@ public class Main extends JPanel {
 
 		/* Detect unit commands */
 		if(manager.getKeyCodeFlag(KeyEvent.VK_W)) {
-			unit.move();
+			//unit.move();
 		}
 
 		/* Zooming */
@@ -295,8 +294,12 @@ public class Main extends JPanel {
 					/* Prevent the viewport from going off the map */
                     int totalWidth = map.getN() * mapPainter.getTileWidth();
                     int totalHeight = map.getN() * mapPainter.getTileHeight();
-                    int[] limitxPts = {0, totalWidth/2 - viewport.getWidth()/2, totalWidth - viewport.getWidth(), totalWidth/2 - viewport.getWidth()/2};
-                    int[] limityPts = {totalHeight/2 - viewport.getHeight()/2, 0, totalHeight/2 - viewport.getHeight()/2,  totalHeight - viewport.getHeight()};
+                    int[] limitxPts = {
+                        0, totalWidth/2 - viewport.getWidth()/2, totalWidth - viewport.getWidth(), totalWidth/2 - viewport.getWidth()/2
+                    };
+                    int[] limityPts = {
+                        totalHeight/2 - viewport.getHeight()/2, 0, totalHeight/2 - viewport.getHeight()/2,  totalHeight - viewport.getHeight()
+                    };
                     Polygon limitingPolygon = new Polygon(limitxPts, limityPts, 4);
                     viewport.setViewportLocationLimits(limitingPolygon);
                     viewport.setMapSize(map.getN() * mapPainter.getTileWidth(), map.getN() * mapPainter.getTileHeight());
@@ -351,7 +354,7 @@ public class Main extends JPanel {
 		mapPainter.paintMap(graphics, viewport);
 
 		/* On top of the map, paint all the units and buildings */
-		//unitPainter.paintUnits(graphics, viewport);
+		unitPainter.paintUnits(graphics, viewport);
 
         /* Draw selection */
         drawSelection(graphics);
