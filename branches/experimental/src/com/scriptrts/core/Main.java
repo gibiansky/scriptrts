@@ -216,8 +216,8 @@ public class Main extends JPanel {
     private Point bottomRightSelection = null;
     private boolean prev = false;
 	public void updateGame(){
-		/* Try to accept and locate mouse clicks */
-		if(manager.getMouseDown() && manager.getMouseMoved()){
+		/* Painting on the map */
+		if(false && manager.getMouseDown() && manager.getMouseMoved()){
 			/* Get mouse location */
 			Point point = manager.getMouseLocation();
 
@@ -239,33 +239,37 @@ public class Main extends JPanel {
             }
         }
 
-        if(0 != 0){
-            if(manager.getMouseDown() && !prev){
-                /* Get mouse location */
-                Point point = manager.getMouseLocation();
-                topLeftSelection = point;
-            }
+        if(manager.getMouseDown() && !prev){
+            /* Get mouse location */
+            Point point = manager.getMouseLocation();
+            topLeftSelection = point;
 
-
-            if(manager.getMouseDragged() && topLeftSelection != null){
-                Point point = manager.getMouseLocation();
-                bottomRightSelection = point;
-
-                SimpleUnit[] selectedUnits = unitPainter.getUnitsInRect(topLeftSelection, bottomRightSelection, viewport);
-
-                for(SimpleUnit unit : selectedUnits){
-                    if(!unit.isSelected())
-                        unit.select();
-                }
-            } else if(!manager.getMouseDown()){
-                topLeftSelection = null;
-                bottomRightSelection = null;
-            }
-
-            prev = manager.getMouseDown();
+            SimpleUnit unit = unitPainter.getUnitAtPoint(point, viewport);
+            if(unit != null)
+                if(unit.isSelected())
+                    unit.deselect();
+                else 
+                    unit.select();
         }
 
-		/* Detect unit commands */
+        if(manager.getMouseDragged() && topLeftSelection != null){
+            Point point = manager.getMouseLocation();
+            bottomRightSelection = point;
+
+            SimpleUnit[] selectedUnits = unitPainter.getUnitsInRect(topLeftSelection, bottomRightSelection, viewport);
+
+            for(SimpleUnit unit : selectedUnits){
+                if(!unit.isSelected())
+                    unit.select();
+            }
+        } else if(!manager.getMouseDown()){
+            topLeftSelection = null;
+            bottomRightSelection = null;
+        }
+
+        prev = manager.getMouseDown();
+
+        /* Detect unit commands */
 		if(manager.getKeyCodeFlag(KeyEvent.VK_W)) {
 			//unit.move();
 		}
@@ -362,12 +366,25 @@ public class Main extends JPanel {
 
     private void drawSelection(Graphics2D graphics){
         if(topLeftSelection != null && bottomRightSelection != null){
+            Point topLeft = new Point(topLeftSelection);
+            Point bottomRight = new Point(bottomRightSelection);
+            if(topLeft.x > bottomRight.x){
+                int temp = topLeft.x;
+                topLeft.x = bottomRight.x;
+                bottomRight.x = temp;
+            }
+            if(topLeft.y > bottomRight.y){
+                int temp = topLeft.y;
+                topLeft.y = bottomRight.y;
+                bottomRight.y = temp;
+            }
+
             graphics.translate(viewport.getX(), viewport.getY());
             Color transparentBlue = new Color(0, 0, 255, 120);
             graphics.setColor(transparentBlue);
-            graphics.fillRect(topLeftSelection.x, topLeftSelection.y, bottomRightSelection.x - topLeftSelection.x, bottomRightSelection.y - topLeftSelection.y);
+            graphics.fillRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
             graphics.setColor(Color.BLUE);
-            graphics.drawRect(topLeftSelection.x, topLeftSelection.y, bottomRightSelection.x - topLeftSelection.x, bottomRightSelection.y - topLeftSelection.y);
+            graphics.drawRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
         }
     }
 }
