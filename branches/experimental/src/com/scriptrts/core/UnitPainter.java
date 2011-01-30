@@ -490,7 +490,6 @@ public class UnitPainter {
         int tileY = mapPainter.getTileHeight();
 
         /* Try each unit tile in this map tile, return if the point is inside */
-        System.out.println(point);
         for(int a = 0; a < UnitGrid.SPACES_PER_TILE; a++)
             for(int b = 0; b < UnitGrid.SPACES_PER_TILE; b++) {
                 Point backCorner = getUnitTileBackLocation(a, b);

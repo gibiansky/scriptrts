@@ -23,6 +23,7 @@ import javax.swing.JPanel;
 import com.scriptrts.game.SimpleUnit;
 import com.scriptrts.game.SpriteState;
 import com.scriptrts.game.UnitGrid;
+import com.scriptrts.control.Selection;
 
 public class Main extends JPanel {
 	/* Game properties */
@@ -41,6 +42,7 @@ public class Main extends JPanel {
 	private UnitGrid unitGrid;
 	private UnitPainter unitPainter;
 	private Map map;
+    private Selection currentSelection = new Selection();
 
 	/* Unit temp. controlled */
 	SimpleUnit unit;
@@ -185,9 +187,6 @@ public class Main extends JPanel {
 		unitGrid = new UnitGrid(n);
 		unitPainter = new UnitPainter(unitGrid, mapPainter);
 
-		/* Retrieve the unit we will be controlling */
-		//unit = unitGrid.unitGrid[5][5].units[UnitLocation.Center.ordinal()];
-
 		/* Create the viewport */
 		viewport = new Viewport();
 		viewport.setDim(getWidth(), getHeight());
@@ -253,15 +252,28 @@ public class Main extends JPanel {
             Point point = manager.getMouseLocation();
             topLeftSelection = point;
 
+            Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
+        }
+
+
+        /* Mouse released, but was never dragged */
+        if(!manager.getMouseDown() && prev && bottomRightSelection == null){
+            /* Get mouse location */
+            Point point = manager.getMouseLocation();
+
             SimpleUnit unit = unitPainter.getUnitAtPoint(point, viewport);
             if(unit != null) {
-                if(unit.isSelected())
+                /* If already selected and pressing control, deselect */
+                if(unit.isSelected() && manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
                     unit.deselect();
-                else 
+                    currentSelection.remove(unit);
+                }
+                else {
                     unit.select();
+                    currentSelection.clear();
+                    currentSelection.add(unit);
+                }
             }
-
-            Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
         }
 
         if(manager.getMouseDragged() && topLeftSelection != null){
@@ -270,9 +282,10 @@ public class Main extends JPanel {
 
             SimpleUnit[] selectedUnits = unitPainter.getUnitsInRect(topLeftSelection, bottomRightSelection, viewport);
 
+            currentSelection.clear();
             for(SimpleUnit unit : selectedUnits){
-                if(!unit.isSelected())
-                    unit.select();
+                unit.select();
+                currentSelection.add(unit);
             }
         } else if(!manager.getMouseDown()){
             topLeftSelection = null;
