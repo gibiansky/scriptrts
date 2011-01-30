@@ -26,7 +26,7 @@ import com.scriptrts.game.UnitGrid;
 
 public class Main extends JPanel {
 	/* Game properties */
-	private static final int n = 32;
+	private static final int n = 128;
 	private final static JFrame window = new JFrame("ScriptRTS");
 
 	/* Viewport properties */
@@ -300,13 +300,14 @@ public class Main extends JPanel {
                     Polygon limitingPolygon = new Polygon(limitxPts, limityPts, 4);
                     viewport.setViewportLocationLimits(limitingPolygon);
                     viewport.setMapSize(map.getN() * mapPainter.getTileWidth(), map.getN() * mapPainter.getTileHeight());
-                    viewport.translate(0, 0);
 
-					/* What are we looking at now? */
-					Point topLeftUpdated = mapPainter.getTileAtPoint(new Point(0, 0), viewport);
+                    if(topLeft != null){
+                        Point newLoc = mapPainter.getTileCoordinates((int) topLeft.x, (int) topLeft.y);
+                        viewport.setLocation((int) newLoc.x, (int) newLoc.y);
 
-					/* Shift back to what we were looking at before, approximately */
-					viewport.translate((int)(topLeft.x - topLeftUpdated.x) * newTileX, (int)(topLeft.y - topLeftUpdated.y) * newTileY);
+                        /* Make sure we're not violating bounds */
+                        viewport.translate(0, 1);
+                    }
 				}
 		}
 

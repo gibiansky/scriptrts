@@ -312,17 +312,31 @@ public class MapPainter {
      */
     public synchronized boolean setTileSize(int tileSizeX, int tileSizeY){
         boolean different = (tileSizeX != tileX || tileSizeY != tileY);
+
         if(tileSizeX <= MapPainter.MAX_TILE_X && tileSizeY <= MapPainter.MAX_TILE_Y) 
             if(tileSizeX >= MapPainter.MIN_TILE_X && tileSizeY >= MapPainter.MIN_TILE_Y) {
                 tileX = tileSizeX;
                 tileY = tileSizeY;
 
+                System.out.println("scalte tile");
                 if(different)
                     scaleImagesInBackground();
                 return true;
             }
 
         return false;
+    }
+
+    /**
+     * Get the graphical coordinates of a given tile
+     */
+    public Point getTileCoordinates(int i, int j){
+        /* Coordinates of top corner of tile */
+        int x = (i+j+1)*tileX/2;
+        int y = tileY * toPaint.getN() / 2 + (i - j - 1) * tileY / 2;
+
+        /* Coordinates of tile image */
+        return new Point(x - tileX / 2, y);
     }
 
     /**
