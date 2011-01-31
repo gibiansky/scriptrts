@@ -249,7 +249,6 @@ public class UnitPainter {
         /* How far the unit has moved from its current tile to its destination */
         double percentMovedFromTile = unit.getAnimationCounter();
 
-
 		int tileX = mapPainter.getTileWidth();
 		int tileY = mapPainter.getTileHeight();
 
@@ -268,7 +267,7 @@ public class UnitPainter {
 		/* Make the back of the unit agree with the back of the tile */
         int xLoc = tileLocX + tileBackX;
         int yLoc = tileLocY + tileBackY;
-
+        
         Sprite sprite = unit.getCurrentSprite();
 		sprite.draw(graphics, xLoc, yLoc);
 
@@ -279,6 +278,11 @@ public class UnitPainter {
             graphics.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
         }
 	}
+
+    public void paintTemporaryUnit(Graphics2D graphics, Viewport viewport, SimpleUnit unit, int xLoc, int yLoc){
+        Sprite sprite = unit.getCurrentSprite();
+		sprite.drawCentered(graphics, xLoc + viewport.getX(), yLoc + viewport.getY());
+    }
 
     /**
      * Get the unit that is visible at the given point

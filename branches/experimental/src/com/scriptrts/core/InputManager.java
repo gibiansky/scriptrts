@@ -36,8 +36,11 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     
     public boolean getKeyCodeFlag(int code) {
     	boolean flag = keyCodeFlags.get(code);
-    	keyCodeFlags.put(code, false);
     	return flag;
+    }
+
+    public void clearKeyCodeFlag(int code) {
+    	keyCodeFlags.put(code, false);
     }
 
     /* Mouse methods */
@@ -86,8 +89,11 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     public void keyPressed(KeyEvent key){
     	keyCodeFlags.put(key.getKeyCode(), true);
     }
-    public void keyReleased(KeyEvent key){}
-    public void keyTyped(KeyEvent key){}
+    public void keyReleased(KeyEvent key){
+    	keyCodeFlags.put(key.getKeyCode(), false);
+    }
+    public void keyTyped(KeyEvent key){
+    }
 
     /* Mouse listener */
     public void mouseEntered(MouseEvent mouse){

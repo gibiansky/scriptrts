@@ -236,6 +236,10 @@ public class Main extends JPanel {
     private Point bottomRightSelection = null;
     private boolean prev = false;
     private double totalZoom = 1;
+    boolean placingUnit = false;
+    SimpleUnit tempUnit = null;
+    int tempUnitX, tempUnitY;
+
     public void updateGame(){
         /* Painting on the map */
         if(false && manager.getMouseDown() && manager.getMouseMoved()){
@@ -260,13 +264,42 @@ public class Main extends JPanel {
             }
         }
 
+        if(manager.getKeyCodeFlag(KeyEvent.VK_S)){
+            placingUnit = !placingUnit;
+            manager.clearKeyCodeFlag(KeyEvent.VK_S);
+
+            Point point = manager.getMouseLocation();
+            Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
+            tempUnitX = point.x;
+            tempUnitY = point.y;
+
+            try {
+                /* Retrieve spaceship sprites */
+                Sprite[] sprites = new Sprite[8];
+                for(Direction d : Direction.values()){
+                    BufferedImage img = ResourceManager.loadImage("resource/unit/spaceship/Ship" + d.name() + ".png");
+                    sprites[d.ordinal()]  = new Sprite(img, 0.3 * totalZoom, 87, 25);
+                }
+
+                SimpleUnit spaceship = new SimpleUnit(sprites, 3, 0, 0, Direction.East);
+                tempUnit = spaceship;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         if(manager.getMouseDown() && !prev){
             /* Get mouse location */
             Point point = manager.getMouseLocation();
             topLeftSelection = point;
-
         }
 
+        if(placingUnit && manager.getMouseMoved()){
+            Point point = manager.getMouseLocation();
+            Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
+            tempUnitX = point.x;
+            tempUnitY = point.y;
+        }
 
         /* Mouse released, but was never dragged */
         if(!manager.getMouseDown() && prev && bottomRightSelection == null){
@@ -274,31 +307,26 @@ public class Main extends JPanel {
             Point point = manager.getMouseLocation();
 
             /* Adding units to map */
-            if(manager.getKeyCodeFlag(KeyEvent.VK_S)){
-                try {
-                    /* Retrieve spaceship sprites */
-                    Sprite[] sprites = new Sprite[8];
-                    for(Direction d : Direction.values()){
-                        BufferedImage img = ResourceManager.loadImage("resource/unit/spaceship/Ship" + d.name() + ".png");
-                        sprites[d.ordinal()]  = new Sprite(img, 0.3 * totalZoom, 87, 25);
-                    }
-                    /* Initialize the rider at the middle of the terrain tile (5,5), facing E.
-                     *(Direction, at the moment, doesn't change. */
+            if(placingUnit){
+                Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
+                tempUnit.setX(unitTile.x);
+                tempUnit.setY(unitTile.y);
+                unitGrid.setUnit(tempUnit, unitTile.x, unitTile.y);
 
-                    Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
-                    SimpleUnit spaceship = new SimpleUnit(sprites, 3, unitTile.x, unitTile.y, Direction.East);
-                    unitGrid.setUnit(spaceship, unitTile.x, unitTile.y);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                placingUnit = false;
             }
             else{
                 SimpleUnit unit = unitPainter.getUnitAtPoint(point, viewport);
                 if(unit != null) {
                     /* If already selected and pressing control, deselect */
-                    if(unit.isSelected() && manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
-                        unit.deselect();
-                        currentSelection.remove(unit);
+                    if(manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
+                        if(unit.isSelected()){
+                            unit.deselect();
+                            currentSelection.remove(unit);
+                        } else {
+                            unit.select();
+                            currentSelection.add(unit);
+                        }
                     }
                     else {
                         for(SimpleUnit u : currentSelection.getCollection())
@@ -312,8 +340,8 @@ public class Main extends JPanel {
                         u.deselect();
                     currentSelection.clear();
                 }
-
             }
+
         }
 
         if(manager.getMouseDragged() && topLeftSelection != null){
@@ -340,7 +368,6 @@ public class Main extends JPanel {
 
         /* Detect unit commands */
         if(manager.getKeyCodeFlag(KeyEvent.VK_W)) {
-            //unit.move();
         }
 
         /* Zooming */
@@ -434,8 +461,13 @@ public class Main extends JPanel {
             /* On top of the map, paint all the units and buildings */
             unitPainter.paintUnits(graphics, viewport);
 
-            /* Draw selection */
-            drawSelection(graphics);
+            /* Draw fake units and buildings on the board */
+            if(placingUnit)
+                drawTemporaryUnits(graphics, viewport);
+
+            /* Draw selection (if not placing units) */
+            else    
+                drawSelection(graphics);
         }
 
     private void drawSelection(Graphics2D graphics){
@@ -460,5 +492,9 @@ public class Main extends JPanel {
             graphics.setColor(Color.BLUE);
             graphics.drawRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
         }
+    }
+
+    private void drawTemporaryUnits(Graphics2D graphics, Viewport viewport){
+        unitPainter.paintTemporaryUnit(graphics, viewport, tempUnit, tempUnitX, tempUnitY);
     }
 }

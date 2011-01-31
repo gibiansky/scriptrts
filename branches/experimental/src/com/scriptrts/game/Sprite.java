@@ -31,6 +31,9 @@ public class Sprite {
         }
     }
 
+    public void drawCentered(Graphics2D graphics, int x, int y){
+        graphics.drawImage(image, x - getWidth()/2, y - getHeight()/2, getWidth(), getHeight(), null);
+    }
     public void scale(double scaleFactor){
         scale *= scaleFactor;
     }
