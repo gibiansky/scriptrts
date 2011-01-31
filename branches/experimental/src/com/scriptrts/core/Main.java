@@ -203,7 +203,6 @@ public class Main extends JPanel {
         viewport.setDim(getWidth(), getHeight());
         int totalWidth = map.getN() * mapPainter.getTileWidth();
         int totalHeight = map.getN() * mapPainter.getTileHeight();
-        viewport.translate(totalWidth / 2, totalHeight / 2);
         int[] limitxPts = {
             0, totalWidth/2 - viewport.getWidth()/2, totalWidth - viewport.getWidth(), totalWidth/2 - viewport.getWidth()/2
         };
@@ -213,6 +212,7 @@ public class Main extends JPanel {
         Polygon limitingPolygon = new Polygon(limitxPts, limityPts, 4);
         viewport.setMapSize(limitxPts[2] - limitxPts[0], limityPts[3] - limityPts[1]);
         viewport.setViewportLocationLimits(limitingPolygon);
+        viewport.translate(totalWidth / 2, totalHeight / 2);
 
         // set up key listeners
         window.addKeyListener(manager);
@@ -345,54 +345,52 @@ public class Main extends JPanel {
 
         /* Zooming */
         if(manager.getMouseScrolled()){
-            int zoomLevel = -manager.getMouseScrollDistance();
+			int zoomLevel = -manager.getMouseScrollDistance();
 
-            /* Calculate new tile sizes */
-            int newTileX = mapPainter.getTileWidth(), newTileY = mapPainter.getTileHeight();
-            double zoom = 1;
-            if(zoomLevel > 0){
-                newTileX *= 2;
-                newTileY *= 2;
-                zoom = 2;
-            } else if(zoomLevel < 0) {
-                newTileX /= 2;
-                newTileY /= 2;
-                zoom = 0.5;
-            }
-            totalZoom *= zoom;
+			/* Calculate new tile sizes */
+			int newTileX = mapPainter.getTileWidth(), newTileY = mapPainter.getTileHeight();
+			double zoom = 1;
+			if(zoomLevel > 0){
+				newTileX *= 2;
+				newTileY *= 2;
+				zoom = 2;
+			} else if(zoomLevel < 0) {
+				newTileX /= 2;
+				newTileY /= 2;
+				zoom = 0.5;
+			}
+			totalZoom *= zoom;
 
-            /* Remember what we were looking at before */
-            Point topLeft = mapPainter.getTileAtPoint(new Point(0, 0), viewport);
+			/* Remember what we were looking at before */
+			Point mouseLoc = manager.getMouseLocation();
+			Point zoomCenter = new Point((int)(zoom * (viewport.getX() + mouseLoc.getX())), (int)(zoom * (viewport.getY() + mouseLoc.getY())));
 
-            /* Make sure map isn't smaller than screen at new zoom level */
-            if(newTileX * map.getN() > viewport.getWidth() && newTileY / 2 * map.getN() > viewport.getHeight())
-                /* Try to resize the tiles */
-                if(mapPainter.setTileSize(newTileX, newTileY)){
-                    /* Prevent the viewport from going off the map */
-                    int totalWidth = map.getN() * mapPainter.getTileWidth();
-                    int totalHeight = map.getN() * mapPainter.getTileHeight();
-                    int[] limitxPts = {
-                        0, totalWidth/2 - viewport.getWidth()/2, totalWidth - viewport.getWidth(), totalWidth/2 - viewport.getWidth()/2
-                    };
-                    int[] limityPts = {
-                        totalHeight/2 - viewport.getHeight()/2, 0, totalHeight/2 - viewport.getHeight()/2,  totalHeight - viewport.getHeight()
-                    };
-                    Polygon limitingPolygon = new Polygon(limitxPts, limityPts, 4);
-                    viewport.setViewportLocationLimits(limitingPolygon);
-                    viewport.setMapSize(limitxPts[2] - limitxPts[0], limityPts[3] - limityPts[1]);
+			/* Make sure map isn't smaller than screen at new zoom level */
+			if(newTileX * map.getN() > viewport.getWidth() && newTileY / 2 * map.getN() > viewport.getHeight()){
+				/* Try to resize the tiles */
+				if(mapPainter.setTileSize(newTileX, newTileY)){
+					/* Prevent the viewport from going off the map */
+					int totalWidth = map.getN() * mapPainter.getTileWidth();
+					int totalHeight = map.getN() * mapPainter.getTileHeight();
+					int[] limitxPts = {
+							0, totalWidth/2 - viewport.getWidth()/2, totalWidth - viewport.getWidth(), totalWidth/2 - viewport.getWidth()/2
+					};
+					int[] limityPts = {
+							totalHeight/2 - viewport.getHeight()/2, 0, totalHeight/2 - viewport.getHeight()/2,  totalHeight - viewport.getHeight()
+					};
+					Polygon limitingPolygon = new Polygon(limitxPts, limityPts, 4);
+					viewport.setViewportLocationLimits(limitingPolygon);
+					viewport.setMapSize(limitxPts[2] - limitxPts[0], limityPts[3] - limityPts[1]);
+					Point topLeft = new Point((int)(zoomCenter.getX() - mouseLoc.getX()), (int)(zoomCenter.getY() - mouseLoc.getY()));
+					viewport.setLocation(topLeft.x, topLeft.y);
 
-                    if(topLeft != null){
-                        Point newLoc = mapPainter.getTileCoordinates(topLeft.x, topLeft.y);
-                        viewport.setLocation(newLoc.x, newLoc.y);
-
-                        /* Make sure we're not violating bounds */
-                        viewport.translate(0, 1);
-                    }
-
-                    /* Also update the unit painter */
-                    unitPainter.zoom(zoom);
-                }
-        }
+					/* Also update the unit painter */
+					unitPainter.zoom(zoom);
+				} else
+					totalZoom /= zoom;
+			} else
+				totalZoom /= zoom;
+		}
 
         /* Scrolling */
         int increment = 30;

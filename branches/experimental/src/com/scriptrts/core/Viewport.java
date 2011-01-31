@@ -78,6 +78,9 @@ public class Viewport {
         x += deltaX;
         y += deltaY;
 
+        if(!limit.contains(origX, origY))
+        	return;
+        
         boolean movingX = Math.abs(deltaX) > Math.abs(deltaY);
 
         /* Prevent viewport from moving outside specified range */
