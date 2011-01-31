@@ -37,69 +37,25 @@ public class SimpleUnit {
         addToPath(Direction.North);
         addToPath(Direction.North);
         addToPath(Direction.North);
-        addToPath(Direction.South);
-        addToPath(Direction.South);
-        addToPath(Direction.South);
-        addToPath(Direction.Southeast);
-        addToPath(Direction.Southeast);
-        addToPath(Direction.Southeast);
-        addToPath(Direction.West);
-        addToPath(Direction.West);
-        addToPath(Direction.West);
-        addToPath(Direction.West);
-        addToPath(Direction.West);
-        addToPath(Direction.West);
-        addToPath(Direction.West);
         addToPath(Direction.North);
         addToPath(Direction.North);
         addToPath(Direction.North);
         addToPath(Direction.North);
         addToPath(Direction.North);
         addToPath(Direction.North);
-        addToPath(Direction.South);
-        addToPath(Direction.South);
-        addToPath(Direction.South);
-        addToPath(Direction.Southeast);
-        addToPath(Direction.Southeast);
-        addToPath(Direction.Southeast);
-        addToPath(Direction.West);
-        addToPath(Direction.West);
-        addToPath(Direction.West);
-        addToPath(Direction.West);
-        addToPath(Direction.West);
-        addToPath(Direction.West);
-        addToPath(Direction.West);
-        addToPath(Direction.East);
-        addToPath(Direction.East);
-        addToPath(Direction.East);
-        addToPath(Direction.East);
         addToPath(Direction.North);
         addToPath(Direction.North);
         addToPath(Direction.North);
         addToPath(Direction.North);
         addToPath(Direction.North);
         addToPath(Direction.North);
-        addToPath(Direction.South);
-        addToPath(Direction.South);
-        addToPath(Direction.South);
-        addToPath(Direction.Southeast);
-        addToPath(Direction.Southeast);
-        addToPath(Direction.Southeast);
-        addToPath(Direction.West);
-        addToPath(Direction.West);
-        addToPath(Direction.West);
-        addToPath(Direction.West);
-        addToPath(Direction.West);
-        addToPath(Direction.West);
-        addToPath(Direction.West);
         addToPath(Direction.North);
         addToPath(Direction.North);
         addToPath(Direction.North);
         addToPath(Direction.North);
         addToPath(Direction.North);
         addToPath(Direction.North);
-        addToPath(Direction.South);
-        addToPath(Direction.South);
+        addToPath(Direction.North);
 
     }
 
@@ -148,6 +104,20 @@ public class SimpleUnit {
             previousDirection = direction;
             direction = path.poll();
         }
+    }
+
+    /**
+     * Look at where the unit will go next without updating the direction
+     */
+    public Direction peekNextDirection(){
+        Direction next;
+
+        if(path == null || path.peek() == null)
+            next = null;
+        else 
+            next = path.peek();
+
+        return next;
     }
 
     /**

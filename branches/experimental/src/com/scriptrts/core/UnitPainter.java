@@ -103,8 +103,14 @@ public class UnitPainter {
 
         /* Move it however many tiles it wants to be moved */
         while(tilesMoved > 0){
-            grid.moveUnitOneTile(unit);
-            tilesMoved--;
+            boolean moveSucceeded = grid.moveUnitOneTile(unit);
+            if(moveSucceeded)
+                tilesMoved--;
+            else {
+                unit.incrementAnimationCounter(tilesMoved - subtilesMovedPerFrame);
+                tilesMoved = 0;
+            }
+
         }
     }
 
@@ -280,6 +286,40 @@ public class UnitPainter {
 	}
 
     public void paintTemporaryUnit(Graphics2D graphics, Viewport viewport, SimpleUnit unit, int xLoc, int yLoc){
+        /* Draw the place it will snap to */
+        Point pointOnScreen = new Point(xLoc, yLoc);
+        Point unitTile = unitTileAtPoint(pointOnScreen, viewport);
+
+        /* Back corner pixel locations of map tile */
+        int iMap = unitTile.x / 3;
+        int jMap = unitTile.y / 3;
+		int tileX = mapPainter.getTileWidth();
+		int tileY = mapPainter.getTileHeight();
+        int x = (iMap+jMap+1)*tileX/2;
+        int y = tileY * mapPainter.getMap().getN() / 2 + (iMap - jMap - 1) * tileY / 2;
+
+        /* Indices inside the map tile */
+        int a = unitTile.x % 3;
+        int b = unitTile.y % 3;
+        Point backCorner = getUnitTileBackLocation(a, b);
+        backCorner.translate(x - tileX/2, y);
+
+        /* Polygon around the unit tile */
+        int[] xpts = {
+            backCorner.x, backCorner.x + tileX / 6 + 2, backCorner.x, backCorner.x - tileX / 6 - 2
+        };
+        int[] ypts = {
+            backCorner.y - 2, backCorner.y + tileY / 6, backCorner.y + tileY / 3 + 2, backCorner.y + tileY / 6
+        };
+        Polygon poly = new Polygon(xpts, ypts, 4);
+        
+        /* Draw half transparent polygons where the unit will go */
+        graphics.setColor(new Color(0, 255, 0, 120));
+        graphics.fillPolygon(poly);
+        graphics.setColor(Color.green);
+        graphics.drawPolygon(poly);
+
+        /* Draw the sprite on top */
         Sprite sprite = unit.getCurrentSprite();
 		sprite.drawCentered(graphics, xLoc + viewport.getX(), yLoc + viewport.getY());
     }

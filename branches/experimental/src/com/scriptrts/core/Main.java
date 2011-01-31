@@ -372,52 +372,52 @@ public class Main extends JPanel {
 
         /* Zooming */
         if(manager.getMouseScrolled()){
-			int zoomLevel = -manager.getMouseScrollDistance();
+            int zoomLevel = -manager.getMouseScrollDistance();
 
-			/* Calculate new tile sizes */
-			int newTileX = mapPainter.getTileWidth(), newTileY = mapPainter.getTileHeight();
-			double zoom = 1;
-			if(zoomLevel > 0){
-				newTileX *= 2;
-				newTileY *= 2;
-				zoom = 2;
-			} else if(zoomLevel < 0) {
-				newTileX /= 2;
-				newTileY /= 2;
-				zoom = 0.5;
-			}
-			totalZoom *= zoom;
+            /* Calculate new tile sizes */
+            int newTileX = mapPainter.getTileWidth(), newTileY = mapPainter.getTileHeight();
+            double zoom = 1;
+            if(zoomLevel > 0){
+                newTileX *= 2;
+                newTileY *= 2;
+                zoom = 2;
+            } else if(zoomLevel < 0) {
+                newTileX /= 2;
+                newTileY /= 2;
+                zoom = 0.5;
+            }
+            totalZoom *= zoom;
 
-			/* Remember what we were looking at before */
-			Point mouseLoc = manager.getMouseLocation();
-			Point zoomCenter = new Point((int)(zoom * (viewport.getX() + mouseLoc.getX())), (int)(zoom * (viewport.getY() + mouseLoc.getY())));
+            /* Remember what we were looking at before */
+            Point mouseLoc = manager.getMouseLocation();
+            Point zoomCenter = new Point((int)(zoom * (viewport.getX() + mouseLoc.getX())), (int)(zoom * (viewport.getY() + mouseLoc.getY())));
 
-			/* Make sure map isn't smaller than screen at new zoom level */
-			if(newTileX * map.getN() > viewport.getWidth() && newTileY / 2 * map.getN() > viewport.getHeight()){
-				/* Try to resize the tiles */
-				if(mapPainter.setTileSize(newTileX, newTileY)){
-					/* Prevent the viewport from going off the map */
-					int totalWidth = map.getN() * mapPainter.getTileWidth();
-					int totalHeight = map.getN() * mapPainter.getTileHeight();
-					int[] limitxPts = {
-							0, totalWidth/2 - viewport.getWidth()/2, totalWidth - viewport.getWidth(), totalWidth/2 - viewport.getWidth()/2
-					};
-					int[] limityPts = {
-							totalHeight/2 - viewport.getHeight()/2, 0, totalHeight/2 - viewport.getHeight()/2,  totalHeight - viewport.getHeight()
-					};
-					Polygon limitingPolygon = new Polygon(limitxPts, limityPts, 4);
-					viewport.setViewportLocationLimits(limitingPolygon);
-					viewport.setMapSize(limitxPts[2] - limitxPts[0], limityPts[3] - limityPts[1]);
-					Point topLeft = new Point((int)(zoomCenter.getX() - mouseLoc.getX()), (int)(zoomCenter.getY() - mouseLoc.getY()));
-					viewport.setLocation(topLeft.x, topLeft.y);
+            /* Make sure map isn't smaller than screen at new zoom level */
+            if(newTileX * map.getN() > viewport.getWidth() && newTileY / 2 * map.getN() > viewport.getHeight()){
+                /* Try to resize the tiles */
+                if(mapPainter.setTileSize(newTileX, newTileY)){
+                    /* Prevent the viewport from going off the map */
+                    int totalWidth = map.getN() * mapPainter.getTileWidth();
+                    int totalHeight = map.getN() * mapPainter.getTileHeight();
+                    int[] limitxPts = {
+                        0, totalWidth/2 - viewport.getWidth()/2, totalWidth - viewport.getWidth(), totalWidth/2 - viewport.getWidth()/2
+                    };
+                    int[] limityPts = {
+                        totalHeight/2 - viewport.getHeight()/2, 0, totalHeight/2 - viewport.getHeight()/2,  totalHeight - viewport.getHeight()
+                    };
+                    Polygon limitingPolygon = new Polygon(limitxPts, limityPts, 4);
+                    viewport.setViewportLocationLimits(limitingPolygon);
+                    viewport.setMapSize(limitxPts[2] - limitxPts[0], limityPts[3] - limityPts[1]);
+                    Point topLeft = new Point((int)(zoomCenter.getX() - mouseLoc.getX()), (int)(zoomCenter.getY() - mouseLoc.getY()));
+                    viewport.setLocation(topLeft.x, topLeft.y);
 
-					/* Also update the unit painter */
-					unitPainter.zoom(zoom);
-				} else
-					totalZoom /= zoom;
-			} else
-				totalZoom /= zoom;
-		}
+                    /* Also update the unit painter */
+                    unitPainter.zoom(zoom);
+                } else
+                    totalZoom /= zoom;
+            } else
+                totalZoom /= zoom;
+        }
 
         /* Scrolling */
         int increment = 30;
@@ -434,41 +434,40 @@ public class Main extends JPanel {
     }
 
     private long prevTime = System.currentTimeMillis();
-    @Override
-        protected void paintComponent(Graphics g) {
-            if(!initialized) return;
+    protected void paintComponent(Graphics g) {
+        if(!initialized) return;
 
-            if(fpsLogging){
-                long t = System.currentTimeMillis();
-                long diff = t - prevTime;
-                prevTime = t;
-                if(Math.random() < .03){
-                    if(diff == 0) diff = 1;
-                    System.out.println("FPS: " + (1000/diff));
-                }
+        if(fpsLogging){
+            long t = System.currentTimeMillis();
+            long diff = t - prevTime;
+            prevTime = t;
+            if(Math.random() < .03){
+                if(diff == 0) diff = 1;
+                System.out.println("FPS: " + (1000/diff));
             }
-
-            g.setColor(Color.BLACK);
-            g.fillRect(0, 0, 2000, 2000);
-
-            /* Move over to the viewport location */
-            Graphics2D graphics = (Graphics2D) g;
-            g.translate(-viewport.getX(), -viewport.getY());
-
-            /* Paint the map using the map painter */
-            mapPainter.paintMap(graphics, viewport);
-
-            /* On top of the map, paint all the units and buildings */
-            unitPainter.paintUnits(graphics, viewport);
-
-            /* Draw fake units and buildings on the board */
-            if(placingUnit)
-                drawTemporaryUnits(graphics, viewport);
-
-            /* Draw selection (if not placing units) */
-            else    
-                drawSelection(graphics);
         }
+
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, 2000, 2000);
+
+        /* Move over to the viewport location */
+        Graphics2D graphics = (Graphics2D) g;
+        g.translate(-viewport.getX(), -viewport.getY());
+
+        /* Paint the map using the map painter */
+        mapPainter.paintMap(graphics, viewport);
+
+        /* On top of the map, paint all the units and buildings */
+        unitPainter.paintUnits(graphics, viewport);
+
+        /* Draw fake units and buildings on the board */
+        if(placingUnit)
+            drawTemporaryUnits(graphics, viewport);
+
+        /* Draw selection (if not placing units) */
+        else    
+            drawSelection(graphics);
+    }
 
     private void drawSelection(Graphics2D graphics){
         if(topLeftSelection != null && bottomRightSelection != null){
