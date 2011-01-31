@@ -21,6 +21,11 @@ public class UnitPainter {
 	 */
 	private MapPainter mapPainter;
 
+    /**
+     * Enable debug drawing
+     */
+    public static boolean DEBUG = false;
+
 	/**
 	 * Create a new unit painter which paints the given units on the map
 	 */
@@ -41,81 +46,6 @@ public class UnitPainter {
 			 *(Direction, at the moment, doesn't change. */
 			SimpleUnit spaceship = new SimpleUnit(sprites, 3, 210, 186, Direction.East);
 
-            /* LOLLER CATS */
-            spaceship.addToPath(Direction.East);
-            spaceship.addToPath(Direction.East);
-            spaceship.addToPath(Direction.East);
-            spaceship.addToPath(Direction.East);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.South);
-            spaceship.addToPath(Direction.South);
-            spaceship.addToPath(Direction.South);
-            spaceship.addToPath(Direction.Southeast);
-            spaceship.addToPath(Direction.Southeast);
-            spaceship.addToPath(Direction.Southeast);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.South);
-            spaceship.addToPath(Direction.South);
-            spaceship.addToPath(Direction.South);
-            spaceship.addToPath(Direction.Southeast);
-            spaceship.addToPath(Direction.Southeast);
-            spaceship.addToPath(Direction.Southeast);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.East);
-            spaceship.addToPath(Direction.East);
-            spaceship.addToPath(Direction.East);
-            spaceship.addToPath(Direction.East);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.South);
-            spaceship.addToPath(Direction.South);
-            spaceship.addToPath(Direction.South);
-            spaceship.addToPath(Direction.Southeast);
-            spaceship.addToPath(Direction.Southeast);
-            spaceship.addToPath(Direction.Southeast);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.West);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.North);
-            spaceship.addToPath(Direction.South);
-            spaceship.addToPath(Direction.South);
- 
 
 			/* Put the unit tile in the UnitGrid (to be associated with terrain tiles)*/
 			grid.setUnit(spaceship, 210, 186);
@@ -218,6 +148,25 @@ public class UnitPainter {
                     paintUnit(graphics, unit, x - tileX/2, y);
             }
 		}
+
+        if(UnitPainter.DEBUG){
+            graphics.setColor(Color.green);
+            for(int a = 0; a < UnitGrid.SPACES_PER_TILE; a++)
+                for(int b = 0; b < UnitGrid.SPACES_PER_TILE; b++) {
+                    Point backCorner = getUnitTileBackLocation(a, b);
+                    backCorner.translate(x - tileX/2, y);
+                    int[] xpts = {
+                        backCorner.x, backCorner.x + tileX / 6, backCorner.x, backCorner.x - tileX / 6
+                    };
+                    int[] ypts = {
+                        backCorner.y, backCorner.y + tileY / 6, backCorner.y + tileY / 3, backCorner.y + tileY / 6
+                    };
+
+                    graphics.drawPolygon(new Polygon(xpts, ypts, 4));
+                }
+
+
+        }
 	}
 
     private Point getTileBackLocation(SimpleUnit unit){
@@ -299,6 +248,7 @@ public class UnitPainter {
 	private void paintUnit(Graphics2D graphics, SimpleUnit unit, int tileLocX, int tileLocY){
         /* How far the unit has moved from its current tile to its destination */
         double percentMovedFromTile = unit.getAnimationCounter();
+
 
 		int tileX = mapPainter.getTileWidth();
 		int tileY = mapPainter.getTileHeight();
@@ -482,9 +432,6 @@ public class UnitPainter {
         /* Find where this map tile is drawn */
         Point mapTileDrawnAt = mapPainter.getTileCoordinates(iMap, jMap);
 
-        /* Translate point to be in the tile, ignoring viewport and map coordinates */
-        point.translate(-mapTileDrawnAt.x, -mapTileDrawnAt.y);
-
         /* Now we can just draw a map tile and look at the coordinates of the point to figure out which part of the tile it's in */
         int tileX = mapPainter.getTileWidth();
         int tileY = mapPainter.getTileHeight();
@@ -493,11 +440,12 @@ public class UnitPainter {
         for(int a = 0; a < UnitGrid.SPACES_PER_TILE; a++)
             for(int b = 0; b < UnitGrid.SPACES_PER_TILE; b++) {
                 Point backCorner = getUnitTileBackLocation(a, b);
+                backCorner.translate(mapTileDrawnAt.x, mapTileDrawnAt.y);
                 int[] xpts = {
-                    backCorner.x, backCorner.x + tileX / 2, backCorner.x, backCorner.x - tileX / 2
+                    backCorner.x, backCorner.x + tileX / 6, backCorner.x, backCorner.x - tileX / 6
                 };
                 int[] ypts = {
-                    backCorner.y, backCorner.y + tileY / 2, backCorner.y + tileY, backCorner.y + tileY / 2
+                    backCorner.y, backCorner.y + tileY / 6, backCorner.y + tileY / 3, backCorner.y + tileY / 6
                 };
 
                 if(new Polygon(xpts, ypts, 4).contains(point))

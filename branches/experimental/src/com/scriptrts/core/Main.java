@@ -86,6 +86,7 @@ public class Main extends JPanel {
         fpsLogging = (Boolean) parser.getOptionValue(fpsLogOpt,  Boolean.FALSE);
 
         MapPainter.DEBUG = DEBUG;
+        UnitPainter.DEBUG = DEBUG;
     }
 
     public static void main(String... args) {
@@ -224,6 +225,7 @@ public class Main extends JPanel {
     private Point topLeftSelection = null;
     private Point bottomRightSelection = null;
     private boolean prev = false;
+    private double totalZoom = 1;
     public void updateGame(){
         /* Painting on the map */
         if(false && manager.getMouseDown() && manager.getMouseMoved()){
@@ -268,15 +270,21 @@ public class Main extends JPanel {
                     Sprite[] sprites = new Sprite[8];
                     for(Direction d : Direction.values()){
                         BufferedImage img = ResourceManager.loadImage("resource/unit/spaceship/Ship" + d.name() + ".png");
-                        sprites[d.ordinal()]  = new Sprite(img, 0.3, 87, 25);
+                        sprites[d.ordinal()]  = new Sprite(img, 0.3 * totalZoom, 87, 25);
                     }
                     /* Initialize the rider at the middle of the terrain tile (5,5), facing E.
                      *(Direction, at the moment, doesn't change. */
-                    SimpleUnit spaceship = new SimpleUnit(sprites, 3, 210, 186, Direction.East);
 
                     Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
-                    unitGrid.setUnit(spaceship, unitTile.x, unitTile.y);
-                } catch (Exception e) {}
+                    if(unitTile != null) {
+                        SimpleUnit spaceship = new SimpleUnit(sprites, 3, unitTile.x, unitTile.y, Direction.East);
+                        unitGrid.setUnit(spaceship, unitTile.x, unitTile.y);
+                    } else {
+                        System.out.println("ERROR WHY IS THIS GIVING A NULLPOINTER I DON'T KNOW");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
             else{
                 SimpleUnit unit = unitPainter.getUnitAtPoint(point, viewport);
@@ -290,7 +298,6 @@ public class Main extends JPanel {
                         for(SimpleUnit u : currentSelection.getCollection())
                             u.deselect();
                         currentSelection.clear();
-
                         unit.select();
                         currentSelection.add(unit);
                     }
@@ -346,6 +353,7 @@ public class Main extends JPanel {
                 newTileY /= 2;
                 zoom = 0.5;
             }
+            totalZoom *= zoom;
 
             /* Remember what we were looking at before */
             Point topLeft = mapPainter.getTileAtPoint(new Point(0, 0), viewport);

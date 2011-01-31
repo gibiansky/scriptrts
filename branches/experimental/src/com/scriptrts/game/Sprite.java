@@ -1,6 +1,7 @@
 package com.scriptrts.game;
 
 import java.awt.Rectangle;
+import com.scriptrts.core.UnitPainter;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
@@ -23,8 +24,11 @@ public class Sprite {
         int bY = (int) (spriteBackY * scale);
 
         graphics.drawImage(image, tileBackX - bX, tileBackY - bY, getWidth(), getHeight(), null);
-        graphics.setColor(java.awt.Color.green);
-        graphics.fillRect(tileBackX, tileBackY, 5, 5);
+
+        if(UnitPainter.DEBUG){
+            graphics.setColor(java.awt.Color.green);
+            graphics.fillRect(tileBackX, tileBackY, 5, 5);
+        }
     }
 
     public void scale(double scaleFactor){
