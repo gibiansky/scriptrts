@@ -286,12 +286,8 @@ public class Main extends JPanel {
                      *(Direction, at the moment, doesn't change. */
 
                     Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
-                    if(unitTile != null) {
-                        SimpleUnit spaceship = new SimpleUnit(sprites, 3, unitTile.x, unitTile.y, Direction.East);
-                        unitGrid.setUnit(spaceship, unitTile.x, unitTile.y);
-                    } else {
-                        System.out.println("ERROR WHY IS THIS GIVING A NULLPOINTER I DON'T KNOW");
-                    }
+                    SimpleUnit spaceship = new SimpleUnit(sprites, 3, unitTile.x, unitTile.y, Direction.East);
+                    unitGrid.setUnit(spaceship, unitTile.x, unitTile.y);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

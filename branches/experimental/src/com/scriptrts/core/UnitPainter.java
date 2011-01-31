@@ -441,17 +441,18 @@ public class UnitPainter {
             for(int b = 0; b < UnitGrid.SPACES_PER_TILE; b++) {
                 Point backCorner = getUnitTileBackLocation(a, b);
                 backCorner.translate(mapTileDrawnAt.x, mapTileDrawnAt.y);
+                /* The +- 2 elements make the tiles slightly bigger, to avoid floating point errors */
                 int[] xpts = {
-                    backCorner.x, backCorner.x + tileX / 6, backCorner.x, backCorner.x - tileX / 6
+                    backCorner.x, backCorner.x + tileX / 6 + 2, backCorner.x, backCorner.x - tileX / 6 - 2
                 };
                 int[] ypts = {
-                    backCorner.y, backCorner.y + tileY / 6, backCorner.y + tileY / 3, backCorner.y + tileY / 6
+                    backCorner.y - 2, backCorner.y + tileY / 6, backCorner.y + tileY / 3 + 2, backCorner.y + tileY / 6
                 };
+
 
                 if(new Polygon(xpts, ypts, 4).contains(point))
                     return new Point(a + iMap * UnitGrid.SPACES_PER_TILE, b + jMap * UnitGrid.SPACES_PER_TILE);
             }
-
 
         return null;
     }
