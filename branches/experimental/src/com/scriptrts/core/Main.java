@@ -27,7 +27,7 @@ import com.scriptrts.control.Selection;
 
 public class Main extends JPanel {
     /* Game properties */
-    private static final int n = 128;
+    private static final int n = 129; //1 more than a power of 2
     private final static JFrame window = new JFrame("ScriptRTS");
 
     /* Viewport properties */
@@ -186,7 +186,7 @@ public class Main extends JPanel {
     public void initializeGame(){
         /* Create and populate map with tiles */
         Map randomMap = new Map(n, ResourceDensity.Medium);
-        randomMap.populateTiles();
+        randomMap.generateMap(.7);
         map = randomMap;
 
         /* Create map painter */
