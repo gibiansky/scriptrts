@@ -1,6 +1,7 @@
 package com.scriptrts.game;
 
 import java.util.Queue;
+import java.awt.Point;
 import java.util.LinkedList;
 import java.util.Collections;
 
@@ -94,14 +95,14 @@ public class SimpleUnit {
      * Update the direction based on the path the unit wants to take.
      */
     public void updateDirection(){
+        if(direction != null)
+            previousDirection = direction;
+
         /* If we have no more directions, stop. */
         if(path == null || path.peek() == null){
-            if(direction != null)
-                previousDirection = direction;
             direction = null;
         }
         else {
-            previousDirection = direction;
             direction = path.poll();
         }
     }
@@ -239,5 +240,17 @@ public class SimpleUnit {
             return sprites[direction.ordinal()];
         else
             return sprites[previousDirection.ordinal()];
+    }
+
+    private class UnitShape {
+        Point[][] shapes = new Point[8][];
+
+        public void setShape(Point[] shp, Direction facing){
+            shapes[facing.ordinal()] = shp;
+        }
+
+        public Point[] getShape(Direction facing){
+            return shapes[facing.ordinal()];
+        }
     }
 }

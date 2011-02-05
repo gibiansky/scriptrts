@@ -72,7 +72,6 @@ public class Viewport {
      * Move the viewport by the specified deltas
      */
     public void translate(int deltaX, int deltaY){
-
         int origY = y;
         int origX = x;
         x += deltaX;
@@ -101,7 +100,7 @@ public class Viewport {
                 increments++;
 
                 /* No infinite looping */
-                if(increments >= 200){
+                if(increments >= 100){
                     x = origX;
                     y = origY;
                     return;

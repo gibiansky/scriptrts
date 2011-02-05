@@ -485,12 +485,12 @@ public class UnitPainter {
             for(int b = 0; b < UnitGrid.SPACES_PER_TILE; b++) {
                 Point backCorner = getUnitTileBackLocation(a, b);
                 backCorner.translate(mapTileDrawnAt.x, mapTileDrawnAt.y);
-                /* The +- 2 elements make the tiles slightly bigger, to avoid floating point errors */
+                /* The +- 5 elements make the tiles slightly bigger, to avoid floating point errors */
                 int[] xpts = {
-                    backCorner.x, backCorner.x + tileX / 6 + 2, backCorner.x, backCorner.x - tileX / 6 - 2
+                   backCorner.x, backCorner.x + tileX / 6 + 5, backCorner.x, backCorner.x - tileX / 6 - 5
                 };
                 int[] ypts = {
-                    backCorner.y - 2, backCorner.y + tileY / 6, backCorner.y + tileY / 3 + 2, backCorner.y + tileY / 6
+                    backCorner.y - 5, backCorner.y + tileY / 6, backCorner.y + tileY / 3 + 5, backCorner.y + tileY / 6
                 };
 
 
