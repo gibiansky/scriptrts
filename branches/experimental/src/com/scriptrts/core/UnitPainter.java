@@ -185,6 +185,18 @@ public class UnitPainter {
         return getUnitTileBackLocation(a, b);
     }
 
+    private Point[] getAllTileBackLocations(SimpleUnit unit){
+        int[] xs = unit.getAllX();
+        int[] ys = unit.getAllY();
+        Point[] pts = new Point[xs.length];
+        for(int i = 0; i < xs.length; i++){
+            int a = xs[i] % UnitGrid.SPACES_PER_TILE;
+            int b = ys[i] % UnitGrid.SPACES_PER_TILE;
+            pts[i] = getUnitTileBackLocation(a,b);
+        }
+        return pts;
+    }
+
     private Point getUnitTileBackLocation(int a, int b){
 		int tileX = mapPainter.getTileWidth();
 		int tileY = mapPainter.getTileHeight();
@@ -275,14 +287,43 @@ public class UnitPainter {
         int yLoc = tileLocY + tileBackY;
         
         Sprite sprite = unit.getCurrentSprite();
-		sprite.draw(graphics, xLoc, yLoc);
 
         /* Display selected units differently */
         if(unit.isSelected()){
             graphics.setColor(Color.RED);
             Rectangle bounds = sprite.getBounds(xLoc, yLoc);
             graphics.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+
+            int[] xs = unit.getAllX();
+            int[] ys = unit.getAllY();
+            Point[] pts = getAllTileBackLocations(unit);
+            for(int k = 0; k < xs.length; k++){
+                int i = xs[k] / 3;
+                int j = ys[k] / 3;
+                int x = (i+j+1)*tileX/2;
+                int y = tileY * mapPainter.getMap().getN() / 2 + (i - j - 1) * tileY / 2;
+
+                Point backCorner = pts[k];
+                backCorner.translate(x - tileX/2, y);
+
+                /* Polygon around the unit tile */
+                int[] xpts = {
+                    backCorner.x, backCorner.x + tileX / 6 + 2, backCorner.x, backCorner.x - tileX / 6 - 2
+                };
+                int[] ypts = {
+                    backCorner.y - 2, backCorner.y + tileY / 6, backCorner.y + tileY / 3 + 2, backCorner.y + tileY / 6
+                };
+                Polygon poly = new Polygon(xpts, ypts, 4);
+
+                /* Draw half transparent polygons where the unit will go */
+                graphics.setColor(new Color(0, 255, 0, 120));
+                graphics.fillPolygon(poly);
+                graphics.setColor(Color.green);
+                graphics.drawPolygon(poly);
+            }
         }
+
+		sprite.draw(graphics, xLoc, yLoc);
 	}
 
     public void paintTemporaryUnit(Graphics2D graphics, Viewport viewport, SimpleUnit unit, int xLoc, int yLoc){

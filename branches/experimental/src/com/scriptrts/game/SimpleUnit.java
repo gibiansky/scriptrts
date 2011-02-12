@@ -16,6 +16,7 @@ public class SimpleUnit {
     private boolean selected;
     private Queue<Direction> path = new LinkedList<Direction>();
     private double animCounter = 0;
+    private UnitShape shape;
 
     public SimpleUnit(Sprite[] sprites, int speed, int x, int y, Direction direction) {
         this.sprites = sprites;
@@ -26,38 +27,47 @@ public class SimpleUnit {
         previousDirection = direction;
         state = SpriteState.Idle;
 
+        shape = UnitShape.SHAPE_2x1;
 
         /* LOLLER CATS */
-        addToPath(Direction.East);
-        addToPath(Direction.East);
-        addToPath(Direction.East);
-        addToPath(Direction.East);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-        addToPath(Direction.North);
-
+        for(int i = 0; i < 50; i++){
+            if(i % 2 == 0){
+                addToPath(Direction.East);
+                addToPath(Direction.East);
+                addToPath(Direction.East);
+                addToPath(Direction.East);
+                addToPath(Direction.North);
+                addToPath(Direction.North);
+                addToPath(Direction.North);
+                addToPath(Direction.North);
+                addToPath(Direction.West);
+                addToPath(Direction.West);
+                addToPath(Direction.West);
+                addToPath(Direction.West);
+                addToPath(Direction.South);
+                addToPath(Direction.South);
+                addToPath(Direction.South);
+                addToPath(Direction.South);
+            }
+            else{
+                addToPath(Direction.Northeast);
+                addToPath(Direction.Northeast);
+                addToPath(Direction.Northeast);
+                addToPath(Direction.Northeast);
+                addToPath(Direction.Northwest);
+                addToPath(Direction.Northwest);
+                addToPath(Direction.Northwest);
+                addToPath(Direction.Northwest);
+                addToPath(Direction.Southwest);
+                addToPath(Direction.Southwest);
+                addToPath(Direction.Southwest);
+                addToPath(Direction.Southwest);
+                addToPath(Direction.Southeast);
+                addToPath(Direction.Southeast);
+                addToPath(Direction.Southeast);
+                addToPath(Direction.Southeast);
+            }
+        }
     }
 
     public boolean isSelected(){
@@ -218,6 +228,30 @@ public class SimpleUnit {
         this.y = y;
     }
 
+    int[] allX = null;
+    public int[] getAllX(){
+        if(allX == null)
+            allX = new int[shape.getSize()];
+
+        Point[] pts = shape.getShape(getFacingDirection());
+        for(int i = 0; i < pts.length; i++)
+            allX[i] = pts[i].x + getX();
+
+        return allX;
+    }
+
+    int[] allY = null;
+    public int[] getAllY(){
+        if(allY == null)
+            allY = new int[shape.getSize()];
+
+        Point[] pts = shape.getShape(getFacingDirection());
+        for(int i = 0; i < pts.length; i++)
+            allY[i] = pts[i].y + getY();
+
+        return allY;
+    }
+
     /**
      * @return the direction
      */
@@ -236,21 +270,56 @@ public class SimpleUnit {
      * @return the currentSprite
      */
     public Sprite getCurrentSprite() {
-        if(direction != null)
-            return sprites[direction.ordinal()];
-        else
-            return sprites[previousDirection.ordinal()];
+        return sprites[getFacingDirection().ordinal()];
     }
 
-    private class UnitShape {
-        Point[][] shapes = new Point[8][];
+    private Direction getFacingDirection(){
+        if(direction != null)
+            return direction;
+        else
+            return previousDirection;
+    }
 
-        public void setShape(Point[] shp, Direction facing){
-            shapes[facing.ordinal()] = shp;
-        }
+}
 
-        public Point[] getShape(Direction facing){
-            return shapes[facing.ordinal()];
-        }
+class UnitShape {
+    Point[][] shapes = new Point[8][];
+
+    static final UnitShape SHAPE_2x1 = new UnitShape(
+            new Point[][]{
+                /* North */
+                new Point[]{new Point(0,0), new Point(0, -1)},
+                 /* Northeast */
+                 new Point[]{new Point(0,0), new Point(-1, -1)},
+                 /* East */
+                 new Point[]{new Point(0,0), new Point(-1, 0)},
+                 /* Southeast */
+                 new Point[]{new Point(0,0), new Point(-1, 1)},
+                 /* South */
+                 new Point[]{new Point(0,0), new Point(0, 1)},
+                 /* Southwest */
+                 new Point[]{new Point(0,0), new Point(1, 1)},
+                 /* West */
+                 new Point[]{new Point(0,0), new Point(1, 0)},
+                 /* Northwest */
+                 new Point[]{new Point(0,0), new Point(1, -1)}
+            }
+            );
+
+    public UnitShape(Point[][] shps){
+        super();
+        shapes = shps;
+    }
+
+    public void setShape(Point[] shp, Direction facing){
+        shapes[facing.ordinal()] = shp;
+    }
+
+    public Point[] getShape(Direction facing){
+        return shapes[facing.ordinal()];
+    }
+
+    public int getSize(){
+        return getShape(Direction.North).length;
     }
 }
