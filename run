@@ -1,0 +1,1 @@
+java -cp bin:lib/jython.jar:lib/jargs.jar com.scriptrts.core.Main $@
