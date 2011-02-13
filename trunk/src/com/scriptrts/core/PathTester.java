@@ -76,7 +76,7 @@ public class PathTester {
             System.out.println(node.getDistance());
     }
     
-    private class Node implements Comparable{
+    private class Node implements Comparable<Node>{
       
 
         private boolean passable;
@@ -85,11 +85,8 @@ public class PathTester {
         private double distance;
 
         @Override
-        public int compareTo(Object c) {
-            if(!(c instanceof Node))
-                return -10000;
-            else
-                return (int) -Math.signum(((Node)c).distance - this.distance);
+        public int compareTo(Node c) {
+            return (int) -Math.signum(((Node)c).distance - this.distance);
             
         }
         
