@@ -1,5 +1,5 @@
 cd src
 find -name *.java > ../.files
-javac -d ../bin -cp ".:../lib/jargs.jar" @../.files
+javac -d ../bin -cp ".:../lib/jargs.jar" $@ @../.files
 cd ..;
 rm .files
