@@ -27,7 +27,7 @@ public class ConsoleTester extends JFrame implements KeyListener {
 		timer = new Timer();
 		timer.schedule(new TimerTask() {
 			public void run() {
-
+				repaint();
 			}
 		}, 0, 75);	
 	}
