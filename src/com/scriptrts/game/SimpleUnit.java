@@ -70,6 +70,10 @@ public class SimpleUnit {
         }
     }
 
+    public boolean isPassable(SimpleUnit u){
+        return false;
+    }
+
     public boolean isSelected(){
         return selected;
     }
@@ -96,6 +100,7 @@ public class SimpleUnit {
         return 0;
 
     }
+
     public void resetAnimationCounter(){
         animCounter = 0;
     }
@@ -170,6 +175,10 @@ public class SimpleUnit {
      */
     public SpriteState getState() {
         return state;
+    }
+
+    public Point[] getShape(Direction facing){
+        return shape.getShape(facing);
     }
 
     /**
@@ -273,7 +282,7 @@ public class SimpleUnit {
         return sprites[getFacingDirection().ordinal()];
     }
 
-    private Direction getFacingDirection(){
+    public Direction getFacingDirection(){
         if(direction != null)
             return direction;
         else

@@ -72,6 +72,7 @@ public class Main extends JPanel {
         CmdLineParser.Option fpsLogOpt = parser.addBooleanOption('l', "logfps");
         CmdLineParser.Option noMapDebugOpt = parser.addBooleanOption("nomapdebug");
         CmdLineParser.Option noUnitDebugOpt = parser.addBooleanOption("nounitdebug");
+        CmdLineParser.Option noMaskOpt = parser.addBooleanOption("nomasking");
 
         /* Parse */
         try {
@@ -86,6 +87,7 @@ public class Main extends JPanel {
         DEBUG = (Boolean) parser.getOptionValue(debugOpt, Boolean.FALSE);
         fullscreen = (Boolean) parser.getOptionValue(fullscreenOpt, Boolean.FALSE);
         fpsLogging = (Boolean) parser.getOptionValue(fpsLogOpt,  Boolean.FALSE);
+        MapPainter.NO_MASKING = (Boolean) parser.getOptionValue(noMaskOpt,  Boolean.FALSE);
 
         boolean noMap = (Boolean) parser.getOptionValue(noMapDebugOpt,  Boolean.FALSE);
         boolean noUnit = (Boolean) parser.getOptionValue(noUnitDebugOpt,  Boolean.FALSE);

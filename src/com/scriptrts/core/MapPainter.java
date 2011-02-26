@@ -17,6 +17,7 @@ public class MapPainter {
      * Whether or not to draw debug lines on the map. Initialized to false;
      */
     public static boolean DEBUG = false;
+    public static boolean NO_MASKING = false;
 
     /**
      * Map which this painter is created to draw on the screen
@@ -485,19 +486,20 @@ public class MapPainter {
 
 
                 /* Don't mask above a certain zoom level */
-                if(tileX > 16 && tileY > 8)
-                    /* Draw the masks on top of the tile */
-                    for(int texType = 0; texType < images.length; texType++){
-                        for(int maskID : MASKS){
-                            int maskingTerrain = masking[i][j][maskID];
+                if(!NO_MASKING)
+                    if(tileX > 16 && tileY > 8)
+                        /* Draw the masks on top of the tile */
+                        for(int texType = 0; texType < images.length; texType++){
+                            for(int maskID : MASKS){
+                                int maskingTerrain = masking[i][j][maskID];
 
-                            /* If the terrain is less than zero, that means we don't need any masking at all */
-                            if(maskingTerrain == texType){
-                                BufferedImage mask = getMask(maskingTerrain, maskID);
-                                graphics.drawImage(mask, x - tileX / 2, y, tileX, tileY, null);
+                                /* If the terrain is less than zero, that means we don't need any masking at all */
+                                if(maskingTerrain == texType){
+                                    BufferedImage mask = getMask(maskingTerrain, maskID);
+                                    graphics.drawImage(mask, x - tileX / 2, y, tileX, tileY, null);
+                                }
                             }
                         }
-                    }
 
                 /* Draw debug lines and labels */
                 if(MapPainter.DEBUG){

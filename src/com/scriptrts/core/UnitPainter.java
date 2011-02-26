@@ -151,6 +151,8 @@ public class UnitPainter {
             for(int b = 0; b < UnitGrid.SPACES_PER_TILE; b++){
                 SimpleUnit unit = grid.getUnit(i * 3 + a, j * 3 + b);
                 if(unit != null)
+                    debugPaintUnitLoc(graphics, unit, x - tileX/2, y);
+                if(unit != null && i * 3 + a == unit.getX() && j * 3 + b == unit.getY())
                     paintUnit(graphics, unit, x - tileX/2, y);
             }
 		}
@@ -324,6 +326,38 @@ public class UnitPainter {
         }
 
 		sprite.draw(graphics, xLoc, yLoc);
+	}
+
+	private void debugPaintUnitLoc(Graphics2D graphics, SimpleUnit unit, int tileLocX, int tileLocY){
+		int tileX = mapPainter.getTileWidth();
+		int tileY = mapPainter.getTileHeight();
+
+        /* Find the back point of the tile it's currently placed in */
+        Point backStartSubtile = getTileBackLocation(unit);
+
+        /* Calculate where it is based on where it started, where it's going, and how far it's gone */
+		int tileBackX = (int)(backStartSubtile.getX());  
+		int tileBackY = (int)(backStartSubtile.getY());
+
+		/* Make the back of the unit agree with the back of the tile */
+        int xLoc = tileLocX + tileBackX;
+        int yLoc = tileLocY + tileBackY;
+        Point backCorner = new Point(xLoc, yLoc);
+
+        /* Polygon around the unit tile */
+        int[] xpts = {
+            backCorner.x, backCorner.x + tileX / 6 + 2, backCorner.x, backCorner.x - tileX / 6 - 2
+        };
+        int[] ypts = {
+            backCorner.y - 2, backCorner.y + tileY / 6, backCorner.y + tileY / 3 + 2, backCorner.y + tileY / 6
+        };
+        Polygon poly = new Polygon(xpts, ypts, 4);
+
+        /* Draw half transparent polygons where the unit will go */
+        graphics.setColor(new Color(0, 0, 255, 120));
+        graphics.fillPolygon(poly);
+        graphics.setColor(Color.BLUE);
+        graphics.drawPolygon(poly);
 	}
 
     public void paintTemporaryUnit(Graphics2D graphics, Viewport viewport, SimpleUnit unit, int xLoc, int yLoc){
