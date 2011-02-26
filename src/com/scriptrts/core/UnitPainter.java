@@ -44,11 +44,11 @@ public class UnitPainter {
             }
 			/* Initialize the rider at the middle of the terrain tile (5,5), facing E.
 			 *(Direction, at the moment, doesn't change. */
-			SimpleUnit spaceship = new SimpleUnit(sprites, 3, 210, 186, Direction.East);
+			SimpleUnit spaceship = new SimpleUnit(sprites,1, 210, 186, Direction.East);
 
 
 			/* Put the unit tile in the UnitGrid (to be associated with terrain tiles)*/
-			grid.setUnit(spaceship, 210, 186);
+			grid.placeUnit(spaceship, 210, 186);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -78,7 +78,7 @@ public class UnitPainter {
         int n = mapPainter.getMap().getN() * UnitGrid.SPACES_PER_TILE;
         for(int i = 0; i < n; i++){
             for(int j = 0; j < n; j++){
-                if(grid.getUnit(i, j) != null)
+                if(grid.getUnit(i, j) != null && grid.getUnit(i, j).getX() == i && grid.getUnit(i, j).getY() == j)
                     updateUnit(i, j);
             }
         }
@@ -151,7 +151,7 @@ public class UnitPainter {
             for(int b = 0; b < UnitGrid.SPACES_PER_TILE; b++){
                 SimpleUnit unit = grid.getUnit(i * 3 + a, j * 3 + b);
                 if(unit != null)
-                    debugPaintUnitLoc(graphics, unit, x - tileX/2, y);
+                    debugPaintUnitLoc(graphics, unit, x - tileX/2, y, i * 3 + a, j * 3 + b);
                 if(unit != null && i * 3 + a == unit.getX() && j * 3 + b == unit.getY())
                     paintUnit(graphics, unit, x - tileX/2, y);
             }
@@ -328,12 +328,12 @@ public class UnitPainter {
 		sprite.draw(graphics, xLoc, yLoc);
 	}
 
-	private void debugPaintUnitLoc(Graphics2D graphics, SimpleUnit unit, int tileLocX, int tileLocY){
+	private void debugPaintUnitLoc(Graphics2D graphics, SimpleUnit unit, int tileLocX, int tileLocY, int i, int j){
 		int tileX = mapPainter.getTileWidth();
 		int tileY = mapPainter.getTileHeight();
 
         /* Find the back point of the tile it's currently placed in */
-        Point backStartSubtile = getTileBackLocation(unit);
+        Point backStartSubtile = getUnitTileBackLocation(i % 3, j % 3);
 
         /* Calculate where it is based on where it started, where it's going, and how far it's gone */
 		int tileBackX = (int)(backStartSubtile.getX());  

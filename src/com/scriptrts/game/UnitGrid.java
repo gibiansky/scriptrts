@@ -59,20 +59,19 @@ public class UnitGrid {
                 break;
         }
 
-        /* Prevent units from colliding and annihilating each other */
-        if(getUnit(unit.getX() + delX, unit.getY() + delY) != null && getUnit(unit.getX() + delX, unit.getY() + delY) != unit){
-            return false;
-        }
-
-        setUnit(null, unit.getX(), unit.getY());
+        removeUnit(unit);
         unit.setX(unit.getX() + delX);
         unit.setY(unit.getY() + delY);
-        setUnit(unit, unit.getX(), unit.getY());
+        placeUnit(unit, unit.getX(), unit.getY());
 
         /* Check if the place where it's going is taken */
         Direction nextDirection = unit.peekNextDirection();
-        if(canMove(unit, nextDirection))
-                unit.updateDirection();
+        if(canMove(unit, nextDirection)){
+            /* Change the orientation of the unit */
+            removeUnit(unit);
+            unit.updateDirection();
+            placeUnit(unit, unit.getX(), unit.getY());
+        }
         else
             unit.setDirection(null);
 
@@ -117,29 +116,35 @@ public class UnitGrid {
         }
 
         Point[] newShape = unit.getShape(nextDirection);
-        if(isEmpty(unit.getX() + delX, unit.getY() + delY))
-                return true;
+        for(Point p : newShape)
+            if(spaceTaken(unit.getX() + delX + p.x, unit.getY() + delY + p.y) 
+                    && getUnit(unit.getX() + delX + p.x, unit.getY() + delY + p.y) != unit)
+                    return false;
 
-        return false;
+        return true;
     }
 
     /**
      * Reserve a unit location for a given unit. This prevents units from attempting to move into that location.
      */
-    public void reserve(int i, int j, SimpleUnit u){
+    private void reserveUnit(int i, int j, SimpleUnit u){
+        /*
+        Point[] points = unit.getCurrentShape();
+        unit.setX(i);
+        unit.setY(j);
+
+        for(Point p : points)
+            setUnit(unit, unit.getX() + p.x, unit.getY() + p.y);
         setUnit(u, i, j);
+        */
     }
 
     /**
      * Remove any reservations on this unit spot.
      */
-    public void unreserve(int i, int j){
+    private void unreserveUnit(int i, int j){
         if(unitGrid[i][j] instanceof ReserveUnit)
             unitGrid[i][j] = null;
-    }
-
-    public boolean isEmpty(int i, int j){
-        return getUnit(i, j) == null && !(unitGrid[i][j] instanceof ReserveUnit);
     }
 
     public SimpleUnit getUnit(int i, int j){
@@ -150,11 +155,26 @@ public class UnitGrid {
     }
 
     public boolean spaceTaken(int i, int j){
-        return getUnit(i, j) != null;
+        return unitGrid[i][j] != null;
     }
 
-    public void setUnit(SimpleUnit unit, int i, int j){
+    private void setUnit(SimpleUnit unit, int i, int j){
         unitGrid[i][j] = unit;
+    }
+
+    public void placeUnit(SimpleUnit unit, int i, int j){
+        Point[] points = unit.getCurrentShape();
+        unit.setX(i);
+        unit.setY(j);
+
+        for(Point p : points)
+            setUnit(unit, unit.getX() + p.x, unit.getY() + p.y);
+    }
+
+    public void removeUnit(SimpleUnit unit){
+        Point[] points = unit.getCurrentShape();
+        for(Point p : points)
+            setUnit(null, unit.getX() + p.x, unit.getY() + p.y);
     }
 }
 
