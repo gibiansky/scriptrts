@@ -181,6 +181,10 @@ public class SimpleUnit {
         return shape.getShape(facing);
     }
 
+    public Point[] getCurrentShape(){
+        return getShape(getFacingDirection());
+    }
+
     /**
      * @return array of sprites this unit may use
      */

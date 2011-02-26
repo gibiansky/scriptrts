@@ -313,7 +313,7 @@ public class Main extends JPanel {
                 Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
                 tempUnit.setX(unitTile.x);
                 tempUnit.setY(unitTile.y);
-                unitGrid.setUnit(tempUnit, unitTile.x, unitTile.y);
+                unitGrid.placeUnit(tempUnit, unitTile.x, unitTile.y);
 
                 placingUnit = false;
             }
