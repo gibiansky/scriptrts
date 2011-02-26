@@ -59,21 +59,25 @@ public class UnitGrid {
                 break;
         }
 
+        /* Remove the unit from the map and place it's new center */
         removeUnit(unit);
         unit.setX(unit.getX() + delX);
         unit.setY(unit.getY() + delY);
-        placeUnit(unit, unit.getX(), unit.getY());
 
         /* Check if the place where it's going is taken */
         Direction nextDirection = unit.peekNextDirection();
         if(canMove(unit, nextDirection)){
             /* Change the orientation of the unit */
-            removeUnit(unit);
             unit.updateDirection();
-            placeUnit(unit, unit.getX(), unit.getY());
+
+            /* Put a reservation on the tiles which the unit will occupy later */
+            reserveNextUnitLocation(unit, unit.getDirection(), unit.peekNextDirection());
         }
-        else
+        else 
             unit.setDirection(null);
+
+        /* Place the unit, in its new orientation, on the map */
+        placeUnit(unit, unit.getX(), unit.getY());
 
         return true;
     }
@@ -117,8 +121,7 @@ public class UnitGrid {
 
         Point[] newShape = unit.getShape(nextDirection);
         for(Point p : newShape)
-            if(spaceTaken(unit.getX() + delX + p.x, unit.getY() + delY + p.y) 
-                    && getUnit(unit.getX() + delX + p.x, unit.getY() + delY + p.y) != unit)
+            if(spaceTakenFor(unit.getX() + delX + p.x, unit.getY() + delY + p.y, unit))
                     return false;
 
         return true;
@@ -127,24 +130,59 @@ public class UnitGrid {
     /**
      * Reserve a unit location for a given unit. This prevents units from attempting to move into that location.
      */
-    private void reserveUnit(int i, int j, SimpleUnit u){
-        /*
-        Point[] points = unit.getCurrentShape();
-        unit.setX(i);
-        unit.setY(j);
+    private void reserveNextUnitLocation(SimpleUnit unit, Direction moving, Direction turnAfterMove){
+        /* Calculate location of next tile */
+        int delX = 0, delY = 0;
+        switch(moving){
+            case North:
+                delY = 1; 
+                break;
+            case Northeast:
+                delX = delY = 1; 
+                break;
+            case East:
+                delX = 1; 
+                break;
+            case Southeast:
+                delX = 1;
+                delY = -1; 
+                break;
+            case South:
+                delY = -1;
+                break;
+            case Southwest:
+                delY = -1;
+                delX = -1;
+                break;
+            case West:
+                delX = -1; 
+                break;
+            case Northwest:
+            default:
+                delX = -1;
+                delY = 1;
+                break;
+        }
 
-        for(Point p : points)
-            setUnit(unit, unit.getX() + p.x, unit.getY() + p.y);
-        setUnit(u, i, j);
-        */
+        /* Reserve the location to which the unit will move */
+        if(moving != null){
+            /* Reserve locations */
+            Point[] points = unit.getShape(moving);
+            for(Point p : points)
+                reserveLoc(unit, unit.getX() + p.x + delX, unit.getY() + p.y + delY);
+        }
+
+        /* Reserve the location to which the unit will turn after moving */
+        if(turnAfterMove != null){
+            /* Reserve locations */
+            Point[] points = unit.getShape(turnAfterMove);
+            for(Point p : points)
+                reserveLoc(unit, unit.getX() + p.x + delX, unit.getY() + p.y + delY);
+        }
     }
 
-    /**
-     * Remove any reservations on this unit spot.
-     */
-    private void unreserveUnit(int i, int j){
-        if(unitGrid[i][j] instanceof ReserveUnit)
-            unitGrid[i][j] = null;
+    private void reserveLoc(SimpleUnit unit, int i, int j){
+        unitGrid[i][j] = new ReserveUnit(unit);
     }
 
     public SimpleUnit getUnit(int i, int j){
@@ -154,8 +192,16 @@ public class UnitGrid {
         return unitGrid[i][j];
     }
 
-    public boolean spaceTaken(int i, int j){
-        return unitGrid[i][j] != null;
+    public boolean spaceTakenFor(int i, int j, SimpleUnit unit){
+        SimpleUnit u = unitGrid[i][j];
+        if(u == null)
+            return false;
+        if(u == unit)
+            return false;
+        if(u instanceof ReserveUnit && ((ReserveUnit) u).getOriginal() == unit)
+            return false;
+
+        return true;
     }
 
     private void setUnit(SimpleUnit unit, int i, int j){
@@ -169,6 +215,10 @@ public class UnitGrid {
 
         for(Point p : points)
             setUnit(unit, unit.getX() + p.x, unit.getY() + p.y);
+    }
+
+    public boolean reserved(int i, int j){
+        return unitGrid[i][j] instanceof ReserveUnit;
     }
 
     public void removeUnit(SimpleUnit unit){
@@ -188,5 +238,9 @@ class ReserveUnit extends SimpleUnit {
 
     public boolean isPassable(SimpleUnit u){
         return reserve.isPassable(u);
+    }
+
+    public SimpleUnit getOriginal(){
+        return reserve;
     }
 }
