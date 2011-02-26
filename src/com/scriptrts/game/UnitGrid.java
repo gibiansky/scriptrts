@@ -23,7 +23,11 @@ public class UnitGrid {
     public boolean moveUnitOneTile(SimpleUnit unit){
         Direction d = unit.getDirection();
         if(d == null) {
-            unit.updateDirection();
+            Direction nextDirection = unit.peekNextDirection();
+            if(canMove(unit, nextDirection))
+                unit.updateDirection();
+            else
+                unit.clearPath();
             return false;
         }
 
@@ -73,8 +77,10 @@ public class UnitGrid {
             /* Put a reservation on the tiles which the unit will occupy later */
             reserveNextUnitLocation(unit, unit.getDirection(), unit.peekNextDirection());
         }
-        else 
+        else {
             unit.setDirection(null);
+            unit.clearPath();
+        }
 
         /* Place the unit, in its new orientation, on the map */
         placeUnit(unit, unit.getX(), unit.getY());

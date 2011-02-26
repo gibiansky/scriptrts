@@ -18,7 +18,7 @@ public class SimpleUnit {
     private double animCounter = 0;
     private UnitShape shape;
 
-    public SimpleUnit(Sprite[] sprites, int speed, int x, int y, Direction direction) {
+    public SimpleUnit(Sprite[] sprites, int speed, int x, int y, Direction direction, boolean shaped) {
         this.sprites = sprites;
         this.speed = speed;
         this.x = x;
@@ -27,10 +27,15 @@ public class SimpleUnit {
         previousDirection = direction;
         state = SpriteState.Idle;
 
-        shape = UnitShape.SHAPE_2x1;
+        if(shaped)
+            shape = UnitShape.SHAPE_2x1;
+        else
+            shape = UnitShape.SHAPE_1x1;
 
-        /* LOLLER CATS */
+        /* MAKE A RANDOM WEIRD PATH (TESTING!!!) */
+        boolean circular = true;
         for(int i = 0; i < 50; i++){
+            if(circular){
             if(i % 2 == 0){
                 addToPath(Direction.East);
                 addToPath(Direction.East);
@@ -67,7 +72,22 @@ public class SimpleUnit {
                 addToPath(Direction.Southeast);
                 addToPath(Direction.Southeast);
             }
+            }
+            else {
+                addToPath(Direction.East);
+                addToPath(Direction.East);
+                addToPath(Direction.East);
+                addToPath(Direction.East);
+                addToPath(Direction.East);
+                addToPath(Direction.East);
+                addToPath(Direction.East);
+                addToPath(Direction.East);
+            }
         }
+    }
+
+    public SimpleUnit(Sprite[] sprites, int speed, int x, int y, Direction direction) {
+        this(sprites, speed, x, y, direction, true);
     }
 
     public boolean isPassable(SimpleUnit u){
@@ -150,6 +170,10 @@ public class SimpleUnit {
         this.path =  path;
         if(direction == null && path != null && path.peek() != null)
             direction = path.poll();
+    }
+
+    public void clearPath(){
+        path.clear();
     }
 
     /**
@@ -318,6 +342,27 @@ class UnitShape {
                  new Point[]{new Point(0,0), new Point(1, -1)}
             }
             );
+
+    static final UnitShape SHAPE_1x1 = new UnitShape(
+        new Point[][]{
+            /* North */
+            new Point[]{new Point(0,0)},
+             /* Northeast */
+             new Point[]{new Point(0,0)},
+             /* East */
+             new Point[]{new Point(0,0)},
+             /* Southeast */
+             new Point[]{new Point(0,0)},
+             /* South */
+             new Point[]{new Point(0,0)},
+             /* Southwest */
+             new Point[]{new Point(0,0)},
+             /* West */
+             new Point[]{new Point(0,0)},
+             /* Northwest */
+             new Point[]{new Point(0,0)}
+        }
+        );
 
     public UnitShape(Point[][] shps){
         super();

@@ -228,6 +228,7 @@ public class Main extends JPanel {
         manager.registerKeyCode(KeyEvent.VK_CONTROL);
         manager.registerKeyCode(KeyEvent.VK_S);
         manager.registerKeyCode(KeyEvent.VK_W);
+        manager.registerKeyCode(KeyEvent.VK_D);
 
         /* Done with initialization */
         initialized = true;
@@ -266,9 +267,16 @@ public class Main extends JPanel {
             }
         }
 
-        if(manager.getKeyCodeFlag(KeyEvent.VK_S)){
+        if(manager.getKeyCodeFlag(KeyEvent.VK_D) || manager.getKeyCodeFlag(KeyEvent.VK_S)){
             placingUnit = !placingUnit;
+            int uSpeed;
+            if(manager.getKeyCodeFlag(KeyEvent.VK_D))
+                uSpeed = 0;
+            else
+                uSpeed = 1;
+
             manager.clearKeyCodeFlag(KeyEvent.VK_S);
+            manager.clearKeyCodeFlag(KeyEvent.VK_D);
 
             Point point = manager.getMouseLocation();
             Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
@@ -283,7 +291,7 @@ public class Main extends JPanel {
                     sprites[d.ordinal()]  = new Sprite(img, 0.3 * totalZoom, 87, 25);
                 }
 
-                SimpleUnit spaceship = new SimpleUnit(sprites, 3, 0, 0, Direction.East);
+                SimpleUnit spaceship = new SimpleUnit(sprites, uSpeed, 0, 0, Direction.East, true);
                 tempUnit = spaceship;
             } catch (Exception e) {
                 e.printStackTrace();

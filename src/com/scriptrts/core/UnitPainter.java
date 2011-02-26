@@ -104,13 +104,7 @@ public class UnitPainter {
         /* Move it however many tiles it wants to be moved */
         while(tilesMoved > 0){
             boolean moveSucceeded = grid.moveUnitOneTile(unit);
-            if(moveSucceeded)
-                tilesMoved--;
-            else {
-                unit.incrementAnimationCounter(tilesMoved - subtilesMovedPerFrame);
-                tilesMoved = 0;
-            }
-
+            tilesMoved--;
         }
     }
 
@@ -150,16 +144,19 @@ public class UnitPainter {
 		for(int a = 0; a < UnitGrid.SPACES_PER_TILE; a++){
             for(int b = 0; b < UnitGrid.SPACES_PER_TILE; b++){
                 SimpleUnit unit = grid.getUnit(i * 3 + a, j * 3 + b);
-                if(unit != null)
-                    debugPaintUnitLoc(graphics, unit, x - tileX/2, y, i * 3 + a, j * 3 + b);
-                if(grid.reserved(i * 3 + a, j * 3 + b))
-                    debugPaintUnitLoc2(graphics, unit, x - tileX/2, y, i * 3 + a, j * 3 + b);
+                if(UnitPainter.DEBUG){
+                    if(unit != null)
+                        debugPaintUnitLoc(graphics, unit, x - tileX/2, y, i * 3 + a, j * 3 + b);
+                    if(grid.reserved(i * 3 + a, j * 3 + b))
+                        debugPaintUnitLoc2(graphics, unit, x - tileX/2, y, i * 3 + a, j * 3 + b);
+                }
+
                 if(unit != null && i * 3 + a == unit.getX() && j * 3 + b == unit.getY())
                     paintUnit(graphics, unit, x - tileX/2, y);
             }
 		}
 
-        if(UnitPainter.DEBUG){
+        if(UnitPainter.DEBUG && false){
             graphics.setColor(Color.green);
             for(int a = 0; a < UnitGrid.SPACES_PER_TILE; a++)
                 for(int b = 0; b < UnitGrid.SPACES_PER_TILE; b++) {
@@ -330,6 +327,7 @@ public class UnitPainter {
 		sprite.draw(graphics, xLoc, yLoc);
 	}
 
+    /* DEBUG PAINT */
 	private void debugPaintUnitLoc(Graphics2D graphics, SimpleUnit unit, int tileLocX, int tileLocY, int i, int j){
 		int tileX = mapPainter.getTileWidth();
 		int tileY = mapPainter.getTileHeight();
@@ -361,7 +359,6 @@ public class UnitPainter {
         graphics.setColor(Color.BLUE);
         graphics.drawPolygon(poly);
 	}
-
 	private void debugPaintUnitLoc2(Graphics2D graphics, SimpleUnit unit, int tileLocX, int tileLocY, int i, int j){
 		int tileX = mapPainter.getTileWidth();
 		int tileY = mapPainter.getTileHeight();
@@ -393,6 +390,7 @@ public class UnitPainter {
         graphics.setColor(Color.BLUE);
         graphics.drawPolygon(poly);
 	}
+
     public void paintTemporaryUnit(Graphics2D graphics, Viewport viewport, SimpleUnit unit, int xLoc, int yLoc){
         /* Draw the place it will snap to */
         Point pointOnScreen = new Point(xLoc, yLoc);
