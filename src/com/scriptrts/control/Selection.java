@@ -1,6 +1,6 @@
 package com.scriptrts.control;
 
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Collection;
 
 import com.scriptrts.game.*;
@@ -8,7 +8,7 @@ import com.scriptrts.game.*;
 public class Selection {
 
     /* Inner container */
-    private ArrayList<SimpleUnit> objects = new ArrayList<SimpleUnit>(10);
+    private Set<SimpleUnit> objects = new HashSet<SimpleUnit>();
 
     public Selection(){
         super();

@@ -229,6 +229,7 @@ public class Main extends JPanel {
         manager.registerKeyCode(KeyEvent.VK_S);
         manager.registerKeyCode(KeyEvent.VK_W);
         manager.registerKeyCode(KeyEvent.VK_D);
+        manager.registerKeyCode(KeyEvent.VK_SHIFT);
 
         /* Done with initialization */
         initialized = true;
@@ -360,10 +361,12 @@ public class Main extends JPanel {
 
             SimpleUnit[] selectedUnits = unitPainter.getUnitsInRect(topLeftSelection, bottomRightSelection, viewport);
 
-            for(SimpleUnit u : currentSelection.getCollection()){
-                u.deselect();
+            if(!manager.getKeyCodeFlag(KeyEvent.VK_SHIFT)){
+                for(SimpleUnit u : currentSelection.getCollection()){
+                    u.deselect();
+                }
+                currentSelection.clear();
             }
-            currentSelection.clear();
             for(SimpleUnit unit : selectedUnits){
                 unit.select();
                 currentSelection.add(unit);
