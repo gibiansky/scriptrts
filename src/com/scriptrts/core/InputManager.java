@@ -2,6 +2,7 @@ package com.scriptrts.core;
 
 import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -46,8 +47,12 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     /* Mouse methods */
     private boolean mouseMovement = false;
     private Point mouseLocation = new Point(0, 0);
-    private boolean mousePressed = false;
-    private boolean mouseClicked = false;
+
+    private boolean mousePressedRight = false;
+    private boolean mouseClickedRight = false;
+    private boolean mousePressedLeft = false;
+    private boolean mouseClickedLeft = false;
+
     private boolean mouseBeingDragged = false;
     private int mouseWheelScroll = 0;
 
@@ -66,13 +71,33 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     }
 
     public boolean getMouseClicked(){
-        boolean ret = mouseClicked;
-        mouseClicked = false;
+        boolean ret = mouseClickedRight || mouseClickedLeft;
+        mouseClickedRight = mouseClickedLeft = false;
         return ret;
     }
     
+    public boolean getRightMouseClicked(){
+        boolean ret = mouseClickedRight;
+        mouseClickedRight = false;
+        return ret;
+    }
+
+    public boolean getLeftMouseClicked(){
+        boolean ret = mouseClickedLeft;
+        mouseClickedLeft = false;
+        return ret;
+    }
+
     public boolean getMouseDown(){
-        return mousePressed;
+        return mousePressedRight || mousePressedLeft;
+    }
+
+    public boolean getLeftMouseDown(){
+        return mousePressedLeft;
+    }
+
+    public boolean getRightMouseDown(){
+        return mousePressedRight;
     }
 
     public int getMouseScrollDistance(){
@@ -107,17 +132,27 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     }
 
     public void mouseClicked(MouseEvent mouse){
-        mouseClicked = true;
+        if(mouse.getButton() == MouseEvent.BUTTON1)
+            mouseClickedLeft = true;
+        else if(mouse.getButton() == MouseEvent.BUTTON3)
+            mouseClickedRight = true;
         mouseLocation.x = mouse.getX();
         mouseLocation.y = mouse.getY();
     } 
     public void mousePressed(MouseEvent mouse){
-        mousePressed = true;
+        if(mouse.getButton() == MouseEvent.BUTTON1)
+            mousePressedLeft = true;
+        else if(mouse.getButton() == MouseEvent.BUTTON3)
+            mousePressedRight = true;
+        System.out.println(mousePressedLeft);
         mouseLocation.x = mouse.getX();
         mouseLocation.y = mouse.getY();
     }
     public void mouseReleased(MouseEvent mouse){
-        mousePressed = false;
+        if(mouse.getButton() == MouseEvent.BUTTON1)
+            mousePressedLeft = false;
+        else if(mouse.getButton() == MouseEvent.BUTTON3)
+            mousePressedRight = false;
         mouseBeingDragged = false;
         mouseLocation.x = mouse.getX();
         mouseLocation.y = mouse.getY();

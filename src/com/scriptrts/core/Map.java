@@ -7,6 +7,7 @@ public class Map {
 	private TerrainType[][] tileArray;
 	private ResourceDensity density;
 	private int length;
+    private java.util.Random random = new java.util.Random();
 
 	public Map(int n, ResourceDensity d) {
 		this.n = n;
@@ -51,7 +52,7 @@ public class Map {
 		int[] corners = {0, n-1};
 		for(int i : corners)
 			for(int j : corners)
-				heightArray[i][j] = 2 * Math.random() - 1;
+				heightArray[i][j] = 2 * random.nextDouble() - 1;
 		length = n-1;
 		int origLength = length;
 			
@@ -63,7 +64,7 @@ public class Map {
 			for(int i = 0; i < n - length; i += length){
 				for(int j = 0; j < n - length; j += length){
 					//middle of square is the average of the four corners
-					heightArray[i + length/2][j + length/2] = d * (2 * Math.random() - 1) + (heightArray[i][j] + heightArray[i][j + length] + heightArray[i + length][j] + heightArray[i + length][j + length])/4;
+					heightArray[i + length/2][j + length/2] = d * (2 * random.nextDouble() - 1) + (heightArray[i][j] + heightArray[i][j + length] + heightArray[i + length][j] + heightArray[i + length][j + length])/4;
 				}
 			}
 			
@@ -71,31 +72,25 @@ public class Map {
 			//first loop through edges
 			for(int i = 0; i < n - length; i += length){
 				//top edge
-				heightArray[i + length/2][0] = d * (2 * Math.random() - 1) + (heightArray[i][0] + heightArray[i + length][0] + heightArray[i + length/2][length/2])/3;
+				heightArray[i + length/2][0] = d * (2 * random.nextDouble() - 1) + (heightArray[i][0] + heightArray[i + length][0] + heightArray[i + length/2][length/2])/3;
 				//bottom edge
-				heightArray[i + length/2][n-1] = d * (2 * Math.random() - 1) + (heightArray[i][n-1] + heightArray[i + length][n-1] + heightArray[i + length/2][n-1 - length/2])/3;
+				heightArray[i + length/2][n-1] = d * (2 * random.nextDouble() - 1) + (heightArray[i][n-1] + heightArray[i + length][n-1] + heightArray[i + length/2][n-1 - length/2])/3;
 				//left edge
-				heightArray[0][i + length/2] = d * (2 * Math.random() - 1) + (heightArray[0][i] + heightArray[0][i + length] + heightArray[length/2][i + length/2])/3;
+				heightArray[0][i + length/2] = d * (2 * random.nextDouble() - 1) + (heightArray[0][i] + heightArray[0][i + length] + heightArray[length/2][i + length/2])/3;
 				//right edge
-				heightArray[n-1][i + length/2] = d * (2 * Math.random() - 1) + (heightArray[n-1][i] + heightArray[n-1][i + length] + heightArray[n-1 - length/2][i + length/2])/3;
+				heightArray[n-1][i + length/2] = d * (2 * random.nextDouble() - 1) + (heightArray[n-1][i] + heightArray[n-1][i + length] + heightArray[n-1 - length/2][i + length/2])/3;
 			}
 			
 			//then loop through middle points
 			for(int i = length/2; i < n - length/2; i += length/2){
 				for(int j = i % length; j < n - length; j += length){
-					heightArray[i][j + length/2] = d * (2 * Math.random() - 1) + (heightArray[i][j] + heightArray[i - length/2][j + length/2] + heightArray[i + length/2][j + length/2] + heightArray[i][j + length])/4;
+					heightArray[i][j + length/2] = d * (2 * random.nextDouble() - 1) + (heightArray[i][j] + heightArray[i - length/2][j + length/2] + heightArray[i + length/2][j + length/2] + heightArray[i][j + length])/4;
 				}
 			}
 			length /= 2;
 		}
 		populateTiles3();
 		
-		/*for(int i = 0; i < heightArray.length; i++){
-			for(int j = 0; j < heightArray.length; j++){
-				System.out.print(heightArray[i][j] + " ");
-			}
-			System.out.println();
-		}*/
 	}
 	
 	/**
@@ -111,7 +106,7 @@ public class Map {
 		for(TerrainType t : TerrainType.values()) {
 			for (int i = 0; i < n; i++)
 				for(int j = 0; j < n; j++)
-					if(Math.random() < param) {
+					if(random.nextDouble() < param) {
 						tileArray[i][j] = t;
 						int x = i, y = j;
 						for (int k = 0; k < n; k++)
