@@ -144,7 +144,6 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
             mousePressedLeft = true;
         else if(mouse.getButton() == MouseEvent.BUTTON3)
             mousePressedRight = true;
-        System.out.println(mousePressedLeft);
         mouseLocation.x = mouse.getX();
         mouseLocation.y = mouse.getY();
     }

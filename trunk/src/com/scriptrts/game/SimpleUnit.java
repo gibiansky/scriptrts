@@ -17,6 +17,7 @@ public class SimpleUnit {
     private Queue<Direction> path = new LinkedList<Direction>();
     private double animCounter = 0;
     private UnitShape shape;
+    private Point destination;
 
     public SimpleUnit(Sprite[] sprites, int speed, int x, int y, Direction direction, boolean shaped) {
         this.sprites = sprites;
@@ -92,6 +93,14 @@ public class SimpleUnit {
 
     public boolean isPassable(SimpleUnit u){
         return false;
+    }
+
+    public Point getDestination() {
+        return destination;
+    }
+
+    public void setDestination(Point p){
+        destination = p;
     }
 
     public boolean isSelected(){

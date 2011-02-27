@@ -3,6 +3,7 @@ package com.scriptrts.core;
 import java.awt.*;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.awt.Point;
 
@@ -605,6 +606,32 @@ public class UnitPainter {
             }
 
         return null;
+    }
+
+    private Image destinationImage = null;
+    /* Paint the destination image at the given location */
+    public void paintDestination(Graphics2D graphics, int i, int j){
+        if(destinationImage == null)
+            try {
+            destinationImage = ResourceManager.loadImage("resource/Destination.png", 50, 50);
+            } catch (IOException io) {
+                io.printStackTrace();
+            }
+
+        int iMap = i / 3;
+        int jMap = j / 3;
+		int tileX = mapPainter.getTileWidth();
+		int tileY = mapPainter.getTileHeight();
+        int x = (iMap+jMap)*tileX/2;
+        int y = tileY * mapPainter.getMap().getN() / 2 + (iMap - jMap - 1) * tileY / 2;
+
+        /* Indices inside the map tile */
+        int a = i % 3;
+        int b = j % 3;
+        Point backCorner = getUnitTileBackLocation(a, b);
+        backCorner.translate(x, y);
+
+        graphics.drawImage(destinationImage, backCorner.x - destinationImage.getWidth(null)/2, backCorner.y - destinationImage.getHeight(null)/2, null);
     }
 
 }

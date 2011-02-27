@@ -308,7 +308,6 @@ public class Main extends JPanel {
 
         if(placingUnit && manager.getMouseMoved()){
             Point point = manager.getMouseLocation();
-            Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
             tempUnitX = point.x;
             tempUnitY = point.y;
         }
@@ -429,6 +428,15 @@ public class Main extends JPanel {
                 totalZoom /= zoom;
         }
 
+        /* Clicking (to set unit destination) */
+        if(manager.getRightMouseClicked()){
+            Point point = manager.getMouseLocation();
+            Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
+            for(SimpleUnit unit : currentSelection.getCollection()){
+                unit.setDestination(unitTile);
+            }
+        }
+
         /* Scrolling */
         int increment = 30;
         if(manager.getKeyCodeFlag(KeyEvent.VK_RIGHT)) 
@@ -466,6 +474,26 @@ public class Main extends JPanel {
 
         /* Paint the map using the map painter */
         mapPainter.paintMap(graphics, viewport);
+
+        /* Paint the destination of all current selected units, if they share one */
+        if(currentSelection.getCollection().size() != 0){
+            /* Check if units share a destination */
+            boolean shareDestination = true;
+            Point destination = null;
+            for(SimpleUnit unit : currentSelection.getCollection()){
+                if(destination == null)
+                    destination = unit.getDestination();
+                else
+                    if(!destination.equals(unit.getDestination())){
+                        shareDestination = false;
+                        break;
+                    }
+            }
+
+            if(shareDestination && destination != null){
+                unitPainter.paintDestination(graphics, destination.x, destination.y);
+            }
+        }
 
         /* On top of the map, paint all the units and buildings */
         unitPainter.paintUnits(graphics, viewport);
