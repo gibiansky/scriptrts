@@ -299,10 +299,11 @@ public class Main extends JPanel {
             }
         }
 
-        if(manager.getMouseDown() && !prev){
+        if(manager.getLeftMouseDown() && !prev){
             /* Get mouse location */
             Point point = manager.getMouseLocation();
             topLeftSelection = point;
+
         }
 
         if(placingUnit && manager.getMouseMoved()){
@@ -313,7 +314,7 @@ public class Main extends JPanel {
         }
 
         /* Mouse released, but was never dragged */
-        if(!manager.getMouseDown() && prev && bottomRightSelection == null){
+        if(!manager.getLeftMouseDown() && prev && bottomRightSelection == null){
             /* Get mouse location */
             Point point = manager.getMouseLocation();
 
@@ -361,7 +362,7 @@ public class Main extends JPanel {
 
             SimpleUnit[] selectedUnits = unitPainter.getUnitsInRect(topLeftSelection, bottomRightSelection, viewport);
 
-            if(!manager.getKeyCodeFlag(KeyEvent.VK_SHIFT)){
+            if(!manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
                 for(SimpleUnit u : currentSelection.getCollection()){
                     u.deselect();
                 }
@@ -371,17 +372,13 @@ public class Main extends JPanel {
                 unit.select();
                 currentSelection.add(unit);
             }
-        } else if(!manager.getMouseDown()){
+        } else if(!manager.getLeftMouseDown()){
             topLeftSelection = null;
             bottomRightSelection = null;
         }
 
 
-        prev = manager.getMouseDown();
-
-        /* Detect unit commands */
-        if(manager.getKeyCodeFlag(KeyEvent.VK_W)) {
-        }
+        prev = manager.getLeftMouseDown();
 
         /* Zooming */
         if(manager.getMouseScrolled()){
