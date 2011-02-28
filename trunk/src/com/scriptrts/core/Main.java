@@ -250,7 +250,9 @@ public class Main extends JPanel {
                 Script.exec("sys.path.append('" + path + "')");
 
             /* Our own initialization script */
-            System.out.print(Script.exec("import init"));
+            String[] initModules = {"init", "selection", "map"};
+            for(String module : initModules)
+                System.out.print(Script.exec("import " + module));
 
             /* Custom init scripts */
             for(String script : pyScripts)
@@ -431,6 +433,9 @@ public class Main extends JPanel {
                 if(!manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
                     Selection.current().clear();
                 }
+                for(SimpleUnit unit : selectedUnits)
+                    Selection.current().add(unit);
+
             } else if(!manager.getLeftMouseDown()){
                 topLeftSelection = null;
                 bottomRightSelection = null;
@@ -443,7 +448,7 @@ public class Main extends JPanel {
             if(manager.getRightMouseClicked()){
                 Point point = manager.getMouseLocation();
                 Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
-                for(SimpleUnit unit : Selection.current().getCollection()){
+                for(SimpleUnit unit : Selection.current().getList()){
                     unit.setDestination(unitTile);
                 }
             }
@@ -493,11 +498,11 @@ public class Main extends JPanel {
         mapPainter.paintMap(graphics, viewport);
 
         /* Paint the destination of all current selected units, if they share one */
-        if(Selection.current().getCollection().size() != 0){
+        if(Selection.current().getList().size() != 0){
             /* Check if units share a destination */
             boolean shareDestination = true;
             Point destination = null;
-            for(SimpleUnit unit : Selection.current().getCollection()){
+            for(SimpleUnit unit : Selection.current().getList()){
                 if(destination == null)
                     destination = unit.getDestination();
                 else

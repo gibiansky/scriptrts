@@ -1,14 +1,13 @@
 package com.scriptrts.control;
 
 import java.util.*;
-import java.util.Collection;
 
 import com.scriptrts.game.*;
 
 public class Selection {
 
     /* Inner container */
-    private Set<SimpleUnit> objects = new HashSet<SimpleUnit>();
+    private ArrayList<SimpleUnit> objects = new ArrayList<SimpleUnit>();
 
     /* Static selections */
     private static Selection current = new Selection();
@@ -42,18 +41,20 @@ public class Selection {
     /* Combine selections */
     public static Selection combine(Selection one, Selection two){
         Selection selection = new Selection();
-        selection.add(one.getCollection());
-        selection.add(two.getCollection());
+        selection.add(one.getList());
+        selection.add(two.getList());
         return selection;
     }
 
     /* Add to a selection */
     public void add(SimpleUnit unit){
-        objects.add(unit);
+        if(!objects.contains(unit))
+            objects.add(unit);
     }
 
     public void add(Collection<SimpleUnit> units){
-        objects.addAll(units);
+        for(SimpleUnit u : units)
+            add(u);
     }
 
     public void remove(SimpleUnit unit){
@@ -64,7 +65,7 @@ public class Selection {
         objects.clear();
     }
 
-    public Collection<SimpleUnit> getCollection(){
+    public List<SimpleUnit> getList(){
         return objects;
     }
 
