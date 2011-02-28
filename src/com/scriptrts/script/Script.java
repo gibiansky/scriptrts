@@ -18,12 +18,11 @@ public class Script {
     }
 
     public static String exec(String cmd){
+        StringWriter writer = new StringWriter();
+        StringWriter errWriter = new StringWriter();
         try {
             /* Get the output as a string */
             ScriptContext context = engine.getContext();
-
-            StringWriter writer = new StringWriter();
-            StringWriter errWriter = new StringWriter();
             context.setWriter(writer);
             context.setErrorWriter(errWriter);
 
@@ -32,11 +31,9 @@ public class Script {
 
             /* Return the output string */
             writer.flush();
-            errWriter.flush();
-            String ret = writer.toString();
-            return ret;
+            return writer.toString();
         } catch (Exception e) {
-            return "<Error Occurred>";
+            return e.getMessage().trim() + "\n";
         } 
     }
 }
