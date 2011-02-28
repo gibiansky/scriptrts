@@ -16,6 +16,7 @@ public class Console extends JPanel {
     private static int charWidth = -1;
     private static int charHeight = -1;
     private JTextField console;
+    private JScrollPane areaScrollPane;
     private JTextArea output;
 
     public static boolean calibrated(){
@@ -53,7 +54,7 @@ public class Console extends JPanel {
         output.setBackground(new Color(0, 0, 0, 0));
         output.setForeground(gray);
 
-        JScrollPane areaScrollPane = new JScrollPane(output);
+        areaScrollPane = new JScrollPane(output);
         areaScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         areaScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         Dimension dim = output.getPreferredSize();
@@ -96,17 +97,30 @@ public class Console extends JPanel {
         output.setColumns(columns);
         output.setRows(rows);
 
-        Dimension oDim = output.getPreferredSize();
-        output.setBounds(0, 0, oDim.width, oDim.height);
+        Dimension dim = output.getPreferredSize();
+        dim.height += 5;
+        areaScrollPane.setPreferredSize(dim);
+
+        Dimension oDim = areaScrollPane.getPreferredSize();
+        areaScrollPane.setBounds(0, 0, oDim.width, oDim.height);
         Dimension cDim = console.getPreferredSize();
         console.setBounds(0, oDim.height, cDim.width, cDim.height);
+
+        updateOutput();
     }
 
     private void runCommand(){
         String commandText = console.getText();
         console.setText("");
 
+        boolean ident = true;
+        for(int i = 0; i < commandText.length(); i++)
+            if(!Character.isJavaIdentifierPart(commandText.charAt(i)))
+                ident = false;
+
         history.add(commandText);
+        if(ident)
+            commandText = "print " + commandText;
         outputs.add(executeScript(commandText));
 
         updateOutput();
@@ -135,7 +149,7 @@ public class Console extends JPanel {
             output.setText(outputText);
         }
 
-        int lines = output.getText().split(" ").length;
+        int lines = output.getText().split("\n").length;
         if(lines > output.getRows()) {
             output.setRows(lines);
         }
