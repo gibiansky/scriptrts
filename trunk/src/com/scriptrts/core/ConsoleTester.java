@@ -60,15 +60,15 @@ public class ConsoleTester extends JFrame implements KeyListener {
 	}
 
 	public void keyPressed(KeyEvent evt) {
-		if(evt.getKeyCode() == KeyEvent.VK_BACK_QUOTE) {
+		if(evt.getKeyCode() == KeyEvent.VK_BACK_QUOTE)
 			isConsoleDown = ! isConsoleDown;
-			return;
-		}
-		int asciiVal = (int) evt.getKeyChar();
-		if(isConsoleDown && asciiVal <= 125 && asciiVal >= 32) {
-			String charEntered = evt.getKeyChar() + "";
-			System.out.println(charEntered);
-		}
+        else {
+            int asciiVal = (int) evt.getKeyChar();
+            if(isConsoleDown && asciiVal <= 125 && asciiVal >= 32) {
+                String charEntered = evt.getKeyChar() + "";
+                System.out.println(charEntered);
+            }
+        }
 	}
 
 	public void keyReleased(KeyEvent evt) {
