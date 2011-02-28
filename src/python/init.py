@@ -1,1 +1,1 @@
-print "Hello"
+print "Initializing core module..."
