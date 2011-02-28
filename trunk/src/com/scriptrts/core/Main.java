@@ -16,6 +16,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.util.Timer;
+import java.util.ArrayList;
 import java.util.TimerTask;
 
 import javax.swing.*;
@@ -43,6 +44,11 @@ public class Main extends JPanel {
     private UnitGrid unitGrid;
     private UnitPainter unitPainter;
     private Map map;
+
+    /* Interpreter setup data */
+    private static ArrayList<String> pyPaths = new ArrayList<String>();
+    private static ArrayList<String> pyScripts = new ArrayList<String>();
+    private static ArrayList<String> pyExprs = new ArrayList<String>();
 
     /* Unit temp. controlled */
     SimpleUnit unit;
@@ -75,6 +81,11 @@ public class Main extends JPanel {
         CmdLineParser.Option noUnitDebugOpt = parser.addBooleanOption("nounitdebug");
         CmdLineParser.Option noMaskOpt = parser.addBooleanOption("nomasking");
 
+        /* Script options */
+        CmdLineParser.Option scriptOpt = parser.addStringOption('m', "module");
+        CmdLineParser.Option pathOpt = parser.addStringOption('p', "path");
+        CmdLineParser.Option exprOpt = parser.addStringOption('e', "eval");
+
         /* Parse */
         try {
             parser.parse(args);
@@ -82,6 +93,29 @@ public class Main extends JPanel {
         catch ( CmdLineParser.OptionException e ) {
             System.err.println(e.getMessage());
             System.exit(2);
+        }
+
+        /* Collect paths, scripts, expressions to plug in to the intepreter */
+        while(true){
+            String path = (String) parser.getOptionValue(pathOpt);
+            if(path == null)
+                break;
+            else
+                pyPaths.add(path);
+        }
+        while(true){
+            String script = (String) parser.getOptionValue(scriptOpt);
+            if(script == null)
+                break;
+            else
+                pyScripts.add(script);
+        }
+        while(true){
+            String expr = (String) parser.getOptionValue(exprOpt);
+            if(expr == null)
+                break;
+            else
+                pyExprs.add(expr);
         }
 
         /* Interpret arguments */
@@ -210,7 +244,21 @@ public class Main extends JPanel {
             Script.initialize();
             Script.exec("import sys");
             Script.exec("sys.path.append('./src/python')");
-            Script.exec("import init");
+
+            /* Add paths */
+            for(String path : pyPaths)
+                Script.exec("sys.path.append('" + path + "')");
+
+            /* Our own initialization script */
+            System.out.print(Script.exec("import init"));
+
+            /* Custom init scripts */
+            for(String script : pyScripts)
+                System.out.print(Script.exec("import " + script));
+
+            /* Custom init expressions */
+            for(String expr : pyExprs)
+                System.out.print(Script.exec(expr));
         }
 
         /* Create map painter */
@@ -383,9 +431,6 @@ public class Main extends JPanel {
                 if(!manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
                     Selection.current().clear();
                 }
-
-                for(SimpleUnit unit : selectedUnits)
-                    Selection.current().add(unit);
             } else if(!manager.getLeftMouseDown()){
                 topLeftSelection = null;
                 bottomRightSelection = null;
