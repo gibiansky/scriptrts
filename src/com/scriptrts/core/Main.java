@@ -43,7 +43,6 @@ public class Main extends JPanel {
     private UnitGrid unitGrid;
     private UnitPainter unitPainter;
     private Map map;
-    private Selection currentSelection = new Selection();
 
     /* Unit temp. controlled */
     SimpleUnit unit;
@@ -209,7 +208,9 @@ public class Main extends JPanel {
         /* Initialize scripting engine */
         if(!Script.initialized()) {
             Script.initialize();
-            Script.exec("__name__ = \"main\"");
+            Script.exec("import sys");
+            Script.exec("sys.path.append('./src/python')");
+            Script.exec("import init");
         }
 
         /* Create map painter */
@@ -268,39 +269,9 @@ public class Main extends JPanel {
     Console console = null;
 
     public void updateGame(){
-        /* Painting on the map */
-        if(false && manager.getMouseDown() && manager.getMouseMoved()){
-            /* Get mouse location */
-            Point point = manager.getMouseLocation();
-
-            /* Convert map location into absolute coordinates on the map */
-            Point tileLoc = mapPainter.getTileAtPoint(point, viewport);
-            if(tileLoc == null) return;
-
-            int tileLocX = tileLoc.x;
-            int tileLocY = tileLoc.y;
-
-
-            /* Paint on the map */
-            if(manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
-                TerrainType type = map.getTileArray()[tileLocX][tileLocY];
-                paintbrush = type;
-            } else {
-                map.getTileArray()[tileLocX][tileLocY] = paintbrush;
-                mapPainter.update();
-            }
-        }
-
         /* Calling the console */
         if(manager.getKeyCodeFlag(KeyEvent.VK_F11)){
             manager.clearKeyCodeFlag(KeyEvent.VK_F11);
-
-            if(console == null){
-                console = new Console((int) (.30 * viewport.getHeight()), viewport.getWidth());
-                console.addKeyListener(manager);
-                Dimension size = console.getPreferredSize();
-                console.setBounds(0, 0, size.width, size.height);
-            }
 
             /* Show or unshow the console */
             consoleDown = !consoleDown;
@@ -313,185 +284,137 @@ public class Main extends JPanel {
             }
         }
 
-        if(manager.getKeyCodeFlag(KeyEvent.VK_D) || manager.getKeyCodeFlag(KeyEvent.VK_S)){
-            placingUnit = !placingUnit;
-            int uSpeed;
-            if(manager.getKeyCodeFlag(KeyEvent.VK_D))
-                uSpeed = 0;
-            else
-                uSpeed = 1;
-
-            manager.clearKeyCodeFlag(KeyEvent.VK_S);
-            manager.clearKeyCodeFlag(KeyEvent.VK_D);
-
-            Point point = manager.getMouseLocation();
-            Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
-            tempUnitX = point.x;
-            tempUnitY = point.y;
-
-            try {
-                /* Retrieve spaceship sprites */
-                Sprite[] sprites = new Sprite[8];
-                for(Direction d : Direction.values()){
-                    BufferedImage img = ResourceManager.loadImage("resource/unit/spaceship/Ship" + d.name() + ".png");
-                    sprites[d.ordinal()]  = new Sprite(img, 0.3 * totalZoom, 87, 25);
-                }
-
-                SimpleUnit spaceship = new SimpleUnit(sprites, uSpeed, 0, 0, Direction.East, true);
-                tempUnit = spaceship;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        if(console == null){
+            console = new Console((int) (.30 * viewport.getHeight()), viewport.getWidth());
+            console.addKeyListener(manager);
+            Dimension size = console.getPreferredSize();
+            console.setBounds(0, 0, size.width, size.height);
         }
 
-        if(manager.getLeftMouseDown() && !prev){
-            /* Get mouse location */
-            Point point = manager.getMouseLocation();
-            topLeftSelection = point;
+        /* Disable map movements and actions when the console has focus */
+        if(!console.hasFocus()){
 
-        }
+            if(manager.getKeyCodeFlag(KeyEvent.VK_D) || manager.getKeyCodeFlag(KeyEvent.VK_S)){
+                placingUnit = !placingUnit;
+                int uSpeed;
+                if(manager.getKeyCodeFlag(KeyEvent.VK_D))
+                    uSpeed = 0;
+                else
+                    uSpeed = 1;
 
-        if(placingUnit && manager.getMouseMoved()){
-            Point point = manager.getMouseLocation();
-            tempUnitX = point.x;
-            tempUnitY = point.y;
-        }
+                manager.clearKeyCodeFlag(KeyEvent.VK_S);
+                manager.clearKeyCodeFlag(KeyEvent.VK_D);
 
-        /* Mouse released, but was never dragged */
-        if(!manager.getLeftMouseDown() && prev && bottomRightSelection == null){
-            /* Get mouse location */
-            Point point = manager.getMouseLocation();
-
-            /* Adding units to map */
-            if(placingUnit){
+                Point point = manager.getMouseLocation();
                 Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
-                tempUnit.setX(unitTile.x);
-                tempUnit.setY(unitTile.y);
-                unitGrid.placeUnit(tempUnit, unitTile.x, unitTile.y);
+                tempUnitX = point.x;
+                tempUnitY = point.y;
 
-                placingUnit = false;
+                try {
+                    /* Retrieve spaceship sprites */
+                    Sprite[] sprites = new Sprite[8];
+                    for(Direction d : Direction.values()){
+                        BufferedImage img = ResourceManager.loadImage("resource/unit/spaceship/Ship" + d.name() + ".png");
+                        sprites[d.ordinal()]  = new Sprite(img, 0.3 * totalZoom, 87, 25);
+                    }
+
+                    SimpleUnit spaceship = new SimpleUnit(sprites, uSpeed, 0, 0, Direction.East, true);
+                    tempUnit = spaceship;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-            else{
-                SimpleUnit unit = unitPainter.getUnitAtPoint(point, viewport);
-                if(unit != null) {
-                    /* If already selected and pressing control, deselect */
-                    if(manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
-                        if(unit.isSelected()){
-                            unit.deselect();
-                            currentSelection.remove(unit);
-                        } else {
-                            unit.select();
-                            currentSelection.add(unit);
+
+            if(manager.getLeftMouseDown() && !prev){
+                /* Get mouse location */
+                Point point = manager.getMouseLocation();
+                topLeftSelection = point;
+
+            }
+
+            if(placingUnit && manager.getMouseMoved()){
+                Point point = manager.getMouseLocation();
+                tempUnitX = point.x;
+                tempUnitY = point.y;
+            }
+
+            /* Mouse released, but was never dragged */
+            if(!manager.getLeftMouseDown() && prev && bottomRightSelection == null){
+                /* Get mouse location */
+                Point point = manager.getMouseLocation();
+
+                /* Adding units to map */
+                if(placingUnit){
+                    Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
+                    tempUnit.setX(unitTile.x);
+                    tempUnit.setY(unitTile.y);
+                    unitGrid.placeUnit(tempUnit, unitTile.x, unitTile.y);
+
+                    placingUnit = false;
+                }
+                else{
+                    SimpleUnit unit = unitPainter.getUnitAtPoint(point, viewport);
+                    if(unit != null) {
+                        /* If already selected and pressing control, deselect */
+                        if(manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
+                            if(Selection.current().contains(unit)){
+                                Selection.current().remove(unit);
+                            } else {
+                                Selection.current().add(unit);
+                            }
                         }
+                        else {
+                            Selection.current().clear();
+                            Selection.current().add(unit);
+                        }
+                    } else {
+                        Selection.current().clear();
                     }
-                    else {
-                        for(SimpleUnit u : currentSelection.getCollection())
-                            u.deselect();
-                        currentSelection.clear();
-                        unit.select();
-                        currentSelection.add(unit);
-                    }
-                } else {
-                    for(SimpleUnit u : currentSelection.getCollection())
-                        u.deselect();
-                    currentSelection.clear();
+                }
+
+            }
+
+            if(manager.getMouseDragged() && topLeftSelection != null){
+                Point point = manager.getMouseLocation();
+                bottomRightSelection = point;
+
+                SimpleUnit[] selectedUnits = unitPainter.getUnitsInRect(topLeftSelection, bottomRightSelection, viewport);
+
+                if(!manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
+                    Selection.current().clear();
+                }
+
+                for(SimpleUnit unit : selectedUnits)
+                    Selection.current().add(unit);
+            } else if(!manager.getLeftMouseDown()){
+                topLeftSelection = null;
+                bottomRightSelection = null;
+            }
+
+
+            prev = manager.getLeftMouseDown();
+
+            /* Clicking (to set unit destination) */
+            if(manager.getRightMouseClicked()){
+                Point point = manager.getMouseLocation();
+                Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
+                for(SimpleUnit unit : Selection.current().getCollection()){
+                    unit.setDestination(unitTile);
                 }
             }
 
+            /* Scrolling */
+            int increment = 30;
+            if(manager.getKeyCodeFlag(KeyEvent.VK_RIGHT)) 
+                viewport.translate(increment, 0);
+            if(manager.getKeyCodeFlag(KeyEvent.VK_LEFT))
+                viewport.translate(-increment, 0);
+            if(manager.getKeyCodeFlag(KeyEvent.VK_UP))
+                viewport.translate(0, -increment);
+            if(manager.getKeyCodeFlag(KeyEvent.VK_DOWN))
+                viewport.translate(0, increment);
+
         }
-
-        if(manager.getMouseDragged() && topLeftSelection != null){
-            Point point = manager.getMouseLocation();
-            bottomRightSelection = point;
-
-            SimpleUnit[] selectedUnits = unitPainter.getUnitsInRect(topLeftSelection, bottomRightSelection, viewport);
-
-            if(!manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
-                for(SimpleUnit u : currentSelection.getCollection()){
-                    u.deselect();
-                }
-                currentSelection.clear();
-            }
-            for(SimpleUnit unit : selectedUnits){
-                unit.select();
-                currentSelection.add(unit);
-            }
-        } else if(!manager.getLeftMouseDown()){
-            topLeftSelection = null;
-            bottomRightSelection = null;
-        }
-
-
-        prev = manager.getLeftMouseDown();
-
-        /* Zooming */
-        if(manager.getMouseScrolled()){
-            int zoomLevel = -manager.getMouseScrollDistance();
-
-            /* Calculate new tile sizes */
-            int newTileX = mapPainter.getTileWidth(), newTileY = mapPainter.getTileHeight();
-            double zoom = 1;
-            if(zoomLevel > 0){
-                newTileX *= 2;
-                newTileY *= 2;
-                zoom = 2;
-            } else if(zoomLevel < 0) {
-                newTileX /= 2;
-                newTileY /= 2;
-                zoom = 0.5;
-            }
-            totalZoom *= zoom;
-
-            /* Remember what we were looking at before */
-            Point mouseLoc = manager.getMouseLocation();
-            Point zoomCenter = new Point((int)(zoom * (viewport.getX() + mouseLoc.getX())), (int)(zoom * (viewport.getY() + mouseLoc.getY())));
-
-            /* Make sure map isn't smaller than screen at new zoom level */
-            if(newTileX * map.getN() > viewport.getWidth() && newTileY / 2 * map.getN() > viewport.getHeight()){
-                /* Try to resize the tiles */
-                if(mapPainter.setTileSize(newTileX, newTileY)){
-                    /* Prevent the viewport from going off the map */
-                    int totalWidth = map.getN() * mapPainter.getTileWidth();
-                    int totalHeight = map.getN() * mapPainter.getTileHeight();
-                    int[] limitxPts = {
-                        0, totalWidth/2 - viewport.getWidth()/2, totalWidth - viewport.getWidth(), totalWidth/2 - viewport.getWidth()/2
-                    };
-                    int[] limityPts = {
-                        totalHeight/2 - viewport.getHeight()/2, 0, totalHeight/2 - viewport.getHeight()/2,  totalHeight - viewport.getHeight()
-                    };
-                    Polygon limitingPolygon = new Polygon(limitxPts, limityPts, 4);
-                    viewport.setViewportLocationLimits(limitingPolygon);
-                    viewport.setMapSize(limitxPts[2] - limitxPts[0], limityPts[3] - limityPts[1]);
-                    Point topLeft = new Point((int)(zoomCenter.getX() - mouseLoc.getX()), (int)(zoomCenter.getY() - mouseLoc.getY()));
-                    viewport.setLocation(topLeft.x, topLeft.y);
-
-                    /* Also update the unit painter */
-                    unitPainter.zoom(zoom);
-                } else
-                    totalZoom /= zoom;
-            } else
-                totalZoom /= zoom;
-        }
-
-        /* Clicking (to set unit destination) */
-        if(manager.getRightMouseClicked()){
-            Point point = manager.getMouseLocation();
-            Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
-            for(SimpleUnit unit : currentSelection.getCollection()){
-                unit.setDestination(unitTile);
-            }
-        }
-
-        /* Scrolling */
-        int increment = 30;
-        if(manager.getKeyCodeFlag(KeyEvent.VK_RIGHT)) 
-            viewport.translate(increment, 0);
-        if(manager.getKeyCodeFlag(KeyEvent.VK_LEFT))
-            viewport.translate(-increment, 0);
-        if(manager.getKeyCodeFlag(KeyEvent.VK_UP))
-            viewport.translate(0, -increment);
-        if(manager.getKeyCodeFlag(KeyEvent.VK_DOWN))
-            viewport.translate(0, increment);
 
         unitPainter.update();
     }
@@ -525,11 +448,11 @@ public class Main extends JPanel {
         mapPainter.paintMap(graphics, viewport);
 
         /* Paint the destination of all current selected units, if they share one */
-        if(currentSelection.getCollection().size() != 0){
+        if(Selection.current().getCollection().size() != 0){
             /* Check if units share a destination */
             boolean shareDestination = true;
             Point destination = null;
-            for(SimpleUnit unit : currentSelection.getCollection()){
+            for(SimpleUnit unit : Selection.current().getCollection()){
                 if(destination == null)
                     destination = unit.getDestination();
                 else

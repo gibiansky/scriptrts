@@ -27,11 +27,16 @@ public class Script {
             context.setErrorWriter(errWriter);
 
             /* Evaluate the command */
-            engine.eval(cmd, context);
+            Object result = engine.eval(cmd, context);
+
+            /* If this was an expression, append the expression value to the end of the string */
+            String expr = "";
+            if(result != null)
+                expr = result.toString() + "\n";
 
             /* Return the output string */
             writer.flush();
-            return writer.toString();
+            return writer.toString() + expr;
         } catch (Exception e) {
             return e.getMessage().trim() + "\n";
         } 
