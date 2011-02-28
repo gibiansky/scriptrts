@@ -2,7 +2,7 @@ package com.scriptrts.core;
 
 import jargs.gnu.CmdLineParser;
 
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
@@ -18,11 +18,12 @@ import java.awt.event.KeyEvent;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.swing.JFrame;
+import javax.swing.*;
 import javax.swing.JPanel;
 
 import com.scriptrts.game.*;
 import com.scriptrts.util.*;
+import com.scriptrts.script.*;
 import com.scriptrts.control.Selection;
 
 public class Main extends JPanel {
@@ -62,6 +63,7 @@ public class Main extends JPanel {
     /* Create a new JPanel Main object with double buffering enabled */
     public Main() {
         super(true);
+        setLayout(null);
     }
 
     private static void parseOptions(String[] args){
@@ -181,6 +183,19 @@ public class Main extends JPanel {
     public void resized(){
         if(viewport != null)
             viewport.resize(getWidth(), getHeight());
+        if(console != null){
+            remove(console);
+            window.requestFocusInWindow();
+
+            console.updateSize((int) (.30 * viewport.getHeight()), viewport.getWidth());
+            Dimension size = console.getPreferredSize();
+            console.setBounds(0, 0, size.width, size.height);
+
+            if(consoleDown){
+                add(console);
+                console.requestFocusInWindow();
+            }
+        }
         repaint();
     }
 
@@ -190,6 +205,12 @@ public class Main extends JPanel {
         Map randomMap = new Map(n, ResourceDensity.Medium);
         randomMap.generateMap(.7);
         map = randomMap;
+
+        /* Initialize scripting engine */
+        if(!Script.initialized()) {
+            Script.initialize();
+            Script.exec("__name__ = \"main\"");
+        }
 
         /* Create map painter */
         mapPainter = new MapPainter(randomMap, 128, 64);
@@ -229,7 +250,7 @@ public class Main extends JPanel {
         manager.registerKeyCode(KeyEvent.VK_S);
         manager.registerKeyCode(KeyEvent.VK_W);
         manager.registerKeyCode(KeyEvent.VK_D);
-        manager.registerKeyCode(KeyEvent.VK_SHIFT);
+        manager.registerKeyCode(KeyEvent.VK_F11);
 
         /* Done with initialization */
         initialized = true;
@@ -243,6 +264,8 @@ public class Main extends JPanel {
     boolean placingUnit = false;
     SimpleUnit tempUnit = null;
     int tempUnitX, tempUnitY;
+    boolean consoleDown = false;
+    Console console = null;
 
     public void updateGame(){
         /* Painting on the map */
@@ -265,6 +288,28 @@ public class Main extends JPanel {
             } else {
                 map.getTileArray()[tileLocX][tileLocY] = paintbrush;
                 mapPainter.update();
+            }
+        }
+
+        /* Calling the console */
+        if(manager.getKeyCodeFlag(KeyEvent.VK_F11)){
+            manager.clearKeyCodeFlag(KeyEvent.VK_F11);
+
+            if(console == null){
+                console = new Console((int) (.30 * viewport.getHeight()), viewport.getWidth());
+                console.addKeyListener(manager);
+                Dimension size = console.getPreferredSize();
+                console.setBounds(0, 0, size.width, size.height);
+            }
+
+            /* Show or unshow the console */
+            consoleDown = !consoleDown;
+            if(consoleDown){
+                add(console);
+                console.requestFocusInWindow();
+            } else {
+                remove(console);
+                window.requestFocusInWindow();
             }
         }
 
@@ -453,8 +498,11 @@ public class Main extends JPanel {
 
     private long prevTime = System.currentTimeMillis();
     protected void paintComponent(Graphics g) {
+        if(!Console.calibrated())
+            Console.calibrateFont(g);
         if(!initialized) return;
 
+        /* Record FPS */
         if(fpsLogging){
             long t = System.currentTimeMillis();
             long diff = t - prevTime;
@@ -465,6 +513,7 @@ public class Main extends JPanel {
             }
         }
 
+        /* Clear screen */
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, 2000, 2000);
 
@@ -505,6 +554,12 @@ public class Main extends JPanel {
         /* Draw selection (if not placing units) */
         else    
             drawSelection(graphics);
+
+        /* From now on, paint in screen coordinates again */
+        g.translate(viewport.getX(), viewport.getY());
+
+        /* User interface */
+        drawInterface(graphics);
     }
 
     private void drawSelection(Graphics2D graphics){
@@ -533,5 +588,8 @@ public class Main extends JPanel {
 
     private void drawTemporaryUnits(Graphics2D graphics, Viewport viewport){
         unitPainter.paintTemporaryUnit(graphics, viewport, tempUnit, tempUnitX, tempUnitY);
+    }
+
+    private void drawInterface(Graphics2D graphics){
     }
 }

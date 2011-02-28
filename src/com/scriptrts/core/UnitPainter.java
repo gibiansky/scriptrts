@@ -631,7 +631,8 @@ public class UnitPainter {
         Point backCorner = getUnitTileBackLocation(a, b);
         backCorner.translate(x, y);
 
-        graphics.drawImage(destinationImage, backCorner.x - destinationImage.getWidth(null)/2, backCorner.y - destinationImage.getHeight(null)/2, null);
+        graphics.drawImage(destinationImage, 
+                backCorner.x - destinationImage.getWidth(null)/2, backCorner.y - destinationImage.getHeight(null)/2, null);
     }
 
 }
