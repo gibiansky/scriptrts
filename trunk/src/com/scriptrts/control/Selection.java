@@ -10,24 +10,32 @@ public class Selection {
     /* Inner container */
     private Set<SimpleUnit> objects = new HashSet<SimpleUnit>();
 
+    /* Static selections */
+    private static Selection current = new Selection();
+
     public Selection(){
         super();
     }
+    
+    /* Managing player selections */
+    public static Selection current(){
+        return current;
+    }
+    public static Selection mine(){
+        return null;
+    }
+    public static Selection enemy(){
+        return null;
+    }
+    public static Selection ally(){
+        return null;
+    }
 
     /* Global selections */
-    public static Selection allEntities(){
+    public static Selection all(){
         return null;
     }
-    public static Selection myEntities(){
-        return null;
-    }
-    public static Selection enemyEntities(){
-        return null;
-    }
-    public static Selection allyEntities(){
-        return null;
-    }
-    public static Selection terrainEntities(){
+    public static Selection terrain(){
         return null;
     }
 
@@ -58,5 +66,9 @@ public class Selection {
 
     public Collection<SimpleUnit> getCollection(){
         return objects;
+    }
+
+    public boolean contains(SimpleUnit unit){
+        return objects.contains(unit);
     }
 }

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.awt.Point;
 
 import com.scriptrts.game.*;
+import com.scriptrts.control.*;
 import com.scriptrts.util.ResourceManager;
 
 public class UnitPainter {
@@ -291,7 +292,7 @@ public class UnitPainter {
         Sprite sprite = unit.getCurrentSprite();
 
         /* Display selected units differently */
-        if(unit.isSelected()){
+        if(Selection.current().contains(unit)){
             graphics.setColor(Color.RED);
             Rectangle bounds = sprite.getBounds(xLoc, yLoc);
             graphics.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);

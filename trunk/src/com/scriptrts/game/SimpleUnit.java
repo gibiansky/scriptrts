@@ -13,7 +13,6 @@ public class SimpleUnit {
     private int x, y;
     private Direction previousDirection;
     private Direction direction;
-    private boolean selected;
     private Queue<Direction> path = new LinkedList<Direction>();
     private double animCounter = 0;
     private UnitShape shape;
@@ -101,16 +100,6 @@ public class SimpleUnit {
 
     public void setDestination(Point p){
         destination = p;
-    }
-
-    public boolean isSelected(){
-        return selected;
-    }
-    public void select(){
-        selected = true;
-    }
-    public void deselect(){
-        selected = false;
     }
 
     public double getAnimationCounter(){
