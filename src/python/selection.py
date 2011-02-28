@@ -1,10 +1,16 @@
 print "Initializing selection module..."
 
 from com.scriptrts.control import Selection as JSelection
+from com.scriptrts.control import SelectionStorage as JSelectionStorage
 
 # Global and player selections
-def current():
-    return Selection(JSelection.current())
+def current(new_selection = None):
+    if new_selection == None:
+        return Selection(JSelection.current())
+    else
+        JSelection.current().clear()
+        for unit in new_selection:
+            JSelection.current().add(unit)
 def enemy():
     return Selection(JSelection.enemy())
 def ally():
@@ -13,6 +19,15 @@ def terrain():
     return Selection(JSelection.terrain())
 def all():
     return Selection(JSelection.all())
+
+def group(number, new_group = None):
+    if new_group == None:
+        return Selection(JSelectionStorage.retrieve(int(number)))
+    else:
+        new_sel = JSelection()
+        for x in new_group:
+            new_sel.add(x)
+        JSelectionStorage.store(new_sel, number)
 
 class SelectionIterator:
     def __init__(self, java_list):
