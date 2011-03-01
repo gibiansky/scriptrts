@@ -18,7 +18,12 @@ public class Script {
     }
 
     public static String exec(String cmd){
-        StringWriter writer = new StringWriter();
+        return exec(cmd, null);
+    }
+
+    public static String exec(String cmd, StringWriter writer){
+        if(writer == null)
+            writer = new StringWriter();
         StringWriter errWriter = new StringWriter();
         try {
             /* Get the output as a string */
@@ -38,7 +43,9 @@ public class Script {
             writer.flush();
             return writer.toString() + expr;
         } catch (Exception e) {
-            return e.getMessage().trim() + "\n";
+            writer.write(e.getMessage().trim() + "\n");
+            writer.flush();
+            return writer.toString();
         } 
     }
 }
