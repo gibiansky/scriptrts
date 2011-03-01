@@ -40,8 +40,9 @@ public class Script {
                 expr = result.toString() + "\n";
 
             /* Return the output string */
+            writer.write(expr);
             writer.flush();
-            return writer.toString() + expr;
+            return writer.toString();
         } catch (Exception e) {
             writer.write(e.getMessage().trim() + "\n");
             writer.flush();

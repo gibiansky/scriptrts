@@ -13,3 +13,8 @@ class Unit:
 
     def position(self):
         return (self._unit.getX(), self._unit.getY())
+
+from com.scriptrts.game import Direction as JDirection
+class direction: pass
+for direct in JDirection.values():
+    direction.__dict__[direct.name()] = direct
