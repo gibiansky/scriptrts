@@ -273,7 +273,7 @@ public class Main extends JPanel {
 
 
             /* Disable importing scriptrts classes */
-            System.out.println(Script.exec("core.disallow_scriptrts_import()"));
+            Script.exec("core.disallow_scriptrts_import()");
 
             /* Custom init scripts */
             for(String script : pyScripts)
