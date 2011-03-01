@@ -220,7 +220,7 @@ public class Main extends JPanel {
             remove(console);
             window.requestFocusInWindow();
 
-            console.updateSize((int) (.30 * viewport.getHeight()), viewport.getWidth());
+            console.updateSize((int) (.40 * viewport.getHeight()), viewport.getWidth());
             Dimension size = console.getPreferredSize();
             console.setBounds(0, 0, size.width, size.height);
 
@@ -250,9 +250,12 @@ public class Main extends JPanel {
                 Script.exec("sys.path.append('" + path + "')");
 
             /* Our own initialization script */
-            String[] initModules = {"init", "selection", "map"};
+            String[] initModules = {"core", "selection", "map"};
             for(String module : initModules)
                 System.out.print(Script.exec("import " + module));
+
+            /* Disable importing scriptrts classes */
+            System.out.println(Script.exec("core.disallow_scriptrts_import()"));
 
             /* Custom init scripts */
             for(String script : pyScripts)
@@ -335,7 +338,7 @@ public class Main extends JPanel {
         }
 
         if(console == null){
-            console = new Console((int) (.30 * viewport.getHeight()), viewport.getWidth());
+            console = new Console((int) (.40 * viewport.getHeight()), viewport.getWidth());
             console.addKeyListener(manager);
             Dimension size = console.getPreferredSize();
             console.setBounds(0, 0, size.width, size.height);

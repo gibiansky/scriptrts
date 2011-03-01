@@ -1,5 +1,3 @@
-print "Initializing selection module..."
-
 from com.scriptrts.control import Selection as JSelection
 from com.scriptrts.control import SelectionStorage as JSelectionStorage
 
@@ -7,7 +5,7 @@ from com.scriptrts.control import SelectionStorage as JSelectionStorage
 def current(new_selection = None):
     if new_selection == None:
         return Selection(JSelection.current())
-    else
+    else:
         JSelection.current().clear()
         for unit in new_selection:
             JSelection.current().add(unit)
