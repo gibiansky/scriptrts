@@ -1,45 +1,96 @@
 package com.scriptrts.core;
 
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import java.io.*;
+import java.util.ArrayList;
+import java.awt.Font;
+import java.awt.event.KeyEvent;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import java.io.StringWriter;
 
-import com.scriptrts.script.*;
+import com.scriptrts.script.Script;
 
+/**
+ * In-game terminal implemented as a Swing component. 
+ *
+ * The terminal consists of a text field and a text area. The text area is the output, while the 
+ * text field is the input. When the user is done inputting, the console evaluates the input as
+ * Python code and appends output to the text area.
+ */
 public class Console extends JPanel {
-    private String buffer;
+    /**
+     * The list of previously-entered commands.
+     */
     private ArrayList<String> history;
-    private ArrayList<Integer> commandLengths;
 
+    /**
+     * Font used by the text area and text field.
+     */
     private static Font font = new Font("Monospaced", Font.PLAIN, 14);
+
+    /**
+     * Character size calculated in order to resize the console to fit the window.
+     */
     private static int charWidth = -1;
     private static int charHeight = -1;
+
+    /**
+     * Input text field.
+     */
     private JTextField console;
-    private int originalNumRows = -1;
+
+    /**
+     * Scroll pane that houses the output area and provides a vertical scroll bar.
+     */
     private JScrollPane areaScrollPane;
+
+    /**
+     * Output text area, updated whenever a command is run.
+     */
     private JTextArea output;
+
+    /**
+     * How many rows the console output text area should be when there is nothing in it. Determined by
+     * what portion of the window height it should take up, and how high the window is.
+     */
+    private int originalNumRows = -1;
+
+    /**
+     * Boolean representing whether or not a command is currently being interpreted. If it is true, 
+     * commands entered will not be interpreted and will be ignored until the current command is done.
+     */
     private boolean running = false;
 
+    /**
+     * Returns whether the character size has been calculated. If it hasn't, then the console should be calibrated
+     * with the help of a Graphics object representing the current graphics configuration.
+     */
     public static boolean calibrated(){
         return !(charWidth < 0 || charHeight < 0);
     }
 
+    /**
+     * Calibrate the console font for the current graphics configuration. Must be called before the console is used.
+     */
     public static void calibrateFont(Graphics graphics){
-        if(charWidth < 0 || charHeight < 0) {
-            FontMetrics metrics = graphics.getFontMetrics(font);
-            charWidth = metrics.charWidth('A');
-            charHeight = metrics.getHeight();
-        }
+        FontMetrics metrics = graphics.getFontMetrics(font);
+        charWidth = metrics.charWidth('A');
+        charHeight = metrics.getHeight();
     }
 
+    /**
+     * Create a new console.
+     *
+     * @param consoleHeight the height to fit the console into
+     * @param screenWidth the desired width of the console
+     */
     public Console(int consoleHeight, int screenWidth){
+        /* Use double buffering for this JPanel */
         super(true);
 
         buffer = "";
         history = new ArrayList<String>();
-        commandLengths = new ArrayList<Integer>();
 
         setBackground(new Color(0, 0, 0, 0));
         int rows = consoleHeight / charHeight, columns = screenWidth / charWidth + 1;
@@ -277,8 +328,6 @@ public class Console extends JPanel {
                     }
 
                     totalCommandText = "";
-                    commandLengths.add(commandTextLines);
-                    commandTextLines = 0;
                     terminalText = outputter.toString();
                     if(interrupted){
                         terminalText += "KeyboardInterrupt\n";
