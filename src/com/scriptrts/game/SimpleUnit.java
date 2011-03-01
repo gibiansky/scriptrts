@@ -102,6 +102,10 @@ public class SimpleUnit {
         destination = p;
     }
 
+    public void setDestination(int x, int y){
+        setDestination(new Point(x, y));
+    }
+
     public double getAnimationCounter(){
         return animCounter;
     }

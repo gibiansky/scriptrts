@@ -26,3 +26,7 @@ class Unit:
         """ Return the position of this unit as a tuple (x, y). """
         return (self._unit.getX(), self._unit.getY())
 
+    def move(x, y):
+        """ Start moving to the coordinates (x, y). """
+        self._unit.setDestination(x, y)
+
