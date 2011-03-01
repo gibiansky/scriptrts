@@ -3,14 +3,6 @@ package com.scriptrts.core;
 import jargs.gnu.CmdLineParser;
 
 import java.awt.*;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.Point;
-import java.awt.Polygon;
-import java.awt.Color;
-import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -20,12 +12,11 @@ import java.util.ArrayList;
 import java.util.TimerTask;
 
 import javax.swing.*;
-import javax.swing.JPanel;
 
 import com.scriptrts.game.*;
 import com.scriptrts.util.*;
 import com.scriptrts.script.*;
-import com.scriptrts.control.Selection;
+import com.scriptrts.control.*;
 
 public class Main extends JPanel {
     /* Game properties */
@@ -44,7 +35,7 @@ public class Main extends JPanel {
     private UnitGrid unitGrid;
     private UnitPainter unitPainter;
     private Map map;
-
+    
     /* Interpreter setup data */
     private static ArrayList<String> pyPaths = new ArrayList<String>();
     private static ArrayList<String> pyScripts = new ArrayList<String>();
@@ -323,6 +314,20 @@ public class Main extends JPanel {
         manager.registerKeyCode(KeyEvent.VK_W);
         manager.registerKeyCode(KeyEvent.VK_D);
         manager.registerKeyCode(KeyEvent.VK_F11);
+        manager.registerKeyCode(KeyEvent.VK_1);
+        manager.registerKeyCode(KeyEvent.VK_2);
+        manager.registerKeyCode(KeyEvent.VK_3);
+        manager.registerKeyCode(KeyEvent.VK_4);
+        manager.registerKeyCode(KeyEvent.VK_5);
+        manager.registerKeyCode(KeyEvent.VK_6);
+        manager.registerKeyCode(KeyEvent.VK_7);
+        manager.registerKeyCode(KeyEvent.VK_8);
+        manager.registerKeyCode(KeyEvent.VK_9);
+        manager.registerKeyCode(KeyEvent.VK_0);
+        manager.registerKeyCode(KeyEvent.VK_TAB);
+        manager.registerKeyCode(KeyEvent.VK_CONTROL);
+       
+        
 
         /* Done with initialization */
         initialized = true;
@@ -340,7 +345,22 @@ public class Main extends JPanel {
     Console console = null;
 
     public void updateGame(){
-        /* Calling the console */
+    	 /* Grouping */
+    	int[] digits = {KeyEvent.VK_0, KeyEvent.VK_1, KeyEvent.VK_2, KeyEvent.VK_3, KeyEvent.VK_4, KeyEvent.VK_5, KeyEvent.VK_6, KeyEvent.VK_7, KeyEvent.VK_8, KeyEvent.VK_9};
+    	for(int x =0; x < 10; x++)
+    	{
+    		if (manager.getKeyCodeFlag(digits[x]))
+    			if (manager.getKeyCodeFlag(KeyEvent.VK_CONTROL))
+    			{
+    				SelectionStorage.store(Selection.current(), x);
+    				SelectionStorage.store(Selection.current(), 10);
+    			}
+    			else
+    				SelectionStorage.retrieve(x);
+    	
+    	}
+    	
+    	/* Calling the console */
         if(manager.getKeyCodeFlag(KeyEvent.VK_F11)){
             manager.clearKeyCodeFlag(KeyEvent.VK_F11);
 
