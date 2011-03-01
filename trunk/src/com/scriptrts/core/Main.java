@@ -65,10 +65,14 @@ public class Main extends JPanel {
     /* Input manager */
     private InputManager manager = InputManager.getInputManager();
 
+    /* Game instance */
+    private static Main main;
+
     /* Create a new JPanel Main object with double buffering enabled */
     public Main() {
         super(true);
         setLayout(null);
+        main = this;
     }
 
     private static void parseOptions(String[] args){
@@ -204,6 +208,16 @@ public class Main extends JPanel {
             timer.scheduleAtFixedRate(updateTask, 0, (long) (1000 / fps));
     }
 
+    public static Map getCurrentMap(){
+        return getGame().map;
+    }
+    public static UnitGrid getUnitGrid(){
+        return getGame().unitGrid;
+    }
+    private static Main getGame(){
+        return main;
+    }
+
     /**
      * Get the frames per second (FPS) that this game should run at
      * @return fps number of frames and updates per second
@@ -249,10 +263,14 @@ public class Main extends JPanel {
             for(String path : pyPaths)
                 Script.exec("sys.path.append('" + path + "')");
 
-            /* Our own initialization script */
-            String[] initModules = {"core", "selection", "map"};
+            /* Our own initialization scripts */
+            System.out.print(Script.exec("import core"));
+            System.out.print(Script.exec("from lib import *"));
+
+            String[] initModules = {"selection", "map"};
             for(String module : initModules)
                 System.out.print(Script.exec("import " + module));
+
 
             /* Disable importing scriptrts classes */
             System.out.println(Script.exec("core.disallow_scriptrts_import()"));

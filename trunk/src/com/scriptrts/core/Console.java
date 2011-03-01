@@ -4,6 +4,7 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import java.io.*;
 
 import com.scriptrts.script.*;
 
@@ -11,7 +12,6 @@ public class Console extends JPanel {
     private String buffer;
     private ArrayList<String> history;
     private ArrayList<Integer> commandLengths;
-    private ArrayList<String> outputs;
 
     private static Font font = new Font("Monospaced", Font.PLAIN, 14);
     private static int charWidth = -1;
@@ -20,6 +20,7 @@ public class Console extends JPanel {
     private int originalNumRows = -1;
     private JScrollPane areaScrollPane;
     private JTextArea output;
+    private boolean running = false;
 
     public static boolean calibrated(){
         return !(charWidth < 0 || charHeight < 0);
@@ -39,7 +40,6 @@ public class Console extends JPanel {
         buffer = "";
         history = new ArrayList<String>();
         commandLengths = new ArrayList<Integer>();
-        outputs = new ArrayList<String>();
 
         setBackground(new Color(0, 0, 0, 0));
         int rows = consoleHeight / charHeight, columns = screenWidth / charWidth + 1;
@@ -51,8 +51,10 @@ public class Console extends JPanel {
         console.setFont(font);
         console.setBackground(color);
         console.setForeground(gray);
+        console.setCaretColor(Color.white);
 
         output = new JTextArea(rows, columns);
+        output.setLineWrap(true);
         output.setFont(font);
         output.setEditable(false);
         output.setBackground(new Color(0, 0, 0, 0));
@@ -102,6 +104,12 @@ public class Console extends JPanel {
                         cursorToEnd();
                 }
 
+                /* Stopping execution with Ctrl-C */
+                else if(ev.getKeyCode() == KeyEvent.VK_Z){
+                    if(ev.isControlDown())
+                        stopExecution();
+                }
+
                 /* Deleting remainder of line with Ctrl-k */
                 else if(ev.getKeyCode() == KeyEvent.VK_K){
                     if(ev.isControlDown())
@@ -109,10 +117,15 @@ public class Console extends JPanel {
                 }
             }
         });
-
-        updateOutput();
     }
 
+    private String terminalText = "";
+    private boolean interrupted = false;
+    private void stopExecution(){
+        executeScript("core.interrupt()", null);
+        running = false;
+        interrupted = true;
+    }
     private void cursorToStart(){
         console.setCaretPosition(0);
     }
@@ -187,44 +200,97 @@ public class Console extends JPanel {
         areaScrollPane.setBounds(0, 0, screenWidth, oDim.height);
         Dimension cDim = console.getPreferredSize();
         console.setBounds(0, oDim.height, cDim.width, cDim.height);
-
-        updateOutput();
     }
 
     /* Remove things from the console to clear it up */
     private int histStart = 0;
-    private int outputsStart = 0;
     private void clearConsole(){
-        histStart = history.size();
-        outputsStart = outputs.size();
-        updateOutput();
         output.setRows(originalNumRows);
+        output.setText("");
+        terminalText = "";
     }
 
     private String totalCommandText = "";
     private int commandTextLines = 0;
     private void runCommand(){
+        /* Don't allow running commands while others are still running */
+        if(running)
+            return;
         String commandText = console.getText();
         console.setText("");
+
+        /* Find out how many tabs to put in */
+        int tabsForNextLine = getNextLineIndents(commandText);
+
+        /* Add command to console */
+        if(totalCommandText.equals("")) {
+            terminalText += ">>>";
+
+            if(tabsForNextLine == 0)
+                terminalText += " ";
+            else
+                terminalText += "\n";
+        }
+
+        terminalText +=  commandText + "\n";
 
         /* Store the line for later execution */
         totalCommandText += commandText + "\n";
         commandTextLines++;
 
         /* Add the command to history */
-        history.add(commandText);
-        currentHistoryLocation = history.size() - 1;
-
-        /* Find out how many tabs to put in */
-        int tabsForNextLine = getNextLineIndents(commandText);
+        if(commandText.trim().length() != 0){
+            history.add(commandText);
+            currentHistoryLocation = history.size() - 1;
+        }
+        output.setText(terminalText);
 
         /* If this is a finished command, execute it */
         if(tabsForNextLine == 0){
-            outputs.add(executeScript(totalCommandText));
+            /* Start a new thread for the python command */
+            new Thread(new Runnable(){
+                public void run(){
+                    running = true;
+                    
+                    String originalText = output.getText();
+                    final StringWriter outputter = new StringWriter();
+                    outputter.write(originalText);
+                    Thread interpreter = new Thread(new Runnable(){
+                        public void run(){
+                            executeScript(totalCommandText, outputter);
+                            terminalText = outputter.toString();
+                            output.setText(terminalText);
+                            running = false;
+                        }
+                    });
+                    interpreter.setPriority(Thread.MIN_PRIORITY);
+                    interpreter.start();
 
-            totalCommandText = "";
-            commandLengths.add(commandTextLines);
-            commandTextLines = 0;
+                    while(running){
+                        terminalText = outputter.toString();
+
+                        output.setText(terminalText);
+                        output.setCaretPosition(output.getText().length());
+                        try {
+                            Thread.currentThread().sleep(300);
+                        } catch (Exception e) { e.printStackTrace(); }
+                    }
+
+                    totalCommandText = "";
+                    commandLengths.add(commandTextLines);
+                    commandTextLines = 0;
+                    terminalText = outputter.toString();
+                    if(interrupted){
+                        terminalText += "KeyboardInterrupt\n";
+                        interrupted = false;
+                    }
+                    output.setText(terminalText);
+                    output.setCaretPosition(output.getText().length());
+
+
+                }
+            }).start();
+
         } 
 
         /* Add tabs to the next line */
@@ -233,61 +299,16 @@ public class Console extends JPanel {
             tabs += "\t";
         console.setText(tabs);
 
-        updateOutput();
-
         /* Set console history */
         currentHistoryLocation = history.size();
     }
 
-    private String executeScript(String cmd){
+    private String executeScript(String cmd, StringWriter writer){
         if(!Script.initialized()) {
             Script.initialize();
         }
 
-        return Script.exec(cmd);
-    }
-
-    private void updateOutput(){
-        if(history.size() == 0)
-            output.setText(">>> ");
-        else {
-            String outputText = "";
-            int histIndex = histStart;
-            for(int i = outputsStart; i < commandLengths.size(); i++){
-                int currentCommandLen = commandLengths.get(i);
-
-                if(currentCommandLen == 1)
-                    outputText += ">>> ";
-                else
-                    outputText += ">>>\n";
-
-                outputText += history.get(histIndex) + "\n";
-                histIndex++;
-                for(int j = 1; j < currentCommandLen; j++){
-                    outputText += history.get(histIndex) + "\n";
-                    histIndex++;
-                }
-
-                if(outputText.length() != 0 && outputText.charAt(outputText.length() - 1) != '\n')
-                    outputText += "\n";
-                outputText += outputs.get(i);
-            }
-
-            /* Add remaining items in history which haven't been executed */
-            if(histIndex < history.size())
-                outputText += ">>>\n";
-            for(int i = histIndex; i < history.size(); i++){
-                outputText += history.get(histIndex) + "\n";
-                histIndex++;
-            }
-
-            output.setText(outputText);
-        }
-
-        int lines = output.getText().split("\n").length;
-        if(lines > output.getRows()) {
-            output.setRows(lines);
-        }
+        return Script.exec(cmd, writer);
     }
 
     private int getNextLineIndents(String currentLine){
