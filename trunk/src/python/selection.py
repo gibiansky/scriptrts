@@ -68,15 +68,15 @@ class Selection:
         return new_sel
 
     def __getitem__(self, ind):
-        if ind >= 0 && ind < len(self):
+        if ind >= 0 and ind < len(self):
             return Unit(self._selection.getList().get(ind))
 
     def __setitem__(self, ind, u):
-        if not u is None and ind >= 0 && ind < len(self):
+        if not u is None and ind >= 0 and ind < len(self):
             self._selection.getList().set(ind, u)
 
     def __delitem__(self, ind):
-        if ind >= 0 && ind < len(self):
+        if ind >= 0 and ind < len(self):
             self._selection.getList().remove(ind)
 
     def __repr__(self):
