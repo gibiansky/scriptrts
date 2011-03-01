@@ -6,27 +6,56 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptContext;
 import javax.script.ScriptException;
 
+/**
+ * Provides the interface to the embedded Jython interpreter to the rest of the program.
+ */
 public class Script {
+    /**
+     * Low-level script engine interface, used to communicate with Jython 
+     */
     private static ScriptEngine engine = null;
 
+    /**
+     * Whether the interface has been initialized.
+     */
     public static boolean initialized(){
+        /* An initialized interface will have a usable script engine */
         return engine != null;
     }
 
+    /**
+     * Initialize the interpreter.
+     */
     public static void initialize(){
+        /* Create the script engine. Jython.jar should be in the classpath */
         engine = new ScriptEngineManager().getEngineByName("python");
     }
 
+    /**
+     * Runs the provided Python command(s).
+     *
+     * @param cmd the python code to interpret
+     * @return the resulting output, as if we were writing to a console (includes expression values, exception messages)
+     */
     public static String exec(String cmd){
         return exec(cmd, null);
     }
 
+    /**
+     * Runs the provided Python command(s).
+     *
+     * @param cmd the python code to interpret
+     * @param writer an output writer to which Jython will direct stdout and stderr, as well as any other output
+     * @return the resulting output, as if we were writing to a console (includes expression values, exception messages)
+     */
     public static String exec(String cmd, StringWriter writer){
+        /* If we don't need to write to a specified place, just write somewhere to later collect the String */
         if(writer == null)
             writer = new StringWriter();
+
         StringWriter errWriter = new StringWriter();
         try {
-            /* Get the output as a string */
+            /* Set stdout and stderr to our string writers */
             ScriptContext context = engine.getContext();
             context.setWriter(writer);
             context.setErrorWriter(errWriter);
@@ -42,10 +71,16 @@ public class Script {
             /* Return the output string */
             writer.write(expr);
             writer.flush();
+
             return writer.toString();
-        } catch (Exception e) {
+        } 
+        
+        /* If an error occurred */
+        catch (Exception e) {
+            /* Print the error to the console, return the console value */
             writer.write(e.getMessage().trim() + "\n");
             writer.flush();
+
             return writer.toString();
         } 
     }

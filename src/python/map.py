@@ -7,14 +7,16 @@ from lib import *
 # Map object
 _map = JMain.getCurrentMap()
 
-# Terrian types
+# Terrian types may be accessed through map.Dirt, map.Grass, etc
 for ttype in JTerrainType.values():
     locals()[ttype.name()] = ttype
 
+# Get the terrain type at a certain location
 def tiletype(x, y):
     tiles = _map.getTileArray()
     return tiles[x][y]
 
+# Get the unit at a certain location, or None if there is no unit there
 def unit(x, y):
     unitgrid = JMain.getUnitGrid()
     if unitgrid.getUnit(x, y):
