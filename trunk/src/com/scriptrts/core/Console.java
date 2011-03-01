@@ -2,9 +2,18 @@ package com.scriptrts.core;
 
 import java.util.ArrayList;
 import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Dimension;
+import java.awt.Color;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import java.io.StringWriter;
@@ -89,7 +98,6 @@ public class Console extends JPanel {
         /* Use double buffering for this JPanel */
         super(true);
 
-        buffer = "";
         history = new ArrayList<String>();
 
         setBackground(new Color(0, 0, 0, 0));
