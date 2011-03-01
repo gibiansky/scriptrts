@@ -49,6 +49,10 @@ public class Script {
      * @return the resulting output, as if we were writing to a console (includes expression values, exception messages)
      */
     public static String exec(String cmd, StringWriter writer){
+        /* If initialization hasn't been done, do it now */
+        if(!Script.initialized())
+            Script.initialize();
+
         /* If we don't need to write to a specified place, just write somewhere to later collect the String */
         if(writer == null)
             writer = new StringWriter();
