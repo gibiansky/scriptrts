@@ -5,7 +5,7 @@ from com.scriptrts.game import UnitGrid as JUnitGrid
 from lib import *
 
 # Map object
-_map = JMain.getCurrentMap()
+_map = JMain.getGame().getCurrentMap()
 
 # Terrian types may be accessed through map.Dirt, map.Grass, etc
 for ttype in JTerrainType.values():
@@ -18,7 +18,7 @@ def tiletype(x, y):
 
 # Get the unit at a certain location, or None if there is no unit there
 def unit(x, y):
-    unitgrid = JMain.getUnitGrid()
+    unitgrid = JMain.getGame().getUnitGrid()
     if unitgrid.getUnit(x, y):
         return Unit(unitgrid.getUnit(x, y))
     else:

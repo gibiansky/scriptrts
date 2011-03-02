@@ -76,7 +76,7 @@ class Selection:
         If the passed in object is a unit, the unit is added.
         If the passed in object is a list or selection, all units in the list or selection are added.
         """
-        if type(obj) is list or isintance(obj, Selection):
+        if type(obj) is list or isinstance(obj, Selection):
             for o in obj:
                 self.add(o)
         elif not obj is None:
