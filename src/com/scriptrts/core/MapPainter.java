@@ -12,6 +12,9 @@ import java.util.HashMap;
 
 import com.scriptrts.util.ResourceManager;
 
+/**
+ * Painter which displays map terrain tiles on the screen.
+ */
 public class MapPainter {
     /**
      * Whether or not to draw debug lines on the map. Initialized to false;

@@ -1,17 +1,42 @@
 package com.scriptrts.core;
 
+/**
+ * Class representing the terrain tiles of a map.
+ */
 public class Map {
 
+    /**
+     * Length of the map along one edge
+     */
 	private int n;
+
+    /**
+     * Heights of locations on the map.
+     */
 	private double[][] heightArray; 
+
+    /**
+     * Type of terrain at each point on the map.
+     */
 	private TerrainType[][] tileArray;
-	private ResourceDensity density;
+
+
+    /**
+     * ????????????????????????
+     */
 	private int length;
+
+    /**
+     * Random number generator used to generate random map.
+     */
     private java.util.Random random = new java.util.Random();
 
-	public Map(int n, ResourceDensity d) {
+    /**
+     * Create a new map.
+     * @param n size of the map along one edge.
+     */
+	public Map(int n) {
 		this.n = n;
-		this.density = d;
 		heightArray = new double[n][n];
 		tileArray = new TerrainType[n][n];
 	}
@@ -31,14 +56,7 @@ public class Map {
 	}
 
 	/**
-	 * @return the density
-	 */
-	public ResourceDensity getDensity() {
-		return density;
-	}
-
-	/**
-	 * @return the n
+	 * @return the size of the map along one edge
 	 */
 	public int getN() {
 		return n;
@@ -46,6 +64,7 @@ public class Map {
 	
 	/**
 	 * Generate random map
+     * @param noise how much noise to include on the map
 	 */
 	public void generateMap(double noise){
 		//Set initial heights at corners
@@ -117,6 +136,9 @@ public class Map {
 		}
 	}
 
+	/**
+	 * Randomly populate terrain tiles
+	 */
 	public void populateTiles2() {
 		for (int i = 0; i < n; i++)
 			for(int j = 0; j < n; j++)
@@ -128,6 +150,9 @@ public class Map {
 		}
 	}
 	
+	/**
+	 * Randomly populate terrain tiles
+	 */
 	public void populateTiles3(){
 		TerrainType[] terrains = TerrainType.values();
 		for(int i = 0; i < n; i++){

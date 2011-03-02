@@ -18,54 +18,176 @@ import com.scriptrts.util.*;
 import com.scriptrts.script.*;
 import com.scriptrts.control.*;
 
+/**
+ * Main game class which starts the application, parses command line arguments, and initializes the game loop.
+ */
 public class Main extends JPanel {
-    /* Game properties */
-    private static final int n = 129; //1 more than a power of 2
+
+    /**
+     * Window used to display game.
+     */
     private final static JFrame window = new JFrame("ScriptRTS");
 
-    /* Viewport properties */
-    private Viewport viewport;
+    /**
+     * Default size of the window.
+     */
     private final static int DEFAULT_WIDTH = 800, DEFAULT_HEIGHT = 600;
 
-    private TerrainType paintbrush = TerrainType.DeepFire;
-
-    /* Game data */
+    /**
+     * Whether the game has already been initialized.
+     */
     private boolean initialized = false;
-    private MapPainter mapPainter;
-    private UnitGrid unitGrid;
-    private UnitPainter unitPainter;
-    private Map map;
-    
-    /* Interpreter setup data */
+
+    /**
+     * Directories to add to the interpreter path.
+     */
     private static ArrayList<String> pyPaths = new ArrayList<String>();
+
+    /**
+     * Modules to import after interpreter initialization.
+     */
     private static ArrayList<String> pyScripts = new ArrayList<String>();
+
+    /**
+     * Expressions to evaluate after interpreter initialization and module importing.
+     */
     private static ArrayList<String> pyExprs = new ArrayList<String>();
 
-    /* Unit temp. controlled */
-    SimpleUnit unit;
-
-    /* Use fullscreen? */
+    /**
+     * Whether to use fullscreen (or alternatively, a windowed mode)
+     */
     private static boolean fullscreen =  false;
 
-    /* Debug mode? */
+    /**
+     * Whether to enable debug drawing and printing.
+     */
     private static boolean DEBUG = false;
 
-    /* Use FPS logging or fixed FPS? */
+    /**
+     * Whether to run the game at maximum FPS and occasionally print FPS. This helps us determine 
+     * how fast our graphics are functioning and is useful for occasional optimisation.
+     */
     private static boolean fpsLogging = false;
 
-    /* Input manager */
+    /**
+     * Counter used for logging FPS. Represents time when paint() was called.
+     */
+    private static long previousTime = System.currentTimeMillis();
+
+    /**
+     * Console used to enter commands during the game.
+     */
+    Console console = null;
+
+    /** 
+     * Whether or not the console is currently displayed.
+     */
+    boolean consoleDown = false;
+
+    /**
+     * Input manager used to deal with inputs throughout the application.
+     */
     private InputManager manager = InputManager.getInputManager();
 
-    /* Game instance */
+    /**
+     * Main instance used to access game properties from Python and external parts of the program.
+     */
     private static Main main;
 
-    /* Create a new JPanel Main object with double buffering enabled */
+    /**
+     * Current game instance.
+     */
+    private Game game;
+
+    /**
+     * Create a new Main object
+     */
     public Main() {
+        /* Enable double buffering and use an absolute layout */
         super(true);
         setLayout(null);
         main = this;
+
+        /* Create game */
+        game = new Game(128, getWidth(), getHeight());
     }
 
+    /**
+     * Program entry point, initializes and starts program.
+     * @param args list of command-line arguments.
+     */
+    public static void main(String... args) {
+        /* Parse command-line options */
+        parseOptions(args);
+
+        /* Create window of default size */
+        int width = DEFAULT_WIDTH;
+        int height = DEFAULT_HEIGHT;
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.setSize(width, height);
+
+        /* Check for fullscreen */
+        if(fullscreen){
+            /* Disable resizing and decorations */
+            window.setUndecorated(true);
+            window.setResizable(false);
+
+            /* Switch to fullscreen and make window maximum size */
+            Toolkit toolkit = Toolkit.getDefaultToolkit();
+            Dimension scrnsize = toolkit.getScreenSize();
+            width = scrnsize.width;
+            height = scrnsize.height;
+            window.setSize(width, height);
+
+            GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+            device.setFullScreenWindow(window);
+        }
+
+        /* Add graphics location */
+        final Main panel = new Main();
+        window.getContentPane().add(panel);
+
+        /* Set window to be visible */
+        window.setVisible(true);
+
+        /* Allow window resizing */
+        panel.addComponentListener(new ComponentAdapter(){
+            public void componentResized(ComponentEvent c){
+                panel.resized();
+            }
+        });
+
+        /* Initialize the game */
+        panel.initializeGame();
+
+        /* Start game loop */
+        float fps = Main.getFPS();
+        final TimerTask updateTask = new TimerTask(){
+            public void run(){
+                panel.updateGame();
+                panel.repaint();
+            }
+        };
+        Timer timer = new Timer();
+
+        /* If we want to log FPS, just run the program at max speed */
+        if(fpsLogging){
+            new Thread(){
+                public void run(){
+                    while(true){
+                        updateTask.run();
+                    }
+                }
+            }.start();
+        }
+        else
+            timer.scheduleAtFixedRate(updateTask, 0, (long) (1000 / fps));
+    }
+
+    /**
+     * Parse the command-line options.
+     * @param args list of command line arguments, as received by main()
+     */
     private static void parseOptions(String[] args){
         /* Create parser */
         CmdLineParser parser = new CmdLineParser();
@@ -125,88 +247,19 @@ public class Main extends JPanel {
         MapPainter.DEBUG = DEBUG;
         UnitPainter.DEBUG = DEBUG;
 
+        /* Allow user to turn off parts of the debug */
         if(noMap)
             MapPainter.DEBUG = false;
         if(noUnit)
             UnitPainter.DEBUG = false;
     }
 
-    public static void main(String... args) {
-        /* Parse command-line options */
-        parseOptions(args);
-
-        /* Create window of default size */
-        int width = DEFAULT_WIDTH;
-        int height = DEFAULT_HEIGHT;
-
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        window.setSize(width, height);
-
-        /* Check for fullscreen */
-        if(fullscreen){
-            /* Disable resizing and decorations */
-            window.setUndecorated(true);
-            window.setResizable(false);
-
-            /* Switch to fullscreen and make window maximum size */
-            Toolkit toolkit = Toolkit.getDefaultToolkit();
-            Dimension scrnsize = toolkit.getScreenSize();
-            width = scrnsize.width;
-            height = scrnsize.height;
-            window.setSize(width, height);
-
-            GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-            device.setFullScreenWindow(window);
-        }
-
-        /* Add graphics location */
-        final Main panel = new Main();
-        window.getContentPane().add(panel);
-
-        /* Set window to be visible */
-        window.setVisible(true);
-
-        /* Allow window resizing */
-        panel.addComponentListener(new ComponentAdapter(){
-            public void componentResized(ComponentEvent c){
-                panel.resized();
-            }
-        });
-
-        /* Initialize the game */
-        panel.initializeGame();
-
-        /* Start game loop */
-        float fps = Main.getFPS();
-        final TimerTask updateTask = new TimerTask(){
-            public void run(){
-                panel.updateGame();
-                panel.repaint();
-            }
-        };
-        Timer timer = new Timer();
-
-        if(fpsLogging){
-            new Thread(){
-                public void run(){
-                    while(true){
-                        updateTask.run();
-                    }
-                }
-            }.start();
-        }
-        else
-            timer.scheduleAtFixedRate(updateTask, 0, (long) (1000 / fps));
-    }
-
-    public static Map getCurrentMap(){
-        return getGame().map;
-    }
-    public static UnitGrid getUnitGrid(){
-        return getGame().unitGrid;
-    }
-    private static Main getGame(){
-        return main;
+    /**
+     * Return current game instance.
+     * @return current game object
+     */
+    public static Game getGame(){
+        return main.game;
     }
 
     /**
@@ -217,33 +270,39 @@ public class Main extends JPanel {
         return 30;
     }
 
-    /* Called when the window or drawing panel has changed size */
+    /**
+     * Called when the window or drawing panel has changed size; resizes the window and any components inside.
+     * */
     public void resized(){
-        if(viewport != null)
-            viewport.resize(getWidth(), getHeight());
+        /* Resize viewport inside game */
+        getGame().getViewport().resize(getWidth(), getHeight());
+
+        /* Resize console */
         if(console != null){
+            /* Remove console before resizing */
             remove(console);
             window.requestFocusInWindow();
 
-            console.updateSize((int) (.40 * viewport.getHeight()), viewport.getWidth());
+            /* Update console size */
+            console.updateSize((int) (.40 * getGame().getViewport().getHeight()), getGame().getViewport().getWidth());
             Dimension size = console.getPreferredSize();
             console.setBounds(0, 0, size.width, size.height);
 
+            /* Readd console if it was down before */
             if(consoleDown){
                 add(console);
                 console.requestFocusInWindow();
             }
         }
+
+        /* Redraw window after resize to fill in spaces which used to be blank */
         repaint();
     }
 
-    /* Initialize game resources */
+    /**
+     * Initialize game resources 
+     */
     public void initializeGame(){
-        /* Create and populate map with tiles */
-        Map randomMap = new Map(n, ResourceDensity.Medium);
-        randomMap.generateMap(.7);
-        map = randomMap;
-
         /* Initialize scripting engine */
         if(!Script.initialized()) {
             Script.initialize();
@@ -275,92 +334,32 @@ public class Main extends JPanel {
                 System.out.print(Script.exec(expr));
         }
 
-        /* Create map painter */
-        mapPainter = new MapPainter(randomMap, 128, 64);
-        int tileX = mapPainter.getTileWidth();
-        int tileY = mapPainter.getTileHeight();
-
-        /* Create the unit grid and unit painter */
-        unitGrid = new UnitGrid(n);
-        unitPainter = new UnitPainter(unitGrid, mapPainter);
-
-        /* Create the viewport */
-        viewport = new Viewport();
-        viewport.setDim(getWidth(), getHeight());
-        int totalWidth = map.getN() * mapPainter.getTileWidth();
-        int totalHeight = map.getN() * mapPainter.getTileHeight();
-        int[] limitxPts = {
-            0, totalWidth/2 - viewport.getWidth()/2, totalWidth - viewport.getWidth(), totalWidth/2 - viewport.getWidth()/2
-        };
-        int[] limityPts = {
-            totalHeight/2 - viewport.getHeight()/2, 0, totalHeight/2 - viewport.getHeight()/2,  totalHeight - viewport.getHeight()
-        };
-        Polygon limitingPolygon = new Polygon(limitxPts, limityPts, 4);
-        viewport.setMapSize(limitxPts[2] - limitxPts[0], limityPts[3] - limityPts[1]);
-        viewport.setViewportLocationLimits(limitingPolygon);
-        viewport.translate(totalWidth / 2, totalHeight / 2);
-
-        // set up key listeners
+        /* Set up listeners */
         window.addKeyListener(manager);
         addMouseMotionListener(manager);
         addMouseListener(manager);
         addMouseWheelListener(manager);
-        manager.registerKeyCode(KeyEvent.VK_LEFT);
-        manager.registerKeyCode(KeyEvent.VK_RIGHT);
-        manager.registerKeyCode(KeyEvent.VK_UP);
-        manager.registerKeyCode(KeyEvent.VK_DOWN);
-        manager.registerKeyCode(KeyEvent.VK_CONTROL);
-        manager.registerKeyCode(KeyEvent.VK_S);
-        manager.registerKeyCode(KeyEvent.VK_W);
-        manager.registerKeyCode(KeyEvent.VK_D);
         manager.registerKeyCode(KeyEvent.VK_F11);
-        manager.registerKeyCode(KeyEvent.VK_1);
-        manager.registerKeyCode(KeyEvent.VK_2);
-        manager.registerKeyCode(KeyEvent.VK_3);
-        manager.registerKeyCode(KeyEvent.VK_4);
-        manager.registerKeyCode(KeyEvent.VK_5);
-        manager.registerKeyCode(KeyEvent.VK_6);
-        manager.registerKeyCode(KeyEvent.VK_7);
-        manager.registerKeyCode(KeyEvent.VK_8);
-        manager.registerKeyCode(KeyEvent.VK_9);
-        manager.registerKeyCode(KeyEvent.VK_0);
-        manager.registerKeyCode(KeyEvent.VK_TAB);
-        manager.registerKeyCode(KeyEvent.VK_CONTROL);
-       
-        
+
+        /* Initialize the console if it hasn't been created */
+        if(console == null){
+            console = new Console((int) (.40 * getGame().getViewport().getHeight()), getGame().getViewport().getWidth());
+            console.addKeyListener(manager);
+            Dimension size = console.getPreferredSize();
+            console.setBounds(0, 0, size.width, size.height);
+        }
+
+        game.init();
 
         /* Done with initialization */
         initialized = true;
     }
 
-    /* Update game state */
-    private Point topLeftSelection = null;
-    private Point bottomRightSelection = null;
-    private boolean prev = false;
-    private double totalZoom = 1;
-    boolean placingUnit = false;
-    SimpleUnit tempUnit = null;
-    int tempUnitX, tempUnitY;
-    boolean consoleDown = false;
-    Console console = null;
-
+    /**
+     * Update the state of the game.
+     */
     public void updateGame(){
-    	 /* Grouping */
-    	int[] digits = {KeyEvent.VK_0, KeyEvent.VK_1, KeyEvent.VK_2, KeyEvent.VK_3, KeyEvent.VK_4, KeyEvent.VK_5, KeyEvent.VK_6, KeyEvent.VK_7, KeyEvent.VK_8, KeyEvent.VK_9};
-    	for(int x =0; x < 10; x++)
-    	{
-    		if (manager.getKeyCodeFlag(digits[x]))
-    			if (manager.getKeyCodeFlag(KeyEvent.VK_CONTROL))
-    			{
-    				SelectionStorage.store(Selection.current(), x);
-    				SelectionStorage.store(Selection.current(), 10);
-    			}
-    			else
-    				SelectionStorage.retrieve(x);
-    	
-    	}
-    	
-    	/* Calling the console */
+        /* Calling the console */
         if(manager.getKeyCodeFlag(KeyEvent.VK_F11)){
             manager.clearKeyCodeFlag(KeyEvent.VK_F11);
 
@@ -375,235 +374,39 @@ public class Main extends JPanel {
             }
         }
 
-        if(console == null){
-            console = new Console((int) (.40 * viewport.getHeight()), viewport.getWidth());
-            console.addKeyListener(manager);
-            Dimension size = console.getPreferredSize();
-            console.setBounds(0, 0, size.width, size.height);
-        }
-
-        /* Disable map movements and actions when the console has focus */
-        if(!console.hasFocus()){
-
-            if(manager.getKeyCodeFlag(KeyEvent.VK_D) || manager.getKeyCodeFlag(KeyEvent.VK_S)){
-                placingUnit = !placingUnit;
-                int uSpeed;
-                if(manager.getKeyCodeFlag(KeyEvent.VK_D))
-                    uSpeed = 0;
-                else
-                    uSpeed = 1;
-
-                manager.clearKeyCodeFlag(KeyEvent.VK_S);
-                manager.clearKeyCodeFlag(KeyEvent.VK_D);
-
-                Point point = manager.getMouseLocation();
-                Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
-                tempUnitX = point.x;
-                tempUnitY = point.y;
-
-                try {
-                    /* Retrieve spaceship sprites */
-                    Sprite[] sprites = new Sprite[8];
-                    for(Direction d : Direction.values()){
-                        BufferedImage img = ResourceManager.loadImage("resource/unit/spaceship/Ship" + d.name() + ".png");
-                        sprites[d.ordinal()]  = new Sprite(img, 0.3 * totalZoom, 87, 25);
-                    }
-
-                    SimpleUnit spaceship = new SimpleUnit(sprites, uSpeed, 0, 0, Direction.East, true);
-                    tempUnit = spaceship;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            if(manager.getLeftMouseDown() && !prev){
-                /* Get mouse location */
-                Point point = manager.getMouseLocation();
-                topLeftSelection = point;
-
-            }
-
-            if(placingUnit && manager.getMouseMoved()){
-                Point point = manager.getMouseLocation();
-                tempUnitX = point.x;
-                tempUnitY = point.y;
-            }
-
-            /* Mouse released, but was never dragged */
-            if(!manager.getLeftMouseDown() && prev && bottomRightSelection == null){
-                /* Get mouse location */
-                Point point = manager.getMouseLocation();
-
-                /* Adding units to map */
-                if(placingUnit){
-                    Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
-                    tempUnit.setX(unitTile.x);
-                    tempUnit.setY(unitTile.y);
-                    unitGrid.placeUnit(tempUnit, unitTile.x, unitTile.y);
-
-                    placingUnit = false;
-                }
-                else{
-                    SimpleUnit unit = unitPainter.getUnitAtPoint(point, viewport);
-                    if(unit != null) {
-                        /* If already selected and pressing control, deselect */
-                        if(manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
-                            if(Selection.current().contains(unit)){
-                                Selection.current().remove(unit);
-                            } else {
-                                Selection.current().add(unit);
-                            }
-                        }
-                        else {
-                            Selection.current().clear();
-                            Selection.current().add(unit);
-                        }
-                    } else {
-                        Selection.current().clear();
-                    }
-                }
-
-            }
-
-            if(manager.getMouseDragged() && topLeftSelection != null){
-                Point point = manager.getMouseLocation();
-                bottomRightSelection = point;
-
-                SimpleUnit[] selectedUnits = unitPainter.getUnitsInRect(topLeftSelection, bottomRightSelection, viewport);
-
-                if(!manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
-                    Selection.current().clear();
-                }
-                for(SimpleUnit unit : selectedUnits)
-                    Selection.current().add(unit);
-
-            } else if(!manager.getLeftMouseDown()){
-                topLeftSelection = null;
-                bottomRightSelection = null;
-            }
-
-
-            prev = manager.getLeftMouseDown();
-
-            /* Clicking (to set unit destination) */
-            if(manager.getRightMouseClicked()){
-                Point point = manager.getMouseLocation();
-                Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
-                for(SimpleUnit unit : Selection.current().getList()){
-                    unit.setDestination(unitTile);
-                }
-            }
-
-            /* Scrolling */
-            int increment = 30;
-            if(manager.getKeyCodeFlag(KeyEvent.VK_RIGHT)) 
-                viewport.translate(increment, 0);
-            if(manager.getKeyCodeFlag(KeyEvent.VK_LEFT))
-                viewport.translate(-increment, 0);
-            if(manager.getKeyCodeFlag(KeyEvent.VK_UP))
-                viewport.translate(0, -increment);
-            if(manager.getKeyCodeFlag(KeyEvent.VK_DOWN))
-                viewport.translate(0, increment);
-
-        }
-
-        unitPainter.update();
+        /* Update the game */
+        game.update(!console.hasFocus());
     }
 
-    private long prevTime = System.currentTimeMillis();
+    /**
+     * Draw the game onto the screen.
+     * @param g Graphics object which allows the program to draw on the panel.
+     */
     protected void paintComponent(Graphics g) {
+        /* Calibrate the console if necessary */
         if(!Console.calibrated())
             Console.calibrateFont(g);
+
+        /* Do not draw anything until initialization is done */
         if(!initialized) return;
 
-        /* Record FPS */
+        /* Record FPS if the option was enabled (via command-line switch) */
         if(fpsLogging){
-            long t = System.currentTimeMillis();
-            long diff = t - prevTime;
-            prevTime = t;
+            long currentTime = System.currentTimeMillis();
+            long difference = currentTime - previousTime;
+            previousTime = currentTime;
+
+            /* Only print FPS occasionally, so printing doesn't influence measurement */
             if(Math.random() < .03){
-                if(diff == 0) diff = 1;
-                System.out.println("FPS: " + (1000/diff));
+                /* Avoid division by zero if the program is too fast or errors occur */
+                if(difference == 0) difference = 1;
+
+                /* Print FPS */
+                System.out.println("FPS: " + (1000/difference));
             }
         }
 
-        /* Clear screen */
-        g.setColor(Color.BLACK);
-        g.fillRect(0, 0, 2000, 2000);
-
-        /* Move over to the viewport location */
-        Graphics2D graphics = (Graphics2D) g;
-        g.translate(-viewport.getX(), -viewport.getY());
-
-        /* Paint the map using the map painter */
-        mapPainter.paintMap(graphics, viewport);
-
-        /* Paint the destination of all current selected units, if they share one */
-        if(Selection.current().getList().size() != 0){
-            /* Check if units share a destination */
-            boolean shareDestination = true;
-            Point destination = null;
-            for(SimpleUnit unit : Selection.current().getList()){
-                if(destination == null)
-                    destination = unit.getDestination();
-                else
-                    if(!destination.equals(unit.getDestination())){
-                        shareDestination = false;
-                        break;
-                    }
-            }
-
-            if(shareDestination && destination != null){
-                unitPainter.paintDestination(graphics, destination.x, destination.y);
-            }
-        }
-
-        /* On top of the map, paint all the units and buildings */
-        unitPainter.paintUnits(graphics, viewport);
-
-        /* Draw fake units and buildings on the board */
-        if(placingUnit)
-            drawTemporaryUnits(graphics, viewport);
-
-        /* Draw selection (if not placing units) */
-        else    
-            drawSelection(graphics);
-
-        /* From now on, paint in screen coordinates again */
-        g.translate(viewport.getX(), viewport.getY());
-
-        /* User interface */
-        drawInterface(graphics);
-    }
-
-    private void drawSelection(Graphics2D graphics){
-        if(topLeftSelection != null && bottomRightSelection != null){
-            Point topLeft = new Point(topLeftSelection);
-            Point bottomRight = new Point(bottomRightSelection);
-            if(topLeft.x > bottomRight.x){
-                int temp = topLeft.x;
-                topLeft.x = bottomRight.x;
-                bottomRight.x = temp;
-            }
-            if(topLeft.y > bottomRight.y){
-                int temp = topLeft.y;
-                topLeft.y = bottomRight.y;
-                bottomRight.y = temp;
-            }
-
-            graphics.translate(viewport.getX(), viewport.getY());
-            Color transparentBlue = new Color(0, 0, 255, 120);
-            graphics.setColor(transparentBlue);
-            graphics.fillRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
-            graphics.setColor(Color.BLUE);
-            graphics.drawRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
-        }
-    }
-
-    private void drawTemporaryUnits(Graphics2D graphics, Viewport viewport){
-        unitPainter.paintTemporaryUnit(graphics, viewport, tempUnit, tempUnitX, tempUnitY);
-    }
-
-    private void drawInterface(Graphics2D graphics){
+        /* Paint the game */
+        game.paint((Graphics2D) g);
     }
 }
