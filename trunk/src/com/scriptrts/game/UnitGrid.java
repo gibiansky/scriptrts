@@ -2,15 +2,29 @@ package com.scriptrts.game;
 
 import java.awt.Point;
 
+/**
+ * Stores the locations of all the units on the map.
+ */
 public class UnitGrid {
 	/** 
 	 * How many of the smallest unit can fit along one side of each map tile
 	 */
     public final static int SPACES_PER_TILE = 3;
 
+    /**
+     * Size of the map.
+     */
 	private int n;
+
+    /**
+     * Array of units representing the map.
+     */
 	private SimpleUnit[][] unitGrid;
 	
+    /**
+     * Create a new unit grid.
+     * @param n size of the map.
+     */
 	public UnitGrid(int n) {
 		this.n = n * SPACES_PER_TILE;
 		unitGrid = new SimpleUnit[this.n][this.n];
@@ -88,6 +102,10 @@ public class UnitGrid {
         return true;
     }
 
+    /**
+     * Figure out whether the unit can move in the specified direction. This direction has to be along the unit's path.
+     * @return true if the unit can move there, false otherwise;
+     */
     private boolean canMove(SimpleUnit unit, Direction nextDirection){
         if(nextDirection == null)
             return true;
@@ -135,6 +153,9 @@ public class UnitGrid {
 
     /**
      * Reserve a unit location for a given unit. This prevents units from attempting to move into that location.
+     * @param unit the unit for which to reserve area
+     * @param moving which direction the unit is moving in right now
+     * @param turnAfterMove which direction the unit will move in after it finishes the current move
      */
     private void reserveNextUnitLocation(SimpleUnit unit, Direction moving, Direction turnAfterMove){
         /* Calculate location of next tile */
@@ -187,10 +208,22 @@ public class UnitGrid {
         }
     }
 
+    /**
+     * Reserve a specific spot in the unit grid.
+     * @param unit the unit for which to reserve the spot
+     * @param i x coordinate of spot
+     * @param j y coordinate of spot
+     */
     private void reserveLoc(SimpleUnit unit, int i, int j){
         unitGrid[i][j] = new ReserveUnit(unit);
     }
 
+    /**
+     * Return the unit at the given coordinates.
+     * @param i x coordinate
+     * @param j y coordinate
+     * @return unit at specified coordinates
+     */
     public SimpleUnit getUnit(int i, int j){
         if(unitGrid[i][j] instanceof ReserveUnit)
             return null;
@@ -198,6 +231,12 @@ public class UnitGrid {
         return unitGrid[i][j];
     }
 
+    /**
+     * Check whether the given unit can move to the specified spot.
+     * @param i x coordinate of spot
+     * @param j y coordinate of spot
+     * @param unit the unit for which to check
+     */
     public boolean spaceTakenFor(int i, int j, SimpleUnit unit){
         SimpleUnit u = unitGrid[i][j];
         if(u == null)
@@ -210,10 +249,22 @@ public class UnitGrid {
         return true;
     }
 
+    /**
+     * Set a location in the unit grid to a given unit.
+     * @param unit the unit 
+     * @param i x coordinate of spot
+     * @param j y coordinate of spot
+     */
     private void setUnit(SimpleUnit unit, int i, int j){
         unitGrid[i][j] = unit;
     }
 
+    /**
+     * Place a unit in a given position. This moves the entire unit, not just the center.
+     * @param unit the unit 
+     * @param i x coordinate of spot
+     * @param j y coordinate of spot
+     */
     public void placeUnit(SimpleUnit unit, int i, int j){
         Point[] points = unit.getCurrentShape();
         unit.setX(i);
@@ -223,10 +274,20 @@ public class UnitGrid {
             setUnit(unit, unit.getX() + p.x, unit.getY() + p.y);
     }
 
+    /**
+     * Check if this spot is reserved.
+     * @param i x coordinate of spot
+     * @param j y coordinate of spot
+     * @return whether this spot is reserved
+     */
     public boolean reserved(int i, int j){
         return unitGrid[i][j] instanceof ReserveUnit;
     }
 
+    /**
+     * Remove a unit from a location. This removes the entire unit, not just the center.
+     * @param unit the unit 
+     */
     public void removeUnit(SimpleUnit unit){
         Point[] points = unit.getCurrentShape();
         for(Point p : points)
@@ -234,18 +295,37 @@ public class UnitGrid {
     }
 }
 
+/**
+ * "Fake" unit used by the UnitGrid to reserve spots in the grid.
+ */
 class ReserveUnit extends SimpleUnit {
+    /**
+     * Which unit this spot is reserved for.
+     */
     private SimpleUnit reserve;
 
+    /**
+     * Create a new reserve unit.
+     * @param  reserveFor which unit to reserve the spot for.
+     */
     public ReserveUnit(SimpleUnit reserveFor){
         super(null, 0, 0, 0, null);
         reserve = reserveFor;
     }
 
+    /**
+     * Check whether the specified unit can pass over this reserve unit.
+     * @param u unit which wants to pass over this unit
+     * @return whether the unit can pass the reserved spot
+     */
     public boolean isPassable(SimpleUnit u){
         return reserve.isPassable(u);
     }
 
+    /**
+     * Get which unit this is reserving for.
+     * @return the unit which is going to this destination
+     */
     public SimpleUnit getOriginal(){
         return reserve;
     }
