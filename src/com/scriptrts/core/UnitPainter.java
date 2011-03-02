@@ -11,6 +11,9 @@ import com.scriptrts.game.*;
 import com.scriptrts.control.*;
 import com.scriptrts.util.ResourceManager;
 
+/**
+ * Painter which draws units onto the screen on top of the map.
+ */
 public class UnitPainter {
 
 	/**
@@ -24,9 +27,19 @@ public class UnitPainter {
 	private MapPainter mapPainter;
 
     /**
+     * Image used to denote where a unit is going.
+     */
+    private Image destinationImage = null;
+
+    /**
      * Enable debug drawing
      */
     public static boolean DEBUG = false;
+
+    /**
+     * Integer array used internally for storage, so as not to create a new one each time update() is called.
+     */
+    private int[] mapBoundsArray = new int[4];
 
 	/**
 	 * Create a new unit painter which paints the given units on the map
@@ -110,74 +123,10 @@ public class UnitPainter {
         }
     }
 
-	/**
-	 * Paints all visible units onto the screen
-	 */
-    private int[] mapBoundsArray = new int[4];
-	public void paintUnits(Graphics2D graphics, Viewport viewport){
-		/* Calculate the viewport edges (in map tiles) */
-		int tileX = mapPainter.getTileWidth();
-		int tileY = mapPainter.getTileHeight();
-
-        /* Get tiles visible */
-        mapPainter.getViewportTileBounds(mapBoundsArray, viewport);
-        int west    = mapBoundsArray[0];
-        int east     = mapBoundsArray[1];
-        int south   = mapBoundsArray[2];
-        int north  = mapBoundsArray[3];
-
-		for(int i = west; i < east; i++){
-			for(int j = south; j < north; j++){
-                paintUnitsOnMapTile(graphics, i, j);
-			}
-		}
-
-	}
-
-	private void paintUnitsOnMapTile(Graphics2D graphics, int i, int j){
-		/* Calculate the pixel location of the tile on which we're drawing */
-		int tileX = mapPainter.getTileWidth();
-		int tileY = mapPainter.getTileHeight();
-
-        /* Back corner pixel locations of tile */
-        int x = (i+j+1)*tileX/2;
-        int y = tileY * mapPainter.getMap().getN() / 2 + (i - j - 1) * tileY / 2;
-
-		for(int a = 0; a < UnitGrid.SPACES_PER_TILE; a++){
-            for(int b = 0; b < UnitGrid.SPACES_PER_TILE; b++){
-                SimpleUnit unit = grid.getUnit(i * 3 + a, j * 3 + b);
-                if(UnitPainter.DEBUG){
-                    if(unit != null)
-                        debugPaintUnitLoc(graphics, unit, x - tileX/2, y, i * 3 + a, j * 3 + b);
-                    if(grid.reserved(i * 3 + a, j * 3 + b))
-                        debugPaintUnitLoc2(graphics, unit, x - tileX/2, y, i * 3 + a, j * 3 + b);
-                }
-
-                if(unit != null && i * 3 + a == unit.getX() && j * 3 + b == unit.getY())
-                    paintUnit(graphics, unit, x - tileX/2, y);
-            }
-		}
-
-        if(UnitPainter.DEBUG && false){
-            graphics.setColor(Color.green);
-            for(int a = 0; a < UnitGrid.SPACES_PER_TILE; a++)
-                for(int b = 0; b < UnitGrid.SPACES_PER_TILE; b++) {
-                    Point backCorner = getUnitTileBackLocation(a, b);
-                    backCorner.translate(x - tileX/2, y);
-                    int[] xpts = {
-                        backCorner.x, backCorner.x + tileX / 6, backCorner.x, backCorner.x - tileX / 6
-                    };
-                    int[] ypts = {
-                        backCorner.y, backCorner.y + tileY / 6, backCorner.y + tileY / 3, backCorner.y + tileY / 6
-                    };
-
-                    graphics.drawPolygon(new Polygon(xpts, ypts, 4));
-                }
-
-
-        }
-	}
-
+    /**
+     * Get the coordinates of the back point on the unit.
+     * @param unit which unit to get the back point of
+     */
     private Point getTileBackLocation(SimpleUnit unit){
         int tileBackX, tileBackY;
 
@@ -188,6 +137,10 @@ public class UnitPainter {
         return getUnitTileBackLocation(a, b);
     }
 
+    /**
+     * Get all the back points of all tiles a unit occupies.
+     * @param unit the unit to get tiles from
+     */
     private Point[] getAllTileBackLocations(SimpleUnit unit){
         int[] xs = unit.getAllX();
         int[] ys = unit.getAllY();
@@ -200,6 +153,9 @@ public class UnitPainter {
         return pts;
     }
 
+    /**
+     * Get the tile back location of the given unit tile (inside the map tile)
+     */
     private Point getUnitTileBackLocation(int a, int b){
 		int tileX = mapPainter.getTileWidth();
 		int tileY = mapPainter.getTileHeight();
@@ -266,6 +222,81 @@ public class UnitPainter {
         return new Point(tileBackX, tileBackY);
     }
 
+	/**
+	 * Paints all visible units onto the screen
+     * @param graphics graphics handle to the screen
+     * @param viewport viewport being used to view the map
+	 */
+	public void paintUnits(Graphics2D graphics, Viewport viewport){
+		/* Calculate the viewport edges (in map tiles) */
+		int tileX = mapPainter.getTileWidth();
+		int tileY = mapPainter.getTileHeight();
+
+        /* Get tiles visible */
+        mapPainter.getViewportTileBounds(mapBoundsArray, viewport);
+        int west    = mapBoundsArray[0];
+        int east     = mapBoundsArray[1];
+        int south   = mapBoundsArray[2];
+        int north  = mapBoundsArray[3];
+
+		for(int i = west; i < east; i++){
+			for(int j = south; j < north; j++){
+                paintUnitsOnMapTile(graphics, i, j);
+			}
+		}
+
+	}
+
+    /**
+     * Paints the units which are on a given map tile.
+     * @param graphics graphics handle to the screen
+     * @param i x coordinate of the map tile
+     * @param j y coordinate of the map tile
+     */
+	private void paintUnitsOnMapTile(Graphics2D graphics, int i, int j){
+		/* Calculate the pixel location of the tile on which we're drawing */
+		int tileX = mapPainter.getTileWidth();
+		int tileY = mapPainter.getTileHeight();
+
+        /* Back corner pixel locations of tile */
+        int x = (i+j+1)*tileX/2;
+        int y = tileY * mapPainter.getMap().getN() / 2 + (i - j - 1) * tileY / 2;
+
+		for(int a = 0; a < UnitGrid.SPACES_PER_TILE; a++){
+            for(int b = 0; b < UnitGrid.SPACES_PER_TILE; b++){
+                SimpleUnit unit = grid.getUnit(i * 3 + a, j * 3 + b);
+                if(unit != null && i * 3 + a == unit.getX() && j * 3 + b == unit.getY())
+                    paintUnit(graphics, unit, x - tileX/2, y);
+            }
+		}
+
+        if(UnitPainter.DEBUG && false){
+            graphics.setColor(Color.green);
+            for(int a = 0; a < UnitGrid.SPACES_PER_TILE; a++)
+                for(int b = 0; b < UnitGrid.SPACES_PER_TILE; b++) {
+                    Point backCorner = getUnitTileBackLocation(a, b);
+                    backCorner.translate(x - tileX/2, y);
+                    int[] xpts = {
+                        backCorner.x, backCorner.x + tileX / 6, backCorner.x, backCorner.x - tileX / 6
+                    };
+                    int[] ypts = {
+                        backCorner.y, backCorner.y + tileY / 6, backCorner.y + tileY / 3, backCorner.y + tileY / 6
+                    };
+
+                    graphics.drawPolygon(new Polygon(xpts, ypts, 4));
+                }
+
+
+        }
+	}
+
+    /**
+     * Paint a single unit onto the map.
+     * @param graphics graphics handle to the screen
+     * @param unit which unit to paint onto the screen
+     * @param tileLocX graphical x coordinate of the map tile this unit is on
+     * @param tileLocY graphical y coordinate of the map tile this unit is on
+     */
 	private void paintUnit(Graphics2D graphics, SimpleUnit unit, int tileLocX, int tileLocY){
         /* How far the unit has moved from its current tile to its destination */
         double percentMovedFromTile = unit.getAnimationCounter();
@@ -329,70 +360,14 @@ public class UnitPainter {
 		sprite.draw(graphics, xLoc, yLoc);
 	}
 
-    /* DEBUG PAINT */
-	private void debugPaintUnitLoc(Graphics2D graphics, SimpleUnit unit, int tileLocX, int tileLocY, int i, int j){
-		int tileX = mapPainter.getTileWidth();
-		int tileY = mapPainter.getTileHeight();
-
-        /* Find the back point of the tile it's currently placed in */
-        Point backStartSubtile = getUnitTileBackLocation(i % 3, j % 3);
-
-        /* Calculate where it is based on where it started, where it's going, and how far it's gone */
-		int tileBackX = (int)(backStartSubtile.getX());  
-		int tileBackY = (int)(backStartSubtile.getY());
-
-		/* Make the back of the unit agree with the back of the tile */
-        int xLoc = tileLocX + tileBackX;
-        int yLoc = tileLocY + tileBackY;
-        Point backCorner = new Point(xLoc, yLoc);
-
-        /* Polygon around the unit tile */
-        int[] xpts = {
-            backCorner.x, backCorner.x + tileX / 6 + 2, backCorner.x, backCorner.x - tileX / 6 - 2
-        };
-        int[] ypts = {
-            backCorner.y - 2, backCorner.y + tileY / 6, backCorner.y + tileY / 3 + 2, backCorner.y + tileY / 6
-        };
-        Polygon poly = new Polygon(xpts, ypts, 4);
-
-        /* Draw half transparent polygons where the unit will go */
-        graphics.setColor(new Color(0, 0, 255, 120));
-        graphics.fillPolygon(poly);
-        graphics.setColor(Color.BLUE);
-        graphics.drawPolygon(poly);
-	}
-	private void debugPaintUnitLoc2(Graphics2D graphics, SimpleUnit unit, int tileLocX, int tileLocY, int i, int j){
-		int tileX = mapPainter.getTileWidth();
-		int tileY = mapPainter.getTileHeight();
-
-        /* Find the back point of the tile it's currently placed in */
-        Point backStartSubtile = getUnitTileBackLocation(i % 3, j % 3);
-
-        /* Calculate where it is based on where it started, where it's going, and how far it's gone */
-		int tileBackX = (int)(backStartSubtile.getX());  
-		int tileBackY = (int)(backStartSubtile.getY());
-
-		/* Make the back of the unit agree with the back of the tile */
-        int xLoc = tileLocX + tileBackX;
-        int yLoc = tileLocY + tileBackY;
-        Point backCorner = new Point(xLoc, yLoc);
-
-        /* Polygon around the unit tile */
-        int[] xpts = {
-            backCorner.x, backCorner.x + tileX / 6 + 2, backCorner.x, backCorner.x - tileX / 6 - 2
-        };
-        int[] ypts = {
-            backCorner.y - 2, backCorner.y + tileY / 6, backCorner.y + tileY / 3 + 2, backCorner.y + tileY / 6
-        };
-        Polygon poly = new Polygon(xpts, ypts, 4);
-
-        /* Draw half transparent polygons where the unit will go */
-        graphics.setColor(new Color(255, 0, 255, 120));
-        graphics.fillPolygon(poly);
-        graphics.setColor(Color.BLUE);
-        graphics.drawPolygon(poly);
-	}
-
+    /**
+     * Paint a unit that is currently being placed on the map.
+     * @param graphics graphics handle to the screen
+     * @param viewport viewport being used to view the map
+     * @param unit which unit to draw
+     * @param xLoc x location of the mouse
+     * @param yLoc y location of the mouse
+     */
     public void paintTemporaryUnit(Graphics2D graphics, Viewport viewport, SimpleUnit unit, int xLoc, int yLoc){
         /* Draw the place it will snap to */
         Point pointOnScreen = new Point(xLoc, yLoc);
@@ -518,7 +493,13 @@ public class UnitPainter {
         return selected;
     }
 
-    /* Add units that are visible in a given unit tile to the list of visible units */
+    /**
+     * Add units that are visible in a given unit tile to the list of visible units 
+     * @param unitShapes list of polygons which represent unit boundaries
+     * @param addedUnits list of units which were detected
+     * @param i x coordinate (unit tiles) of the unit to add
+     * @param j y coordinate (unit tiles) of the unit to to the polygon and unit selection
+     */
     private void addVisibleUnitPoly(ArrayList<Shape> unitShapes, ArrayList<SimpleUnit> addedUnits, int i, int j){
         SimpleUnit unit = grid.getUnit(i, j);
         if(unit == null) return;
@@ -609,8 +590,12 @@ public class UnitPainter {
         return null;
     }
 
-    private Image destinationImage = null;
-    /* Paint the destination image at the given location */
+    /**
+     * Paint the destination image at the given location 
+     * @param graphics graphics handle used to draw the image
+     * @param i x coordinate in unit tiles of the destination
+     * @param j y coordinate in unit tiles of the destination
+     */
     public void paintDestination(Graphics2D graphics, int i, int j){
         if(destinationImage == null)
             try {

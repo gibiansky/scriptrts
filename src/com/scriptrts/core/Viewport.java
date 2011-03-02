@@ -4,6 +4,9 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.geom.Point2D;
 
+/**
+ * Viewport defining how the user is looking at the game map.
+ */
 public class Viewport {
     /**
      * Dimensions of the viewport
@@ -42,6 +45,10 @@ public class Viewport {
     
     /**
      * Create a new viewport
+     * @param w width of viewport
+     * @param h height of viewport
+     * @param mapSizeX horizontal size of map in pixels
+     * @param mapSizeY vertical size of map in pixels
      */
     public Viewport(int w, int h, int mapSizeX, int mapSizeY){
         super();
@@ -54,6 +61,8 @@ public class Viewport {
     
     /**
      * Set dimensions
+     * @param w width of viewport
+     * @param h height of viewport
      */
     public void setDim(int w, int h){
     	width = w;
@@ -62,6 +71,8 @@ public class Viewport {
     
     /**
      * Set map size 
+     * @param mapSizeX horizontal size of map in pixels
+     * @param mapSizeY vertical size of map in pixels
      */
     public void setMapSize(int mapSizeX, int mapSizeY){
         mapX = mapSizeX;
@@ -70,6 +81,8 @@ public class Viewport {
 
     /**
      * Move the viewport by the specified deltas
+     * @param deltaX how much to shift in the x direction
+     * @param deltaY how much to shift in the y direction
      */
     public void translate(int deltaX, int deltaY){
         int origY = y;
@@ -140,6 +153,7 @@ public class Viewport {
 
     /**
      * Set viewport motion limits
+     * @param limit Polygon defining where the viewport top left corner is allowed to be
      */
     public void setViewportLocationLimits(Polygon limit){
         viewportMotionLimited = true;
@@ -148,6 +162,8 @@ public class Viewport {
 
     /**
      * Resize viewport
+     * @param newWidth desired new width of viewport
+     * @param newHeight desired new height of viewport
      */
     public void resize(int newWidth, int newHeight){
         width = newWidth;
@@ -156,6 +172,7 @@ public class Viewport {
 
     /**
      * Get height of the viewport
+     * @return viewport height
      */
     public int getHeight(){
         return height;
@@ -163,6 +180,7 @@ public class Viewport {
 
     /**
      * Get width of the viewport 
+     * @return viewport width
      */
     public int getWidth(){
         return width;
@@ -170,6 +188,7 @@ public class Viewport {
 
     /**
      * Get location of the viewport
+     * @return location of the viewport
      */
     public Point getLocation(){
         return new Point(x, y);
@@ -177,6 +196,7 @@ public class Viewport {
 
     /**
      * Get the x component of the location
+     * @return x coordinate of viewport location
      */
     public int getX(){
         return x;
@@ -184,6 +204,7 @@ public class Viewport {
 
     /**
      * Get the y component of the location
+     * @return y coordinate of viewport location
      */
     public int getY(){
         return y;
@@ -191,6 +212,7 @@ public class Viewport {
 
     /**
      * Set viewport location
+     * @param p new viewport location
      */
     public void setLocation(Point p){
         x = (int) p.x;
@@ -199,16 +221,11 @@ public class Viewport {
 
     /**
      * Set viewport location
+     * @param x new x coordinate of location
+     * @param y new y coordinate of location
      */
     public void setLocation(int x, int y){
         this.x = x;
         this.y = y;
-    }
-
-    /**
-     * Get printable version of a viewport
-     */
-    public String toString(){
-        return "(Viewport at (" + x + ", " + y + ") sized " + width + "x" + height + ")";
     }
 }

@@ -20,6 +20,10 @@ public class MapPainter {
      * Whether or not to draw debug lines on the map. Initialized to false;
      */
     public static boolean DEBUG = false;
+
+    /**
+     * Whether to disable masking (for speed purposes). Initialized to false.
+     */
     public static boolean NO_MASKING = false;
 
     /**
@@ -38,7 +42,15 @@ public class MapPainter {
      * by the index stored in the terrain integer array.
      */
     private BufferedImage[] images = new BufferedImage[TerrainType.values().length];
+
+    /**
+     * A black terrain image used for masking the edges of the map.
+     */
     private BufferedImage blackImage;
+
+    /**
+     * The list of texture images, scaled to current tile size.
+     */
     private BufferedImage[] scaledImages = new BufferedImage[TerrainType.values().length];
 
     /**
@@ -67,21 +79,35 @@ public class MapPainter {
      * An array containing all possible masks that might need to be used. The first index is the type of texture, and the second is the mask type.
      */
     private BufferedImage[][] terrainMasks;
+
+    /**
+     * An array of masks, scaled to current tile size.
+     */
     private BufferedImage[][] scaledTerrainMasks;
+
+    /**
+     * An array of masks used to mask the edge of the map.
+     */
     private BufferedImage[] blackMasks;
+
+    /**
+     * The black edge maps, scaled.
+     */
     private BufferedImage[] scaledBlackMasks;
 
     /**
      * Flags that dictate the order that the masks are stored in the mask arrays 
      */
-    private static final int MASK_TOP = 0, MASK_BOTTOM = 1, MASK_LEFT = 2, MASK_RIGHT = 3; 
-    private static final int MASK_TOP_LEFT = 4, MASK_TOP_RIGHT = 5, MASK_BOTTOM_LEFT = 6, MASK_BOTTOM_RIGHT = 7;
+    private static final int MASK_TOP = 0, MASK_BOTTOM = 1, MASK_LEFT = 2, MASK_RIGHT = 3,
+                             MASK_TOP_LEFT = 4, MASK_TOP_RIGHT = 5, MASK_BOTTOM_LEFT = 6, MASK_BOTTOM_RIGHT = 7;
 
     /**
      * An array which we can loop over to iterate over all mask types
      */
     private static final int[] MASKS = 
-    {MASK_TOP, MASK_BOTTOM, MASK_LEFT, MASK_RIGHT, MASK_TOP_LEFT, MASK_TOP_RIGHT, MASK_BOTTOM_LEFT, MASK_BOTTOM_RIGHT};
+        {
+            MASK_TOP, MASK_BOTTOM, MASK_LEFT, MASK_RIGHT, MASK_TOP_LEFT, MASK_TOP_RIGHT, MASK_BOTTOM_LEFT, MASK_BOTTOM_RIGHT
+        };
 
     /**
      * An array of black and white layer mask images that are applied to textures to create the necessary masks 
@@ -89,7 +115,15 @@ public class MapPainter {
     private static BufferedImage[] maskImages;
 
     /**
+     * Integer array used for internal storage by paintMap() to avoid creating many new integer arrays every time.
+     */
+    private int[] mapBoundsPaintArray = new int[4];
+
+    /**
      * Constructor which takes a map and an initial tile size, and initializes all necessary elements of the painter
+     * @param map map to draw
+     * @param tileX horizontal size of each tile
+     * @param tileY vertical size of each tile (should be half of horizontal size)
      */
     public MapPainter(Map map, int tileX, int tileY){
         /* Store fields */
@@ -360,6 +394,10 @@ public class MapPainter {
 
     /**
      * Enable masking for the given tile with a certain type of mask and a certain masking terrain
+     * @param i x coordinate of map tile
+     * @param j y coordinate of map tile
+     * @param maskingTerrain which terrain type to mask over with
+     * @param maskID which mask to apply
      */
     private void enableMasking(int i, int j, int maskingTerrain, int maskID){
         masking[i][j][maskID] = maskingTerrain;
@@ -367,6 +405,8 @@ public class MapPainter {
 
     /**
      * Retrieve the mask image for this terrain and this type of mask
+     * @param terrain the type of terrain to mask with
+     * @param maskID which type of mask to apply
      */
     private BufferedImage getMask(int terrain, int maskID){
         int blackMask = -1000;
@@ -377,28 +417,10 @@ public class MapPainter {
     }
 
     /**
-     * Attempt to set the tile size to use for this map painter
-     * @return true if tile size was set; 
-     * false if provided tile size was invalid.
-     */
-    public synchronized boolean setTileSize(int tileSizeX, int tileSizeY){
-        boolean different = (tileSizeX != tileX || tileSizeY != tileY);
-
-        if(tileSizeX <= MapPainter.MAX_TILE_X && tileSizeY <= MapPainter.MAX_TILE_Y) 
-            if(tileSizeX >= MapPainter.MIN_TILE_X && tileSizeY >= MapPainter.MIN_TILE_Y) {
-                tileX = tileSizeX;
-                tileY = tileSizeY;
-
-                if(different)
-                    scaleImagesInBackground();
-                return true;
-            }
-
-        return false;
-    }
-
-    /**
      * Get the graphical coordinates of a given tile
+     * @param i x coordinate of tile
+     * @param j y coordinates of tile
+     * @return (x, y) graphical screen coordinates of tile
      */
     public Point getTileCoordinates(int i, int j){
         /* Coordinates of top corner of tile */
@@ -444,6 +466,10 @@ public class MapPainter {
 
     /**
      * Resizes an image to be of desired size
+     * @param img image to scale
+     * @param width new desired width
+     * @param height new desired height
+     * @return a scaled image
      */
     private BufferedImage resizeImage(Image img, int width, int height){
         BufferedImage scaledImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
@@ -456,6 +482,7 @@ public class MapPainter {
 
     /**
      * Get the width of the tiles
+     * @return tile width
      */
     public int getTileWidth(){
         return tileX;
@@ -463,6 +490,7 @@ public class MapPainter {
 
     /**
      * Get the height of the tiles
+     * @return tile height
      */
     public int getTileHeight(){
         return tileY;
@@ -470,6 +498,7 @@ public class MapPainter {
 
     /**
      * Get the map this painter draws
+     * @return map drawn by this painter
      */
     public Map getMap(){
         return toPaint;
@@ -477,6 +506,9 @@ public class MapPainter {
 
     /**
      * Get the tile that is at a given point on the map
+     * @param point screen coordinates of the desired tile
+     * @param viewport viewport that is being used to view map
+     * @return (i, j) map coordinates of tile that was clicked on
      */
     public Point getTileAtPoint(Point point, Viewport viewport){
         /* Calculate boundaries of what the viewport sees */
@@ -537,7 +569,6 @@ public class MapPainter {
     /**
      * Paint the specified part of the map onto the screen using the provided Graphics2D object
      */
-    private int[] mapBoundsPaintArray = new int[4];
     public synchronized void paintMap(Graphics2D graphics, Viewport viewport){
         /* Calculate boundaries of what the viewport sees */
         getViewportTileBounds(mapBoundsPaintArray, viewport);
@@ -611,6 +642,8 @@ public class MapPainter {
 
     /**
      * Get the bounds on the viewport in terms of tiles
+     * @param bounds integer array in which the bounds are stored
+     * @param viewport viewport used to display map
      */
     public void getViewportTileBounds(int[] bounds, Viewport viewport){
         if(bounds.length != 4) return;	
