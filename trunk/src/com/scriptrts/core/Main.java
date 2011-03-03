@@ -81,6 +81,11 @@ public class Main extends JPanel {
      */
     Console console = null;
 
+    /**
+     * Top bar used to display resources and menu bar items
+     */
+    TopBar topBar = null;
+
     /** 
      * Whether or not the console is currently displayed.
      */
@@ -297,6 +302,13 @@ public class Main extends JPanel {
             }
         }
 
+        /* Resize the top bar */
+        if(topBar != null){
+            topBar.setWidth(getGame().getViewport().getWidth());
+            Dimension size = topBar.getPreferredSize();
+            topBar.setBounds(0, 0, size.width, size.height);
+        }
+
         /* Redraw window after resize to fill in spaces which used to be blank */
         repaint();
     }
@@ -344,12 +356,16 @@ public class Main extends JPanel {
         manager.registerKeyCode(KeyEvent.VK_F11);
 
         /* Initialize the console if it hasn't been created */
-        if(console == null){
-            console = new Console((int) (.40 * getGame().getViewport().getHeight()), getGame().getViewport().getWidth());
-            console.addKeyListener(manager);
-            Dimension size = console.getPreferredSize();
-            console.setBounds(0, 0, size.width, size.height);
-        }
+        console = new Console((int) (.40 * getGame().getViewport().getHeight()), getGame().getViewport().getWidth());
+        console.addKeyListener(manager);
+        Dimension size = console.getPreferredSize();
+        console.setBounds(0, 0, size.width, size.height);
+
+        /* Initialize the top bar */
+        topBar = new TopBar(getGame().getViewport().getWidth());
+        size = topBar.getPreferredSize();
+        topBar.setBounds(0, 0, size.width, size.height);
+        add(topBar);
 
         game.init();
 
