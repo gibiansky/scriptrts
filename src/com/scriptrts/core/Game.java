@@ -381,6 +381,7 @@ public class Game {
             graphics.fillRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
             graphics.setColor(Color.BLUE);
             graphics.drawRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
+            graphics.translate(-viewport.getX(), -viewport.getY());
         }
     }
 
