@@ -108,52 +108,14 @@ public class Map {
 			}
 			length /= 2;
 		}
-		populateTiles3();
+		populateTiles();
 		
 	}
 	
 	/**
 	 * Randomly populate terrain tiles
 	 */
-	public void populateTiles() {
-		// create a base of grass
-		for (int i = 0; i < n; i++)
-			for(int j = 0; j < n; j++)
-				tileArray[i][j] = TerrainType.Grass;
-		double param = .005, radius = 4;
-		/* Loop through each tile type */
-		for(TerrainType t : TerrainType.values()) {
-			for (int i = 0; i < n; i++)
-				for(int j = 0; j < n; j++)
-					if(random.nextDouble() < param) {
-						tileArray[i][j] = t;
-						int x = i, y = j;
-						for (int k = 0; k < n; k++)
-							for(int l = 0; l < n; l++)
-								if(Math.pow(x - k, 2) + Math.pow(y - l, 2) / 2 < Math.pow(radius, 2))
-									tileArray[l][k] = t;
-					}
-		}
-	}
-
-	/**
-	 * Randomly populate terrain tiles
-	 */
-	public void populateTiles2() {
-		for (int i = 0; i < n; i++)
-			for(int j = 0; j < n; j++)
-				tileArray[i][j] = TerrainType.Grass;
-		double probability, radius;
-		/* Loop through each tile type */
-		for(TerrainType t : TerrainType.values()) {
-			probability = 0;
-		}
-	}
-	
-	/**
-	 * Randomly populate terrain tiles
-	 */
-	public void populateTiles3(){
+	public void populateTiles(){
 		TerrainType[] terrains = TerrainType.values();
 		for(int i = 0; i < n; i++){
 			for(int j = 0; j < n; j++){
