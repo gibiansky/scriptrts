@@ -17,6 +17,7 @@ public class Script {
 
     /**
      * Whether the interface has been initialized.
+     * @return whether the engine has been initialized
      */
     public static boolean initialized(){
         /* An initialized interface will have a usable script engine */

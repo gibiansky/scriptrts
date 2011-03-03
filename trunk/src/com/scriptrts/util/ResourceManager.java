@@ -15,8 +15,14 @@ import javax.imageio.ImageIO;
 import com.scriptrts.core.SpriteType;
 import com.scriptrts.core.TerrainType;
 
+/**
+ * Utility resource manager to load images, audio, and data files
+ */
 public class ResourceManager {
 
+    /**
+     * Cache of loaded images (hashed with their filenames as keys)
+     */
     private static HashMap<String, BufferedImage> imageCache = new HashMap<String, BufferedImage>();
 
     /**
@@ -90,5 +96,4 @@ public class ResourceManager {
 
         return associations;
     }
-
 }
