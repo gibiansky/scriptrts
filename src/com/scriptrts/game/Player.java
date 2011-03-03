@@ -23,13 +23,13 @@ public class Player {
         colors.push(Color.yellow);
     }
 
-    public Player(String name) throws TooManyPlayersException{
+    public Player(String name) {
         this.name = name;
         id = idCounter++;
         try{
             color = colors.pop();
         } catch(EmptyStackException e){
-            throw new TooManyPlayersException();
+            System.out.println("Empty stack!");
         }
     }
     

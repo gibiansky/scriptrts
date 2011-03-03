@@ -5,15 +5,11 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 
 import javax.imageio.ImageIO;
-
-import com.scriptrts.core.SpriteType;
-import com.scriptrts.core.TerrainType;
 
 /**
  * Utility resource manager to load images, audio, and data files
