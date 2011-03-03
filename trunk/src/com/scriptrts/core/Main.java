@@ -2,21 +2,23 @@ package com.scriptrts.core;
 
 import jargs.gnu.CmdLineParser;
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
-import java.util.Timer;
 import java.util.ArrayList;
+import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
-import com.scriptrts.game.*;
-import com.scriptrts.util.*;
-import com.scriptrts.script.*;
-import com.scriptrts.control.*;
+import com.scriptrts.script.Script;
 
 /**
  * Main game class which starts the application, parses command line arguments, and initializes the game loop.

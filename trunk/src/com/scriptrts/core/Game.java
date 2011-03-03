@@ -1,15 +1,19 @@
 package com.scriptrts.core;
 
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 
-import com.scriptrts.core.*;
-import com.scriptrts.game.*;
-import com.scriptrts.script.*;
-import com.scriptrts.control.*;
-import com.scriptrts.util.*;
+import com.scriptrts.control.Selection;
+import com.scriptrts.control.SelectionStorage;
+import com.scriptrts.game.Direction;
+import com.scriptrts.game.SimpleUnit;
+import com.scriptrts.game.Sprite;
+import com.scriptrts.game.UnitGrid;
+import com.scriptrts.util.ResourceManager;
 
 /**
  * Game class which stores all information about a currently running game and manages

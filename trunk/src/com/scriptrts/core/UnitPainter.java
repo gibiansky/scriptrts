@@ -1,14 +1,21 @@
 package com.scriptrts.core;
 
-import java.awt.*;
+import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.awt.Point;
 
-import com.scriptrts.game.*;
-import com.scriptrts.control.*;
+import com.scriptrts.control.Selection;
+import com.scriptrts.game.Direction;
+import com.scriptrts.game.SimpleUnit;
+import com.scriptrts.game.Sprite;
+import com.scriptrts.game.UnitGrid;
 import com.scriptrts.util.ResourceManager;
 
 /**
