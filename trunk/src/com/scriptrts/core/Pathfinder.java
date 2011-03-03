@@ -29,6 +29,11 @@ public class Pathfinder extends JFrame {
 	private static final Point end = new Point(10, 3);
 
 	public Pathfinder(String file) {
+		
+		if(map[start.x][start.y] == 0 || map[end.x][end.y] == 0) {
+			System.out.println("WARNING: One of the end points is invalid");
+			System.exit(1);
+		}
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setPreferredSize(new Dimension(WIDTH, HEIGHT));
 		pack();
@@ -87,7 +92,6 @@ public class Pathfinder extends JFrame {
 						g.setColor(Color.red);
 						g.fillRect(i * TILEW, j * TILEH, TILEW, TILEH);
 					}
-
 				}
 			}
 		}
