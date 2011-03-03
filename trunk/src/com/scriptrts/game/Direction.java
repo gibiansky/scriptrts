@@ -2,7 +2,12 @@ package com.scriptrts.game;
 
 import java.awt.Point;
 import com.scriptrts.core.*;
+
+/**
+ * Possible directions of movement on the unit grid
+ */
 public enum Direction {
+    /* All possible directions (each cardinal and subcardinal direction) */
 	North,
 	Northeast,
 	East,
@@ -12,6 +17,12 @@ public enum Direction {
 	West,
 	Northwest;
 
+    /**
+     * Find how many pixels a unit shifts when it moves one space in the given direction
+     * @param mapPainter painter object used to paint the map
+     * @param direction which direction the unit is moving in
+     * @return point containing the shift in x, y pixel coordinates
+     */
     public static Point getShift(MapPainter mapPainter, Direction direction){
         if(direction == null)
             return new Point(0, 0);
