@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.PriorityQueue;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -24,9 +26,16 @@ public class Pathfinder extends JFrame {
 	private static final int N = 15;
 	private static final int TILEW = WIDTH / N, TILEH = HEIGHT / N;
 	private byte[][] map;
+	// 0 1 2
+    // 7 X 3 
+    // 6 5 4  [x,y]
+	private int[][] neighbors = {{-1, -1}, {0, -1}, {1,-1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}};
 
 	private static final Point start = new Point(0, 0);
 	private static final Point end = new Point(10, 3);
+	
+	ArrayList<Point> q = new ArrayList<Point>();
+	ArrayList<Integer> value = new ArrayList<Integer>();
 
 	public Pathfinder(String file) {
 		
@@ -72,6 +81,13 @@ public class Pathfinder extends JFrame {
 		}, 0, 75);
 	}
 
+	public void bestFirstSearch(Point start, Point end) {
+		
+		for(int[] pt : neighbors) {
+			
+		}
+	}
+	
 	public static void main(String... argv) {
 		new Pathfinder("resource/pathtest.txt");
 	}
