@@ -5,19 +5,72 @@ import java.awt.Point;
 import java.util.LinkedList;
 import java.util.Collections;
 
+/**
+ * Unit class which only implements most basic functions.
+ */
 public class SimpleUnit {
 
+    /**
+     * The sprites used to display this unit.
+     */
     private Sprite[] sprites;
+
+    /**
+     * Which sprite to display.
+     */
     private SpriteState state;
+
+    /**
+     * The unit's movement speed
+     */
     private int speed;
+
+    /**
+     * The unit's location on the map 
+     */
     private int x, y;
+
+    /**
+     * The direction in which the unit used to be moving. This is used to determine which direction the
+     * unit is facing, even when the direction of movement is null (because unit is stationary).
+     */
     private Direction previousDirection;
+
+    /**
+     * The direction in which the unit is moving.
+     */
     private Direction direction;
+
+    /** 
+     * The path the unit is taking, defined by a list of directions to follow.
+     */
     private Queue<Direction> path = new LinkedList<Direction>();
+
+    /**
+     * How far the unit has progressed in its current tile movement.
+     */
     private double animCounter = 0;
+
+    /**
+     * The shape this unit takes up (which squares it uses)
+     */
     private UnitShape shape;
+
+    /**
+     * Where this unit is going, in unit tile coordinates
+     */
     private Point destination;
 
+
+    /**
+     * Create a new unit
+     * @param sprites array of sprites used to display the image
+     * @param speed unit's speed of movement
+     * @param x unit's starting location x coordinate
+     * @param y unit's starting location y coordinate
+     * @param direction direction in which the unit is facing originally
+     * @param shaped if false, this unit takes up one square; if true, it can take up more.
+     */
     public SimpleUnit(Sprite[] sprites, int speed, int x, int y, Direction direction, boolean shaped) {
         this.sprites = sprites;
         this.speed = speed;
@@ -86,30 +139,65 @@ public class SimpleUnit {
         }
     }
 
+    /**
+     * Create a new unit that takes up one space
+     * @param sprites array of sprites used to display the image
+     * @param speed unit's speed of movement
+     * @param x unit's starting location x coordinate
+     * @param y unit's starting location y coordinate
+     * @param direction direction in which the unit is facing originally
+     */
     public SimpleUnit(Sprite[] sprites, int speed, int x, int y, Direction direction) {
         this(sprites, speed, x, y, direction, true);
     }
 
+    /**
+     * Checks whether this unit can pass over another unit.
+     * @param u the unit passing over
+     * @return whether the unit can pass over this unit
+     */
     public boolean isPassable(SimpleUnit u){
         return false;
     }
 
+    /**
+     * Find where this unit is going
+     * @return unit destination
+     */
     public Point getDestination() {
         return destination;
     }
 
+    /**
+     * Set the unit destination
+     * @param p new unit destination
+     */
     public void setDestination(Point p){
         destination = p;
     }
 
+    /**
+     * Set the unit destination
+     * @param x new unit destination x coordinate
+     * @param y new unit destination y coordinate
+     */
     public void setDestination(int x, int y){
         setDestination(new Point(x, y));
     }
 
+    /**
+     * Find how far the animation has progressed
+     * @return how many far the animation has progressed (double from 0 to 1)
+     */
     public double getAnimationCounter(){
         return animCounter;
     }
-    /* returns how many tile movements it finished */
+
+    /**
+     * Increments the animation counter
+     * @param inc how much to increment the counter by
+     * @return how many tile movements it finished 
+     * */
     public int incrementAnimationCounter(double inc){
         animCounter += inc;
 
@@ -123,6 +211,9 @@ public class SimpleUnit {
 
     }
 
+    /**
+     * Resets animation counter to zero
+     */
     public void resetAnimationCounter(){
         animCounter = 0;
     }
@@ -160,6 +251,7 @@ public class SimpleUnit {
 
     /**
      * Get the path this unit is going to take
+     * @return the path this unit will take, as a queue
      */
     public Queue<Direction> getPath(){
         return (Queue<Direction>) Collections.unmodifiableCollection(path);
@@ -167,6 +259,7 @@ public class SimpleUnit {
 
     /**
      * Set the path this unit is going to take
+     * @param path the new path to take
      */
     public void setPath(Queue<Direction> path){
         this.path =  path;
@@ -174,12 +267,16 @@ public class SimpleUnit {
             direction = path.poll();
     }
 
+    /**
+     * Clear the unit path
+     */
     public void clearPath(){
         path.clear();
     }
 
     /**
      * Append to the path this unit will take
+     * @param d the additional direction to move in
      */
     public void addToPath(Direction d){
         if(direction == null)
@@ -190,6 +287,7 @@ public class SimpleUnit {
 
     /**
      * Append to the path this unit will take
+     * @param additionalPath the additional path to append to the end of the current path
      */
     public void addToPath(Queue<Direction> additionalPath){
         while(additionalPath != null && additionalPath.peek() != null)
@@ -197,21 +295,32 @@ public class SimpleUnit {
     }
 
     /**
-     * @return the state
+     * Get the current sprite state
+     * @return the sprite state
      */
     public SpriteState getState() {
         return state;
     }
 
+    /**
+     * Get the shape of this unit
+     * @param facing determines which direction this unit should be facing to get the shape
+     * @return an array of points representing offsets from the unit center
+     */
     public Point[] getShape(Direction facing){
         return shape.getShape(facing);
     }
 
+    /**
+     * Get the current shape of the unit, using the current facing direction.
+     * @return an array of points representing offsets from the unit center
+     */
     public Point[] getCurrentShape(){
         return getShape(getFacingDirection());
     }
 
     /**
+     * Get the sprites used by this image
      * @return array of sprites this unit may use
      */
     public Sprite[] getSprites(){
@@ -219,6 +328,7 @@ public class SimpleUnit {
     }
 
     /**
+     * Set the sprite state
      * @param state the state to set
      */
     public void setState(SpriteState state) {
@@ -226,6 +336,7 @@ public class SimpleUnit {
     }
 
     /**
+     * Get the unit speed of movement
      * @return the speed
      */
     public int getSpeed() {
@@ -233,6 +344,7 @@ public class SimpleUnit {
     }
 
     /**
+     * Set the unit speed of movement
      * @param speed the speed to set
      */
     public void setSpeed(int speed) {
@@ -240,6 +352,7 @@ public class SimpleUnit {
     }
 
     /**
+     * Get x coordinate of location
      * @return the x
      */
     public int getX() {
@@ -247,6 +360,7 @@ public class SimpleUnit {
     }
 
     /**
+     * Set x coordinate of location
      * @param x the x to set
      */
     public void setX(int x) {
@@ -254,6 +368,7 @@ public class SimpleUnit {
     }
 
     /**
+     * Get y coordinate of location
      * @return the y
      */
     public int getY() {
@@ -261,12 +376,17 @@ public class SimpleUnit {
     }
 
     /**
+     * Set y coordinate of location
      * @param y the y to set
      */
     public void setY(int y) {
         this.y = y;
     }
 
+    /**
+     * Get all the x coordinates of the current shape
+     * @return array of x coordinates
+     */
     int[] allX = null;
     public int[] getAllX(){
         if(allX == null)
@@ -279,6 +399,10 @@ public class SimpleUnit {
         return allX;
     }
 
+    /**
+     * Get all the y coordinates of the current shape
+     * @return array of y coordinates
+     */
     int[] allY = null;
     public int[] getAllY(){
         if(allY == null)
@@ -292,6 +416,7 @@ public class SimpleUnit {
     }
 
     /**
+     * Get the direction this unit is moving in
      * @return the direction
      */
     public Direction getDirection() {
@@ -299,6 +424,7 @@ public class SimpleUnit {
     }
 
     /**
+     * Set the direction this unit is moving in
      * @param direction the direction to set
      */
     public void setDirection(Direction direction) {
@@ -306,24 +432,39 @@ public class SimpleUnit {
     }
 
     /**
+     * Get the current sprite
      * @return the currentSprite
      */
     public Sprite getCurrentSprite() {
         return sprites[getFacingDirection().ordinal()];
     }
 
+    /**
+     * Get the direction in which this unit is facing
+     * @return direction this unit is facing in
+     */
     public Direction getFacingDirection(){
         if(direction != null)
             return direction;
         else
             return previousDirection;
     }
-
 }
 
+/**
+ * The shape of the unit, defined by what points it takes up 
+ * around the center point.
+ */
 class UnitShape {
+    /**
+     * An array of point arrays, with each element being an array that corresponds to the shape
+     * of the unit when it is facing in each of the 8 directions.
+     */
     Point[][] shapes = new Point[8][];
 
+    /**
+     * A two-by-one elongated unit shape
+     */
     static final UnitShape SHAPE_2x1 = new UnitShape(
             new Point[][]{
                 /* North */
@@ -345,6 +486,9 @@ class UnitShape {
             }
             );
 
+    /**
+     * A simple shape composed of one square
+     */
     static final UnitShape SHAPE_1x1 = new UnitShape(
         new Point[][]{
             /* North */
@@ -366,19 +510,28 @@ class UnitShape {
         }
         );
 
+    /**
+     * Create a new unit shape
+     * @param shps the points in the shape, with each point being an offset from the unit center
+     */
     public UnitShape(Point[][] shps){
         super();
         shapes = shps;
     }
 
-    public void setShape(Point[] shp, Direction facing){
-        shapes[facing.ordinal()] = shp;
-    }
-
+    /**
+     * Get the shape of the unit when it is facing a given direction
+     * @param facing which direction it's facing
+     * @return point array denoting unit shape
+     */
     public Point[] getShape(Direction facing){
         return shapes[facing.ordinal()];
     }
 
+    /**
+     * Get how many squares this unit takes up
+     * @return how many squares this unit takes up when facing North
+     */
     public int getSize(){
         return getShape(Direction.North).length;
     }
