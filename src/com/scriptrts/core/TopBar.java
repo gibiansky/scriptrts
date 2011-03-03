@@ -68,6 +68,13 @@ public class TopBar extends JPanel {
                 int horizontal = width - (i+1) * img.getWidth() / scale;
                 ImageButton button = new ImageButton(img, img2, img3, 1/3.0, horizontal, 0);
                 buttons[i] = button;
+
+                final int j = i;
+                buttons[i].addActionListener(new java.awt.event.ActionListener(){
+                    public void actionPerformed(java.awt.event.ActionEvent e){
+                        System.out.println("Menu button pressed!");
+                    }
+                });
             }
 
         } catch (Exception e) { e.printStackTrace(); }

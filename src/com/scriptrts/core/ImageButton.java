@@ -2,6 +2,7 @@ package com.scriptrts.core;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.geom.AffineTransform;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
@@ -111,7 +112,12 @@ public class ImageButton {
         } else
             buttonState = defaultStateImage;
 
+        AffineTransform prevTransform = graphics.getTransform();
+        AffineTransform identity = new AffineTransform();
+
+        graphics.setTransform(identity);
         graphics.drawImage(buttonState, x, y, width, height, null);
+        graphics.setTransform(prevTransform);
     }
 
     /**
