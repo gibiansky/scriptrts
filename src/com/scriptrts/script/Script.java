@@ -1,10 +1,10 @@
 package com.scriptrts.script;
 
 import java.io.StringWriter;
+
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import javax.script.ScriptContext;
-import javax.script.ScriptException;
 
 /**
  * Provides the interface to the embedded Jython interpreter to the rest of the program.
