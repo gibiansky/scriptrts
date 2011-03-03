@@ -86,6 +86,11 @@ public class Main extends JPanel {
      */
     TopBar topBar = null;
 
+    /**
+     * Top bar used to display resources and menu bar items
+     */
+    OverlayPane overlay = null;
+
     /** 
      * Whether or not the console is currently displayed.
      */
@@ -309,6 +314,13 @@ public class Main extends JPanel {
             topBar.setBounds(0, 0, size.width, size.height);
         }
 
+        /* Resize the top bar */
+        if(overlay != null){
+            overlay.setWidth(getGame().getViewport().getWidth());
+            Dimension size = overlay.getPreferredSize();
+            overlay.setBounds(0, getGame().getViewport().getHeight() - size.height, size.width, size.height);
+        }
+
         /* Redraw window after resize to fill in spaces which used to be blank */
         repaint();
     }
@@ -366,6 +378,14 @@ public class Main extends JPanel {
         size = topBar.getPreferredSize();
         topBar.setBounds(0, 0, size.width, size.height);
         add(topBar);
+
+        /* Initialize the top bar */
+        overlay = new OverlayPane(getGame().getViewport());
+        overlay.setWidth(getGame().getViewport().getWidth());
+        size = overlay.getPreferredSize();
+        overlay.setBounds(0, getGame().getViewport().getHeight() - size.height, size.width, size.height);
+        add(overlay);
+
 
         game.init();
 
