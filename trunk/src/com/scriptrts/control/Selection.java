@@ -115,4 +115,20 @@ public class Selection {
     public boolean contains(SimpleUnit unit){
         return objects.contains(unit);
     }
+    
+    public ArrayList<SimpleUnit> getObjects() {
+		return objects;
+	}
+	
+	public Selection clone()
+	{
+		Selection s = new Selection();
+		s.add(this.getObjects());
+		return s;
+	}
+	
+	public static void replaceCurrent(Selection s)
+	{
+		current = s;
+	}
 }
