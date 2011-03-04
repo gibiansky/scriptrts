@@ -1,9 +1,9 @@
+#!/bin/bash
 cd src
 find -name *.java > ../.files
-if [ "$EMAIL" == "nilaykumar07@gmail.com" ]; then
-    javac -d ../bin -cp ".;../lib/jargs.jar" $@ @../.files
-else
-    javac -d ../bin -cp ".:../lib/jargs.jar" $@ @../.files
+if [ "$EMAIL" == "nilaykumar07@gmail.com" ]
+    then javac -d ../bin -cp ".;../lib/jargs.jar" $@ @../.files
+    else javac -d ../bin -cp ".:../lib/jargs.jar" $@ @../.files
 fi
 cd ..;
 rm .files
