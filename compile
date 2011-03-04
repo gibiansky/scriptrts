@@ -7,3 +7,4 @@ if [ "$EMAIL" == "nilaykumar07@gmail.com" ]
 fi
 cd ..;
 rm .files
+echo "Compiled!"

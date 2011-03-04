@@ -123,7 +123,7 @@ public class Main extends JPanel {
         main = this;
 
         /* Create game */
-        game = new Game(128, getWidth(), getHeight());
+        game = new Game(120, getWidth(), getHeight());
     }
 
     /**
@@ -387,7 +387,6 @@ public class Main extends JPanel {
         size = overlay.getPreferredSize();
         overlay.setBounds(0, getGame().getViewport().getHeight() - size.height, size.width, size.height);
         add(overlay);
-
 
         game.init();
 

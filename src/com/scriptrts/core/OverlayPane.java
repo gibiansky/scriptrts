@@ -40,9 +40,14 @@ public class OverlayPane extends JPanel {
     private BufferedImage barBackgroundLeft;
     
     /**
-     * The generic r right corner
+     * The generic right corner
      */
     private BufferedImage barBackgroundRight;
+
+    /**
+     * The minimap to display on the right
+     */
+    private Minimap minimap;
 
     /**
      * Create a new top bar
@@ -60,6 +65,11 @@ public class OverlayPane extends JPanel {
             barBackgroundLeft = ResourceManager.loadImage("resource/MenuBackgroundLeft.png");
             barBackgroundRight = ResourceManager.loadImage("resource/MenuBackgroundRight.png");
         } catch (Exception e) { e.printStackTrace(); }
+
+        minimap = new Minimap();
+        Dimension size = minimap.getPreferredSize();
+        minimap.setBounds(width - size.width, 0, size.width, size.height);
+        add(minimap);
     }
 
     /**
@@ -68,6 +78,9 @@ public class OverlayPane extends JPanel {
      */
     public void setWidth(int width){
         this.width = width;
+
+        Dimension size = minimap.getPreferredSize();
+        minimap.setBounds(width - size.width, 0, size.width, size.height);
     }
 
     /**
