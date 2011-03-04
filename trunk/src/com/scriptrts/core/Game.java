@@ -244,18 +244,22 @@ public class Game {
                     if(unit != null) {
                         /* If already selected and pressing control, deselect */
                         if(manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
+                            Selection newCurrent = Selection.current().clone();
                             if(Selection.current().contains(unit)){
-                                Selection.current().remove(unit);
+                                newCurrent.remove(unit);
                             } else {
-                                Selection.current().add(unit);
+                                newCurrent.add(unit);
                             }
+                            Selection.replaceCurrent(newCurrent);
                         }
                         else {
-                            Selection.current().clear();
-                            Selection.current().add(unit);
+                            Selection newCurrent = Selection.current().clone();
+                            newCurrent.clear();
+                            newCurrent.add(unit);
+                            Selection.replaceCurrent(newCurrent);
                         }
                     } else {
-                        Selection.current().clear();
+                        Selection.replaceCurrent(new Selection());
                     }
                 }
 
@@ -268,10 +272,12 @@ public class Game {
                 SimpleUnit[] selectedUnits = unitPainter.getUnitsInRect(topLeftSelection, bottomRightSelection, viewport);
 
                 if(!manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
-                    Selection.current().clear();
+                    Selection.replaceCurrent(new Selection());
                 }
+                Selection newCurrent = Selection.current().clone();
                 for(SimpleUnit unit : selectedUnits)
-                    Selection.current().add(unit);
+                    newCurrent.add(unit);
+                Selection.replaceCurrent(newCurrent);
 
             } else if(!manager.getLeftMouseDown()){
                 topLeftSelection = null;
