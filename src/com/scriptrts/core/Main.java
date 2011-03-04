@@ -412,19 +412,23 @@ public class Main extends JPanel {
     			}
     			else // Should check here if there are any other keys that have been depressed that would modify the number being pressed
     			{
-    				SelectionStorage.store(Selection.current(), 10);
-    				Selection.replaceCurrent(SelectionStorage.retrieve(x));
+    				if (Selection.current() != null)
+    					SelectionStorage.store(Selection.current(), 10);
+    				if (SelectionStorage.retrieve(x) == null)
+    					Selection.replaceCurrent(new Selection());
+    				else
+    					Selection.replaceCurrent(SelectionStorage.retrieve(x));
 
     			}
     	}
-    	if(manager.getKeyCodeFlag(KeyEvent.VK_TAB))
+    	if(manager.getKeyCodeFlag(KeyEvent.VK_TAB) && SelectionStorage.retrieve(10) != null)
     	{
     		Selection s = new Selection(); 
     		s = SelectionStorage.retrieve(10);
-    		SelectionStorage.store(Selection.current(), 10);
+    		if (Selection.current() != null)
+    			SelectionStorage.store(Selection.current(), 10);
     		Selection.replaceCurrent(s);
     	}
-    	System.out.println(Selection.current() + ", " +  SelectionStorage.retrieve(1));
 
     	/* Calling the console */
         if(manager.getKeyCodeFlag(KeyEvent.VK_F11)){
