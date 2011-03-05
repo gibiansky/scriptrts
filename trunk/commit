@@ -1,4 +1,4 @@
 #!/bin/bash
-svn rm src/python/*.class
+svn rm --force src/python/*.class
 rm src/python/*.class
 svn commit -m "$@" --username $EMAIL
