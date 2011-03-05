@@ -115,11 +115,12 @@ public class ButtonArea extends JPanel {
 
             if(buttons[i] != null){
                 buttons[i].setLocation(x, y);
+                buttons[i].paint(graphics);
+            } else {
+                graphics.setColor(Color.red);
+                graphics.fillRect(x, y, size, size);
+                graphics.setColor(Color.black);
             }
-
-            graphics.setColor(Color.red);
-            graphics.fillRect(x, y, size, size);
-            graphics.setColor(Color.black);
         }
     }
 

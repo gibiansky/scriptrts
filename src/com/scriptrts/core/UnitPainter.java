@@ -358,6 +358,9 @@ public class UnitPainter {
      * @param yLoc y location of the mouse
      */
     public void paintTemporaryUnit(Graphics2D graphics, Viewport viewport, SimpleUnit unit, int xLoc, int yLoc){
+        if(unit == null)
+            return;
+
         /* Draw the place it will snap to */
         Point pointOnScreen = new Point(xLoc, yLoc);
         Point unitTile = unitTileAtPoint(pointOnScreen, viewport);
@@ -393,7 +396,7 @@ public class UnitPainter {
 
         /* Draw the sprite on top */
         Sprite sprite = unit.getCurrentSprite();
-		sprite.drawCentered(graphics, xLoc + viewport.getX(), yLoc + viewport.getY());
+        sprite.drawCentered(graphics, xLoc + viewport.getX(), yLoc + viewport.getY());
     }
 
     /**
