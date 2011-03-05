@@ -11,6 +11,11 @@ import javax.script.ScriptEngineManager;
  */
 public class Script {
     /**
+     * Whether to disable the scripting engine
+     */
+    public static boolean DISABLE = false;
+
+    /**
      * Low-level script engine interface, used to communicate with Jython 
      */
     private static ScriptEngine engine = null;
@@ -29,7 +34,8 @@ public class Script {
      */
     public static void initialize(){
         /* Create the script engine. Jython.jar should be in the classpath */
-        engine = new ScriptEngineManager().getEngineByName("python");
+        if(!DISABLE)
+            engine = new ScriptEngineManager().getEngineByName("python");
     }
 
     /**
@@ -53,6 +59,12 @@ public class Script {
         /* If initialization hasn't been done, do it now */
         if(!Script.initialized())
             Script.initialize();
+
+        if(DISABLE){
+            if(writer != null)
+                writer.write("Error: Python disabled.\n");
+            return "Error: Python disabled.\n";
+        }
 
         /* If we don't need to write to a specified place, just write somewhere to later collect the String */
         if(writer == null)
