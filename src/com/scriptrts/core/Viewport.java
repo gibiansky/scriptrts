@@ -80,6 +80,21 @@ public class Viewport {
     }
 
     /**
+     * Get map horizontal size
+     * @return horizontal size of map
+     */
+    public int getMapX(){
+        return mapX;
+    }
+
+    /**
+     * Get map vertical size
+     * @return vertical size of map
+     */
+    public int getMapY(){
+        return mapY;
+    }
+    /**
      * Move the viewport by the specified deltas
      * @param deltaX how much to shift in the x direction
      * @param deltaY how much to shift in the y direction
@@ -225,7 +240,9 @@ public class Viewport {
      * @param y new y coordinate of location
      */
     public void setLocation(int x, int y){
-        this.x = x;
-        this.y = y;
+        if(limit.contains(x, y)){
+            this.x = x;
+            this.y = y;
+        }
     }
 }

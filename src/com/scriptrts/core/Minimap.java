@@ -2,12 +2,16 @@ package com.scriptrts.core;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.Polygon;
 import java.awt.image.BufferedImage;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseEvent;
 import javax.swing.JPanel;
 
 
@@ -31,10 +35,29 @@ public class Minimap extends JPanel {
     private BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
     /**
-     * Create a new minimap
+     * Viewport currently showing map
      */
-    public Minimap(){
+    private Viewport viewport;
+
+    /**
+     * Create a new minimap
+     * @param viewport to show on minimap
+     */
+    public Minimap(Viewport viewport){
         super(true);
+
+        this.viewport = viewport;
+        addMouseListener(new MouseAdapter(){
+            public void mouseClicked(MouseEvent mouse){
+                moveViewportOnClick(mouse.getX(), mouse.getY());
+            }
+        });
+        addMouseMotionListener(new MouseMotionAdapter(){
+            public void mouseDragged(MouseEvent mouse){
+                moveViewportOnClick(mouse.getX(), mouse.getY());
+            }
+        });
+
     }
 
     /**
@@ -45,13 +68,23 @@ public class Minimap extends JPanel {
         Graphics2D graphics = (Graphics2D) g;
         redrawMinimap();
         graphics.drawImage(image, 0, 0, null);
+
+        /* Draw viewport */
+        graphics.setColor(Color.black);
+        double scale = ((double) viewport.getMapX()) / width;
+        int x = (int) (viewport.getX() / scale);
+        int y = (int) (viewport.getY() / scale);
+        int w = (int) (viewport.getWidth() / scale);
+        int h = (int) (viewport.getHeight() / scale);
+        graphics.drawRect(x, y, w, h);
+        graphics.drawRect(x-1, y-1, w+2, h+2);
+
     }
 
     /**
      * Calculate the minimap image
      */
     private void redrawMinimap(){
-
         /* Draw a temporary square map */
         double size = (width / Math.sqrt(2));
         BufferedImage temporary = new BufferedImage((int) size, (int) size, BufferedImage.TYPE_INT_ARGB);
@@ -61,9 +94,6 @@ public class Minimap extends JPanel {
         Map map = Main.getGame().getCurrentMap();
         TerrainType[][] terrain = map.getTileArray();
         double squareSize = size / n;
-
-        graphics.setColor(Color.red);
-        graphics.fillRect(0, 0, (int) size, (int) size);
 
         /* Draw terrain */
         for(int i = 0; i < n; i++){
@@ -75,29 +105,45 @@ public class Minimap extends JPanel {
             }
         }
 
+        /* Transform the map into the minimap */
+        AffineTransform transform = new AffineTransform();
+        transform.scale(-1, .5);
+        transform.translate(temporary.getWidth() / 2 / Math.sqrt(2), temporary.getHeight() / 2 / Math.sqrt(2));
+        transform.rotate(5*Math.PI/2 + Math.PI / 4);
+        transform.translate(-temporary.getWidth() / 2, -temporary.getHeight() / 2);
+
         /* Draw on the real minimap */
         graphics = (Graphics2D) image.getGraphics();
 
         /* Draw the background */
-        graphics.setColor(Color.white);
-        int[] xs = new int[]{0, width/2, width, width/2};
-        int[] ys = new int[]{height/2, 0, height/2, height};
+        int[] xs = new int[]{
+            0, width/2, width, width/2
+        };
+        int[] ys = new int[]{
+            height/2, 0, height/2, height
+        };
         Polygon poly = new Polygon(xs, ys, 4);
         graphics.fillPolygon(poly);
-        
-        /* Transform the map into the minimap */
-        AffineTransform transform = new AffineTransform();
-        transform.scale(1, .5);
-        transform.translate(temporary.getWidth() / 2 / Math.sqrt(2), temporary.getHeight() / 2 / Math.sqrt(2));
-        transform.rotate(Math.PI / 4);
-        transform.translate(-temporary.getWidth() / 2, -temporary.getHeight() / 2);
 
-        /* Draw minimap */
+        /* Paint the minimap */
+        AffineTransform previous = graphics.getTransform();
         graphics.setTransform(transform);
-        graphics.drawImage(temporary, temporary.getWidth() / 2, -1, temporary.getWidth() + 2, temporary.getHeight() + 2, null);
+        int shiftX = temporary.getWidth();
+        int shiftY = temporary.getHeight() / 2;
+        graphics.drawImage(temporary, shiftX, shiftY, temporary.getWidth() + 2, temporary.getHeight() + 2, null);
+        graphics.setTransform(previous);
+    }
 
-        /* Reset transform */
-        graphics.setTransform(new AffineTransform());
+    /**
+     * Move the viewport to the clicked tile
+     * @param x x coordinate of click
+     * @param y y coordinate of click
+     */
+    public void moveViewportOnClick(int x, int y){
+        double scale = ((double) viewport.getMapX()) / width;
+        int xView = (int) (x * scale);
+        int yView = (int) (y * scale);
+        viewport.setLocation(xView, yView);
     }
 
     /**

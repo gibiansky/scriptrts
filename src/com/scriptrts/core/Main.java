@@ -123,7 +123,7 @@ public class Main extends JPanel {
         main = this;
 
         /* Create game */
-        game = new Game(120, getWidth(), getHeight());
+        game = new Game(129, window.getWidth(), window.getHeight());
     }
 
     /**
