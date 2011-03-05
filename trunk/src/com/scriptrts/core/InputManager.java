@@ -34,7 +34,17 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
      * Has the mouse been moved?
      */
     private boolean mouseMovement = false;
+
+    /**
+     * Time when mouse left button was last clicked
+     */
+    private long mouseLeftClickedTime = System.currentTimeMillis();
     
+    /**
+     * Time when mouse right button was last clicked
+     */
+    private long mouseRightClickedTime = System.currentTimeMillis();
+
     /**
      * The point where the mouse has been last seen.
      */
@@ -145,6 +155,10 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     public boolean getMouseClicked(){
         boolean ret = mouseClickedRight || mouseClickedLeft;
         mouseClickedRight = mouseClickedLeft = false;
+
+        if(System.currentTimeMillis() - mouseRightClickedTime > 200 && System.currentTimeMillis() - mouseLeftClickedTime > 200)
+                return false;
+
         return ret;
     }
     
@@ -155,6 +169,10 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     public boolean getRightMouseClicked(){
         boolean ret = mouseClickedRight;
         mouseClickedRight = false;
+
+        if(System.currentTimeMillis() - mouseRightClickedTime > 200)
+            return false;
+
         return ret;
     }
 
@@ -165,6 +183,10 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     public boolean getLeftMouseClicked(){
         boolean ret = mouseClickedLeft;
         mouseClickedLeft = false;
+
+        if(System.currentTimeMillis() - mouseLeftClickedTime > 200)
+            return false;
+
         return ret;
     }
 
@@ -255,10 +277,14 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
      * @param mouse MouseEvent passed from Swing component
      */
     public void mouseClicked(MouseEvent mouse){
-        if(mouse.getButton() == MouseEvent.BUTTON1)
+        if(mouse.getButton() == MouseEvent.BUTTON1){
             mouseClickedLeft = true;
-        else if(mouse.getButton() == MouseEvent.BUTTON3)
+            mouseLeftClickedTime = System.currentTimeMillis();
+        }
+        else if(mouse.getButton() == MouseEvent.BUTTON3){
             mouseClickedRight = true;
+            mouseRightClickedTime = System.currentTimeMillis();
+        }
         mouseLocation.x = mouse.getX();
         mouseLocation.y = mouse.getY();
     } 
