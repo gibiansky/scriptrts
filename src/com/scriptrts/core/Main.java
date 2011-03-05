@@ -226,6 +226,7 @@ public class Main extends JPanel {
         CmdLineParser.Option noMapDebugOpt = parser.addBooleanOption("nomapdebug");
         CmdLineParser.Option noUnitDebugOpt = parser.addBooleanOption("nounitdebug");
         CmdLineParser.Option noMaskOpt = parser.addBooleanOption("nomasking");
+        CmdLineParser.Option noScriptOpt = parser.addBooleanOption("disable-jython");
 
         /* Script options */
         CmdLineParser.Option scriptOpt = parser.addStringOption('m', "module");
@@ -268,6 +269,7 @@ public class Main extends JPanel {
         DEBUG = (Boolean) parser.getOptionValue(debugOpt, Boolean.FALSE);
         fullscreen = (Boolean) parser.getOptionValue(fullscreenOpt, Boolean.FALSE);
         fpsLogging = (Boolean) parser.getOptionValue(fpsLogOpt,  Boolean.FALSE);
+        Script.DISABLE = (Boolean) parser.getOptionValue(noScriptOpt,  Boolean.FALSE);
         MapPainter.NO_MASKING = (Boolean) parser.getOptionValue(noMaskOpt,  Boolean.FALSE);
 
         boolean noMap = (Boolean) parser.getOptionValue(noMapDebugOpt,  Boolean.FALSE);

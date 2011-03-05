@@ -74,14 +74,14 @@ public class OverlayPane extends JPanel {
 
         /* Load images */
         try {
-            barBackground = ResourceManager.loadImage("resource/MenuBackgroundCenter.png");
-            barBackgroundLeft = ResourceManager.loadImage("resource/MenuBackgroundLeft.png");
-            barBackgroundRight = ResourceManager.loadImage("resource/MenuBackgroundRight.png");
+            barBackground = ResourceManager.loadImage("resource/OverlayBackgroundCenter.png");
+            barBackgroundLeft = ResourceManager.loadImage("resource/OverlayBackgroundLeft.png");
+            barBackgroundRight = ResourceManager.loadImage("resource/OverlayBackgroundRight.png");
         } catch (Exception e) { e.printStackTrace(); }
 
         minimap = new Minimap(viewport);
         Dimension size = minimap.getPreferredSize();
-        minimap.setBounds(width - size.width, 0, size.width, size.height);
+        minimap.setBounds(width - size.width, 5, size.width, size.height);
         int minimapX = width - size.width;
         add(minimap);
 
@@ -105,7 +105,7 @@ public class OverlayPane extends JPanel {
         this.width = width;
 
         Dimension size = minimap.getPreferredSize();
-        minimap.setBounds(width - size.width, 0, size.width, size.height);
+        minimap.setBounds(width - size.width, 5, size.width, size.height);
         int minimapX = width - size.width;
 
         size = buttonArea.getPreferredSize();
@@ -134,22 +134,15 @@ public class OverlayPane extends JPanel {
         graphics.setColor(Color.black);
         graphics.fillRect(0, 0, width, height);
 
-        int vertical = viewport.getHeight() - height;
-        int scale = barBackgroundLeft.getHeight() / 30;
-        int imgWidth = barBackgroundLeft.getWidth() / scale;
-        int imgHeight = barBackgroundLeft.getHeight() / scale;
-        graphics.drawImage(barBackgroundLeft, 0, 0, imgWidth, imgHeight, null);
+        int imgWidth = barBackgroundLeft.getWidth() - 3;
+        int imgHeight = barBackgroundLeft.getHeight() - 2;
+        graphics.drawImage(barBackgroundLeft, 0, 0, null);
 
-        int i = imgWidth;
-        imgWidth = barBackground.getWidth() / scale;
-        imgHeight = barBackground.getHeight() / scale;
-        for(; i <= width - imgWidth; i += imgWidth){
-            graphics.drawImage(barBackground, i, 0, imgWidth, imgHeight, null);
+        for(int i = imgWidth; i <= width; i += imgWidth){
+            graphics.drawImage(barBackground, i, 0, null);
         }
 
-        imgWidth = barBackgroundRight.getWidth() / scale;
-        imgHeight = barBackgroundRight.getHeight() / scale;
-        graphics.drawImage(barBackgroundRight, width - imgWidth, 0, imgWidth, imgHeight, null);
+        graphics.drawImage(barBackgroundRight, width - imgWidth, 0, null);
     }
 
     /**
@@ -157,12 +150,6 @@ public class OverlayPane extends JPanel {
      * @return size of the top bar
      */
     public Dimension getPreferredSize(){
-        return new Dimension(width, height);
+        return new Dimension(width, height + 10);
     }
-
-    // FIXME remove me i'm just here for lazy debugs
-    public Dimension minimapSize() {
-    	return minimap.getSize();
-    }
-    public Rectangle minimapBounds() { return minimap.getBounds(); }
 }
