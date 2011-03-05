@@ -4,8 +4,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
+import java.awt.Rectangle;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
+
 import javax.swing.JPanel;
 
 import com.scriptrts.util.ResourceManager;
@@ -55,6 +57,7 @@ public class OverlayPane extends JPanel {
      */
     public OverlayPane(Viewport viewport) {
         super(true);
+        setLayout(null);
 
         this.viewport = viewport;
         this.width = viewport.getWidth();
@@ -127,4 +130,9 @@ public class OverlayPane extends JPanel {
         return new Dimension(width, height);
     }
 
+    // FIXME remove me i'm just here for lazy debugs
+    public Dimension minimapSize() {
+    	return minimap.getSize();
+    }
+    public Rectangle minimapBounds() { return minimap.getBounds(); }
 }
