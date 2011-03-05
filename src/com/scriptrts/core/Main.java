@@ -130,7 +130,9 @@ public class Main extends JPanel {
         /* Enable double buffering and use an absolute layout */
         super(true);
         setLayout(null);
+        setPreferredSize(window.getSize()); // make Window.pack() pack to the right size
         main = this;
+        
 
         /* Create game */
         game = new Game(129, window.getWidth(), window.getHeight());
@@ -170,6 +172,9 @@ public class Main extends JPanel {
         /* Add graphics location */
         final Main panel = new Main();
         window.getContentPane().add(panel);
+        
+        /* Pack window to ensure actual usable area is the right size (ignoring look and feel) */
+        window.pack();
 
         /* Set window to be visible */
         window.setVisible(true);
@@ -300,6 +305,7 @@ public class Main extends JPanel {
     public void resized(){
         /* Resize viewport inside game */
         getGame().getViewport().resize(getWidth(), getHeight());
+        main.setPreferredSize(getSize());
 
         /* Resize console */
         if(console != null){
@@ -328,14 +334,17 @@ public class Main extends JPanel {
             Dimension size = topBar.getPreferredSize();
             topBar.setBounds(0, 0, size.width, size.height);
         }
-
+        
         /* Resize the top bar */
         if(overlay != null){
             overlay.setWidth(getGame().getViewport().getWidth());
             Dimension size = overlay.getPreferredSize();
             overlay.setBounds(0, getGame().getViewport().getHeight() - size.height, size.width, size.height);
         }
-
+        
+        /* Update window size */
+        window.pack();
+        
         /* Redraw window after resize to fill in spaces which used to be blank */
         repaint();
     }
