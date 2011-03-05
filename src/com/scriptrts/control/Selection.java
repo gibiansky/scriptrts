@@ -137,8 +137,23 @@ public class Selection {
 		return s;
 	}
 	
+	public boolean equals(Selection s){
+		for(SimpleUnit x: s.objects){
+			if(!this.contains(x))
+				return false;
+		}
+		return true;
+	}
+	
+	public boolean isEmpty()
+	{
+		return this.objects.isEmpty();
+	}
+	
 	public static void replaceCurrent(Selection s)
 	{
+		if (!Selection.current().isEmpty())
+            SelectionStorage.store(Selection.current(), 10);
 		current = s;
 
         SelectionArea.selectionChanged();

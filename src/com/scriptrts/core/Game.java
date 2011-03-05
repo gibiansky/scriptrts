@@ -154,7 +154,7 @@ public class Game {
         manager.registerKeyCode(KeyEvent.VK_8);
         manager.registerKeyCode(KeyEvent.VK_9);
         manager.registerKeyCode(KeyEvent.VK_0);
-        manager.registerKeyCode(KeyEvent.VK_TAB);
+        manager.registerKeyCode(KeyEvent.VK_BACK_QUOTE);
         manager.registerKeyCode(KeyEvent.VK_CONTROL);
     }
 
@@ -177,23 +177,23 @@ public class Game {
                     }
 
                     /* Should check here if there are any other keys that have been depressed that would modify the number being pressed */
-                    else {
-                        if (Selection.current() != null)
-                            SelectionStorage.store(Selection.current(), 10);
+                    else if(!Selection.current().equals(SelectionStorage.retrieve(x))) {
                         if (SelectionStorage.retrieve(x) == null)
                             Selection.replaceCurrent(new Selection());
                         else
                             Selection.replaceCurrent(SelectionStorage.retrieve(x));
+                        
                     }
+                    manager.clearKeyCodeFlag(digits[x]);
                 }
             }
 
-            if(manager.getKeyCodeFlag(KeyEvent.VK_TAB) && SelectionStorage.retrieve(10) != null) {
-                Selection s = SelectionStorage.retrieve(10);
-                if (Selection.current() != null)
-                    SelectionStorage.store(Selection.current(), 10);
+            if(manager.getKeyCodeFlag(KeyEvent.VK_BACK_QUOTE) && !SelectionStorage.retrieve(10).isEmpty() && !Selection.current().equals(SelectionStorage.retrieve(10)) ) {
+            	Selection s = SelectionStorage.retrieve(10);
                 Selection.replaceCurrent(s);
+                manager.clearKeyCodeFlag(KeyEvent.VK_BACK_QUOTE);
             }
+            System.out.println(SelectionStorage.retrieve(10) + ", " + Selection.current());
 
             if(manager.getKeyCodeFlag(KeyEvent.VK_D) || manager.getKeyCodeFlag(KeyEvent.VK_S)){
                 placingUnit = !placingUnit;
