@@ -320,14 +320,14 @@ public class Game {
                 viewport.translate(0, -increment);
             if(manager.getKeyCodeFlag(KeyEvent.VK_DOWN))
                 viewport.translate(0, increment);
-            
-            if( manager.getMouseLocation().x > viewport.getWidth() - 30)
+            /* Mouse scrolling. Disabled for windowed mode. */
+            if( Main.FULLSCREEN && manager.getMouseLocation().x > viewport.getWidth() - 30)
                 viewport.translate(increment,0);
-            if( manager.getMouseLocation().x < 30)
+            if( Main.FULLSCREEN && manager.getMouseLocation().x < 30)
                 viewport.translate(-increment,0);
-            if( manager.getMouseLocation().y < 30)
+            if( Main.FULLSCREEN && manager.getMouseLocation().y < 30)
                 viewport.translate(0, -increment);
-            if( manager.getMouseLocation().y > viewport.getHeight() - 30)
+            if( Main.FULLSCREEN && manager.getMouseLocation().y > viewport.getHeight() - 30)
                 viewport.translate(0, increment);
             
 

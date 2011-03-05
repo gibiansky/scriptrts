@@ -60,7 +60,7 @@ public class Main extends JPanel {
     /**
      * Whether to use fullscreen (or alternatively, a windowed mode)
      */
-    private static boolean fullscreen =  false;
+    public static boolean FULLSCREEN =  false;
 
     /**
      * Whether to enable debug drawing and printing.
@@ -153,7 +153,7 @@ public class Main extends JPanel {
         window.setSize(width, height);
 
         /* Check for fullscreen */
-        if(fullscreen){
+        if(FULLSCREEN){
             /* Disable resizing and decorations */
             window.setUndecorated(true);
             window.setResizable(false);
@@ -267,7 +267,7 @@ public class Main extends JPanel {
 
         /* Interpret arguments */
         DEBUG = (Boolean) parser.getOptionValue(debugOpt, Boolean.FALSE);
-        fullscreen = (Boolean) parser.getOptionValue(fullscreenOpt, Boolean.FALSE);
+        FULLSCREEN = (Boolean) parser.getOptionValue(fullscreenOpt, Boolean.FALSE);
         fpsLogging = (Boolean) parser.getOptionValue(fpsLogOpt,  Boolean.FALSE);
         Script.DISABLE = (Boolean) parser.getOptionValue(noScriptOpt,  Boolean.FALSE);
         MapPainter.NO_MASKING = (Boolean) parser.getOptionValue(noMaskOpt,  Boolean.FALSE);
