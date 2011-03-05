@@ -364,6 +364,10 @@ public class Main extends JPanel {
      * Initialize game resources 
      */
     public void initializeGame(){
+        while(!Console.calibrated()){
+            try { Thread.sleep(10); }
+            catch (Exception e) {}
+        }
         /* Initialize scripting engine */
         if(!Script.initialized()) {
             Script.initialize();
@@ -393,6 +397,8 @@ public class Main extends JPanel {
             /* Custom init expressions */
             for(String expr : pyExprs)
                 System.out.print(Script.exec(expr));
+            
+            repaint();
         }
 
         /* Set up listeners */
