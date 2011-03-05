@@ -401,9 +401,9 @@ public class Main extends JPanel {
         addMouseMotionListener(manager);
         addMouseListener(manager);
         addMouseWheelListener(manager);
-        manager.registerKeyCode(KeyEvent.VK_F11);
-        manager.registerKeyCode(KeyEvent.VK_F10);
         manager.registerKeyCode(KeyEvent.VK_F9);
+        manager.registerKeyCode(KeyEvent.VK_F8);
+        manager.registerKeyCode(KeyEvent.VK_F7);
 
         /* Initialize the top bar */
         topBar = new TopBar(getGame().getViewport().getWidth(), this);
@@ -448,8 +448,8 @@ public class Main extends JPanel {
     public void updateGame(){
 
     	/* Calling the console */
-        if(manager.getKeyCodeFlag(KeyEvent.VK_F11)){
-            manager.clearKeyCodeFlag(KeyEvent.VK_F11);
+        if(manager.getKeyCodeFlag(KeyEvent.VK_F9)){
+            manager.clearKeyCodeFlag(KeyEvent.VK_F9);
 
             /* Show or unshow the console */
             consoleDown = !consoleDown;
@@ -463,8 +463,8 @@ public class Main extends JPanel {
         }
 
         /* Calling the top bar */
-        if(manager.getKeyCodeFlag(KeyEvent.VK_F10)){
-            manager.clearKeyCodeFlag(KeyEvent.VK_F10);
+        if(manager.getKeyCodeFlag(KeyEvent.VK_F8)){
+            manager.clearKeyCodeFlag(KeyEvent.VK_F8);
 
             /* Show or unshow the console */
             menuDown = !menuDown;
@@ -482,8 +482,8 @@ public class Main extends JPanel {
         }
 
         /* Calling the overlay */
-        if(manager.getKeyCodeFlag(KeyEvent.VK_F9)){
-            manager.clearKeyCodeFlag(KeyEvent.VK_F9);
+        if(manager.getKeyCodeFlag(KeyEvent.VK_F7)){
+            manager.clearKeyCodeFlag(KeyEvent.VK_F7);
 
             /* Show or unshow the console */
             overlayUp = !overlayUp;
