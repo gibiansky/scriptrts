@@ -416,36 +416,6 @@ public class Main extends JPanel {
      * Update the state of the game.
      */
     public void updateGame(){
-    	/* Grouping 
-    	 * */
-    	int[] digits = {KeyEvent.VK_0, KeyEvent.VK_1, KeyEvent.VK_2, KeyEvent.VK_3, KeyEvent.VK_4, KeyEvent.VK_5, KeyEvent.VK_6, KeyEvent.VK_7, KeyEvent.VK_8, KeyEvent.VK_9};
-    	for(int x =0; x < 10; x++)
-    	{
-    		if (manager.getKeyCodeFlag(digits[x]))
-    			if (manager.getKeyCodeFlag(KeyEvent.VK_CONTROL))
-    			{
-    				SelectionStorage.store(Selection.current(), x);
-
-    			}
-    			else // Should check here if there are any other keys that have been depressed that would modify the number being pressed
-    			{
-    				if (Selection.current() != null)
-    					SelectionStorage.store(Selection.current(), 10);
-    				if (SelectionStorage.retrieve(x) == null)
-    					Selection.replaceCurrent(new Selection());
-    				else
-    					Selection.replaceCurrent(SelectionStorage.retrieve(x));
-
-    			}
-    	}
-    	if(manager.getKeyCodeFlag(KeyEvent.VK_TAB) && SelectionStorage.retrieve(10) != null)
-    	{
-    		Selection s = new Selection(); 
-    		s = SelectionStorage.retrieve(10);
-    		if (Selection.current() != null)
-    			SelectionStorage.store(Selection.current(), 10);
-    		Selection.replaceCurrent(s);
-    	}
 
     	/* Calling the console */
         if(manager.getKeyCodeFlag(KeyEvent.VK_F11)){

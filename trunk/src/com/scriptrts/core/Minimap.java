@@ -40,6 +40,11 @@ public class Minimap extends JPanel {
     private Viewport viewport;
 
     /**
+     * Whether the minimap needs to be updated with new information about the map
+     */
+    private boolean changedMinimap = true;
+
+    /**
      * Create a new minimap
      * @param viewport to show on minimap
      */
@@ -66,8 +71,11 @@ public class Minimap extends JPanel {
      */
     public void paintComponent(Graphics g){
         Graphics2D graphics = (Graphics2D) g;
-        redrawMinimap();
         graphics.drawImage(image, 0, 0, null);
+
+
+        if(changedMinimap && Main.getGame().getCurrentMap() != null)
+            redrawMinimap();
 
         /* Draw viewport */
         graphics.setColor(Color.black);
@@ -85,6 +93,9 @@ public class Minimap extends JPanel {
      * Calculate the minimap image
      */
     private void redrawMinimap(){
+        /* After this redraw, no more updated needed until next change */
+        changedMinimap = false;
+
         /* Draw a temporary square map */
         double size = (width / Math.sqrt(2));
         BufferedImage temporary = new BufferedImage((int) size, (int) size, BufferedImage.TYPE_INT_ARGB);
