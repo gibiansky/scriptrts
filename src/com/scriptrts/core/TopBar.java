@@ -117,6 +117,7 @@ public class TopBar extends JPanel {
 								mainMenu.close.removeActionListener(this); // this is for the old popup
 								pMenu.hide();
 								popupShown = false;
+                                Main.getMain().requestFocus();
 							}
 						});
 						pMenu.show();

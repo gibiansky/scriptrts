@@ -292,6 +292,15 @@ public class Main extends JPanel {
     }
 
     /**
+     * Return current main instance.
+     * @return current main object
+     */
+    public static Main getMain(){
+        return main;
+    }
+
+
+    /**
      * Get the frames per second (FPS) that this game should run at
      * @return fps number of frames and updates per second
      */
@@ -386,6 +395,7 @@ public class Main extends JPanel {
 
         /* Set up listeners */
         window.addKeyListener(manager);
+        addKeyListener(manager);
         addMouseMotionListener(manager);
         addMouseListener(manager);
         addMouseWheelListener(manager);
@@ -419,6 +429,15 @@ public class Main extends JPanel {
 
         /* Done with initialization */
         initialized = true;
+    }
+
+    /**
+     * Request focus back to main panel
+     * @return true for success
+     */
+    public void requestFocus(){
+        super.requestFocus();
+        window.requestFocus();
     }
 
     /**
