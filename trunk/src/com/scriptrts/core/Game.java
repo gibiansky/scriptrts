@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
+import java.awt.geom.AffineTransform;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 
@@ -323,6 +324,7 @@ public class Game {
         graphics.fillRect(0, 0, 2000, 2000);
 
         /* Move over to the viewport location */
+        AffineTransform transform = graphics.getTransform();
         graphics.translate(-viewport.getX(), -viewport.getY());
 
         /* Paint the map using the map painter */
@@ -359,7 +361,7 @@ public class Game {
         else    
             drawSelection(graphics);
 
-        graphics.translate(viewport.getX(), viewport.getY());
+        graphics.setTransform(transform);
     }
 
     /**

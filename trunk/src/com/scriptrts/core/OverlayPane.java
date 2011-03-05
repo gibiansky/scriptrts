@@ -66,7 +66,7 @@ public class OverlayPane extends JPanel {
             barBackgroundRight = ResourceManager.loadImage("resource/MenuBackgroundRight.png");
         } catch (Exception e) { e.printStackTrace(); }
 
-        minimap = new Minimap();
+        minimap = new Minimap(viewport);
         Dimension size = minimap.getPreferredSize();
         minimap.setBounds(width - size.width, 0, size.width, size.height);
         add(minimap);
