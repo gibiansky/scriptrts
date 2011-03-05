@@ -111,7 +111,7 @@ public class Game {
     public void init(){
         /* Create and populate map with tiles */
         map = new Map(n);
-        map.generateMap(.7);
+        map.generateMap(.64);
 
         /* Create map painter */
         mapPainter = new MapPainter(map, 128, 64);
