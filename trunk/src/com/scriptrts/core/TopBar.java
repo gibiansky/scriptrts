@@ -4,9 +4,15 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
+
 import javax.swing.JPanel;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
 
 import com.scriptrts.util.ResourceManager;
 
@@ -44,15 +50,25 @@ public class TopBar extends JPanel {
      */
     private ImageButton[] buttons;
 
+    protected Main parentMain;
+    
+    /**
+     * The main menu, with save/load/settings/etc options on it.
+     */
+    protected InGameMenu mainMenu;
+    
     /**
      * Create a new top bar
      * @param width width of the screen
+     * @param owner the Main instance for the game this is for (for referencing stuff)
      */
-    public TopBar(int width) {
+    public TopBar(int width, Main parent) {
         super(true);
-
+        parentMain = parent;
         this.width = width;
 
+        mainMenu = new InGameMenu();
+        
         /* Load images */
         try {
             barBackground = ResourceManager.loadImage("resource/MenuBackgroundCenter.png");
@@ -76,7 +92,39 @@ public class TopBar extends JPanel {
                     }
                 });
             }
-
+            
+            /* very beautiful code here */
+            /* Honestly this should probably be made more elegant somehow... put into a method somewhere... */
+            buttons[2].addActionListener(new ActionListener() {
+            	/**
+            	 * The Popup form of the component being shown
+            	 */
+            	protected Popup pMenu;
+            	
+            	/**
+            	 * Whether or not the popup is already displayed
+            	 */
+            	protected boolean popupShown;
+				public void actionPerformed(ActionEvent e) {
+					// don't display it if it's already up, that's bad
+					if(!popupShown) {
+						// apparently PopupFactory doesn't really do relative to parent's coordinates...
+						Point pLoc = parentMain.getLocationOnScreen();
+						pMenu = PopupFactory.getSharedInstance().getPopup(parentMain, mainMenu, (parentMain.getWidth()-mainMenu.getWidth())/2+pLoc.x, (parentMain.getHeight()-mainMenu.getHeight())/2+pLoc.y);
+						mainMenu.close.addActionListener(new ActionListener() {
+							// add closing functionality to the menu's "Close" button
+							public void actionPerformed(ActionEvent arg0) {
+								mainMenu.close.removeActionListener(this); // this is for the old popup
+								pMenu.hide();
+								popupShown = false;
+							}
+						});
+						pMenu.show();
+						popupShown = true;
+					}
+				}
+			});
+            
         } catch (Exception e) { e.printStackTrace(); }
     }
 
