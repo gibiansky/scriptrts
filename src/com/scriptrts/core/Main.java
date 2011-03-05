@@ -98,6 +98,16 @@ public class Main extends JPanel {
      */
     boolean consoleDown = false;
 
+    /** 
+     * Whether or not the menu bar is currently displayed.
+     */
+    boolean menuDown = true;
+
+    /** 
+     * Whether or not the overlay is currently displayed.
+     */
+    boolean overlayUp = true;
+
     /**
      * Input manager used to deal with inputs throughout the application.
      */
@@ -300,9 +310,12 @@ public class Main extends JPanel {
             /* Update console size */
             console.updateSize((int) (.40 * getGame().getViewport().getHeight()), getGame().getViewport().getWidth());
             Dimension size = console.getPreferredSize();
-            console.setBounds(0, 0, size.width, size.height);
+            if(menuDown)
+                console.setBounds(0, topBar.getPreferredSize().height, size.width, size.height);
+            else
+                console.setBounds(0, 0, size.width, size.height);
 
-            /* Readd console if it was down before */
+            /* Re-add console if it was down before */
             if(consoleDown){
                 add(console);
                 console.requestFocusInWindow();
@@ -368,20 +381,25 @@ public class Main extends JPanel {
         addMouseListener(manager);
         addMouseWheelListener(manager);
         manager.registerKeyCode(KeyEvent.VK_F11);
+        manager.registerKeyCode(KeyEvent.VK_F10);
+        manager.registerKeyCode(KeyEvent.VK_F9);
+
+        /* Initialize the top bar */
+        topBar = new TopBar(getGame().getViewport().getWidth());
+        Dimension size = topBar.getPreferredSize();
+        topBar.setBounds(0, 0, size.width, size.height);
+        add(topBar);
 
         /* Initialize the console if it hasn't been created */
         console = new Console((int) (.40 * getGame().getViewport().getHeight()), getGame().getViewport().getWidth());
         console.addKeyListener(manager);
-        Dimension size = console.getPreferredSize();
-        console.setBounds(0, 0, size.width, size.height);
+        size = console.getPreferredSize();
+        if(menuDown)
+            console.setBounds(0, topBar.getPreferredSize().height, size.width, size.height);
+        else
+            console.setBounds(0, 0, size.width, size.height);
 
-        /* Initialize the top bar */
-        topBar = new TopBar(getGame().getViewport().getWidth());
-        size = topBar.getPreferredSize();
-        topBar.setBounds(0, 0, size.width, size.height);
-        add(topBar);
-
-        /* Initialize the top bar */
+        /* Initialize the overlay */
         overlay = new OverlayPane(getGame().getViewport());
         overlay.setWidth(getGame().getViewport().getWidth());
         size = overlay.getPreferredSize();
@@ -441,6 +459,38 @@ public class Main extends JPanel {
             } else {
                 remove(console);
                 window.requestFocusInWindow();
+            }
+        }
+
+        /* Calling the top bar */
+        if(manager.getKeyCodeFlag(KeyEvent.VK_F10)){
+            manager.clearKeyCodeFlag(KeyEvent.VK_F10);
+
+            /* Show or unshow the console */
+            menuDown = !menuDown;
+            if(menuDown){
+                add(topBar);
+            } else {
+                remove(topBar);
+            }
+
+            Dimension size = console.getPreferredSize();
+            if(menuDown)
+                console.setBounds(0, topBar.getPreferredSize().height, size.width, size.height);
+            else
+                console.setBounds(0, 0, size.width, size.height);
+        }
+
+        /* Calling the overlay */
+        if(manager.getKeyCodeFlag(KeyEvent.VK_F9)){
+            manager.clearKeyCodeFlag(KeyEvent.VK_F9);
+
+            /* Show or unshow the console */
+            overlayUp = !overlayUp;
+            if(overlayUp){
+                add(overlay);
+            } else {
+                remove(overlay);
             }
         }
 
