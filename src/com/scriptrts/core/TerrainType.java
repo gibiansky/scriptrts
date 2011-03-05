@@ -25,7 +25,7 @@ public enum TerrainType {
             case Sand: return Color.yellow;
             case Rock: return Color.gray;
             case Water: return Color.blue;
-            case DeepFire: return Color.magenta;
+            case DeepFire: return Color.black;
             default: return Color.white;
         }
     }

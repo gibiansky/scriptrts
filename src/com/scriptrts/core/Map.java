@@ -46,6 +46,7 @@ public class Map {
 	}
 
 	/**
+     * Get the map heightmap
 	 * @return the height
 	 */
 	public double[][] getHeightArray(){
@@ -53,13 +54,16 @@ public class Map {
 	}
 	
 	/**
+     * Get the terrain of the map
 	 * @return the terrain
 	 */
 	public TerrainType[][] getTileArray() {
 		return tileArray;
 	}
 
+
 	/**
+     * Get the size of the map
 	 * @return the size of the map along one edge
 	 */
 	public int getN() {
@@ -67,6 +71,7 @@ public class Map {
 	}
 	
 	/**
+     * Check whether the map contains a given point
 	 * @return if the map contains a given point
 	 */
 	
@@ -77,6 +82,7 @@ public class Map {
 	}
 	
 	/**
+     * Get the neighbors of a point
 	 * @return the neighbors of a given point
 	 */
 	public Node[] getNeighbors(Node node){
@@ -111,12 +117,14 @@ public class Map {
 	 * Generate random map using diamond-square algorithm described
 	 * at http://www.gameprogrammer.com/fractal.html.  Each point
 	 * on the map is given a corresponding height value.  Noise changes
-	 * the "jaggedness" of final surface (0 < noise < 1, 1 is most)
+	 * the "jaggedness" of final surface (0 &lt; noise &lt; 1, 1 is most)
      * @param noise how much noise to include on the map
 	 */
 	public void generateMap(double noise){
 		/* Set initial height at corners */
-		int[] corners = {0, n-1};
+		int[] corners = {
+            0, n-1
+        };
 		for(int i : corners)
 			for(int j : corners)
 				heightArray[i][j] = 2 * random.nextDouble() - 1;

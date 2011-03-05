@@ -1,6 +1,7 @@
 package com.scriptrts.game;
 
 import java.awt.Point;
+import com.scriptrts.core.Minimap;
 
 /**
  * Stores the locations of all the units on the map.
@@ -257,6 +258,8 @@ public class UnitGrid {
      */
     private void setUnit(SimpleUnit unit, int i, int j){
         unitGrid[i][j] = unit;
+
+        Minimap.updateMinimap();
     }
 
     /**
@@ -309,7 +312,7 @@ class ReserveUnit extends SimpleUnit {
      * @param  reserveFor which unit to reserve the spot for.
      */
     public ReserveUnit(SimpleUnit reserveFor){
-        super(null, null, 0, 0, 0, null);
+        super(reserveFor.getAllegiance(), null, null, 0, 0, 0, null);
         reserve = reserveFor;
     }
 
