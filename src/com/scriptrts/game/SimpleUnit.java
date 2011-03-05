@@ -72,6 +72,15 @@ public class SimpleUnit {
      */
     private Point destination;
 
+    /**
+     * The maximum health the unit can have
+     */
+    private int maxHealth;
+
+    /**
+     * The current health of the unit
+     */
+    private int health;
 
     /**
      * Create a new unit
@@ -99,6 +108,9 @@ public class SimpleUnit {
             shape = UnitShape.SHAPE_1x1;
 
         this.art = artImg;
+
+        maxHealth = 10;
+        health = (int) (Math.random() * maxHealth);
 
         /* MAKE A RANDOM WEIRD PATH (TESTING!!!) */
         boolean circular = true;
@@ -166,6 +178,37 @@ public class SimpleUnit {
     public SimpleUnit(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction) {
         this(p, sprites, artImg, speed, x, y, direction, true);
     }
+    
+    /**
+     * Get the maximum health of the unit
+     */
+    public int getMaxHealth() {
+        return maxHealth;
+    }
+
+    /**
+     * Get the current health of the unit
+     */
+    public int getHealth() {
+        return health;
+    }
+
+    /**
+     * Set the current health of the unit
+     * @param health the health to set
+     */
+    public void setHealth(int health) {
+        this.health = health;
+    }
+
+    /**
+     * Set the maximum health of the unit
+     * @param maxHealth the maximum health to set
+     */
+    public void setMaxHealth(int maxHealth) {
+        this.maxHealth = maxHealth;
+    }
+
 
     /**
      * Get the player who currently controls this unit
