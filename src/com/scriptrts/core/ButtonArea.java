@@ -19,13 +19,13 @@ import com.scriptrts.game.SimpleUnit;
 import com.scriptrts.control.Selection;
 
 /**
- * Selection area panel which display all units which are currently selected
+ * Button area to display command buttons
  */
-public class SelectionArea extends JPanel {
+public class ButtonArea extends JPanel {
     /**
      * Width of the area
      */
-    private int width = 400;
+    private int width = 200;
 
     /**
      * Height of the area
@@ -33,20 +33,26 @@ public class SelectionArea extends JPanel {
     private int height = 200;
 
     /**
+     * List of buttons to draw
+     */
+    private ImageButton[] buttons = new ImageButton[16];
+
+    /**
      * Cached image
      */
-    private BufferedImage image;
+    private BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
     /**
-     * Whether the selection has changed
+     * Whether the buttons need repainting
      */
-    private static boolean changedSelection = true;
+    private static boolean changedButtons = true;
 
     /**
-     * Create a new selection area
+     * Create a new button area
      */
-    public SelectionArea(){
+    public ButtonArea(){
         super(true);
+        setBackground(Color.yellow);
 
         addMouseListener(new MouseAdapter(){
             public void mouseClicked(MouseEvent mouse){
@@ -62,52 +68,58 @@ public class SelectionArea extends JPanel {
     }
 
     /**
-     * Tell the selection area classes that the selection has changed.
+     * Change the buttons on the button area
      */
-    public static void selectionChanged(){
-        changedSelection = true;
+    public void setButtons(ImageButton[] buttons){
+        this.buttons = buttons;
+        changedButtons = true;
     }
      
 
     /**
-     * Draw the selection area
+     * Draw the buttons on the screen
      * @param g graphics handle for the screen
      */
     public void paintComponent(Graphics g){
-        if(changedSelection)
-            redrawSelection();
+        if(changedButtons)
+            redrawButtons();
 
         Graphics2D graphics = (Graphics2D) g;
         graphics.drawImage(image, 0, 0, null);
     }
 
     /**
-     * Calculate the selection area image
+     * Calculate the button image
      */
-    private void redrawSelection(){
+    private void redrawButtons(){
         /* After this redraw, no more updated needed until next change */
-        changedSelection = false;
+        changedButtons = false;
 
         image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = (Graphics2D) image.getGraphics();
         
-        /* Unit size */
-        int size = 60;
-        int verticalMargin = 5;
-        int horizontalMargin = 6;
-        int rows = height / size;
-        int unitsPerRow = width / size;
+        /* Button size */
+        int size = 40;
+        int verticalMargin = 10;
+        int horizontalMargin = 10;
+        int rows = 4;
+        int buttonsPerRow = 4;
 
         /* Draw each unit */
-        ArrayList<SimpleUnit> units = Selection.current().getObjects();
-        for(int i = 0; i < units.size(); i++){
-            int col = i % unitsPerRow;
-            int x = col * size + (col+3) * horizontalMargin;
+        for(int i = 0; i < buttons.length; i++){
+            int col = i % buttonsPerRow;
+            int x = col * size + (col+1) * horizontalMargin;
 
-            int row = i / unitsPerRow;
-            int y = row * size + (row+1) * verticalMargin;
+            int row = i / buttonsPerRow;
+            int y = row * size + (row+1) * verticalMargin - 2;
 
-            graphics.drawImage(units.get(i).getArt(), x, y, size, size, null);
+            if(buttons[i] != null){
+                buttons[i].setLocation(x, y);
+            }
+
+            graphics.setColor(Color.red);
+            graphics.fillRect(x, y, size, size);
+            graphics.setColor(Color.black);
         }
     }
 
@@ -115,7 +127,7 @@ public class SelectionArea extends JPanel {
      * Resize based on window
      */
     public void setWidth(int w){
-        this.width = w;
+        width = w;
     }
 
     /**
@@ -142,3 +154,4 @@ public class SelectionArea extends JPanel {
         return new Dimension(width, height);
     }
 }
+

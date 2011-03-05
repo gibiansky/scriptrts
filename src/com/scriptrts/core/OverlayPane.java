@@ -57,6 +57,11 @@ public class OverlayPane extends JPanel {
     private SelectionArea selectionArea;
 
     /**
+     * The button area used to show buttons
+     */
+    private ButtonArea buttonArea;
+
+    /**
      * Create a new top bar
      * @param viewport viewport used to display the screen
      */
@@ -80,7 +85,13 @@ public class OverlayPane extends JPanel {
         int minimapX = width - size.width;
         add(minimap);
 
+        buttonArea = new ButtonArea();
+        size = buttonArea.getPreferredSize();
+        buttonArea.setBounds(0, 0, size.width, size.height);
+        add(buttonArea);
+
         selectionArea = new SelectionArea();
+        selectionArea.setWidth(minimapX - size.width);
         size = selectionArea.getPreferredSize();
         selectionArea.setBounds(minimapX - size.width, 0, size.width, size.height);
         add(selectionArea);
@@ -97,6 +108,10 @@ public class OverlayPane extends JPanel {
         minimap.setBounds(width - size.width, 0, size.width, size.height);
         int minimapX = width - size.width;
 
+        size = buttonArea.getPreferredSize();
+        buttonArea.setBounds(0, 0, size.width, size.height);
+
+        selectionArea.setWidth(minimapX - size.width);
         size = selectionArea.getPreferredSize();
         selectionArea.setBounds(minimapX - size.width, 0, size.width, size.height);
     }

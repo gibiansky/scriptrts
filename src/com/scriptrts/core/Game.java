@@ -193,7 +193,6 @@ public class Game {
                 Selection.replaceCurrent(s);
                 manager.clearKeyCodeFlag(KeyEvent.VK_BACK_QUOTE);
             }
-            System.out.println(SelectionStorage.retrieve(10) + ", " + Selection.current());
 
             if(manager.getKeyCodeFlag(KeyEvent.VK_D) || manager.getKeyCodeFlag(KeyEvent.VK_S)){
                 placingUnit = !placingUnit;

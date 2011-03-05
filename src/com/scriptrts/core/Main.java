@@ -35,7 +35,7 @@ public class Main extends JPanel {
     /**
      * Default size of the window.
      */
-    private final static int DEFAULT_WIDTH = 800, DEFAULT_HEIGHT = 600;
+    private final static int DEFAULT_WIDTH = 1000, DEFAULT_HEIGHT = 600;
 
     /**
      * Whether the game has already been initialized.
