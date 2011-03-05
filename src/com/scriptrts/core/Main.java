@@ -394,7 +394,7 @@ public class Main extends JPanel {
         manager.registerKeyCode(KeyEvent.VK_F9);
 
         /* Initialize the top bar */
-        topBar = new TopBar(getGame().getViewport().getWidth());
+        topBar = new TopBar(getGame().getViewport().getWidth(), this);
         Dimension size = topBar.getPreferredSize();
         topBar.setBounds(0, 0, size.width, size.height);
         add(topBar);
