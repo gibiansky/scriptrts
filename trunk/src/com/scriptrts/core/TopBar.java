@@ -165,21 +165,12 @@ public class TopBar extends JPanel {
         graphics.setColor(Color.black);
         graphics.fillRect(0, 0, width, height);
 
-        int scale = barBackgroundLeft.getHeight() / 30;
-        int imgWidth = barBackgroundLeft.getWidth() / scale;
-        int imgHeight = barBackgroundLeft.getHeight() / scale;
-        graphics.drawImage(barBackgroundLeft, 0, 0, imgWidth, imgHeight, null);
-
-        int i = imgWidth;
-        imgWidth = barBackground.getWidth() / scale;
-        imgHeight = barBackground.getHeight() / scale;
-        for(; i <= width - imgWidth; i += imgWidth){
+        int scale = barBackground.getHeight() / 30;
+        int imgWidth = barBackground.getWidth();
+        int imgHeight = barBackground.getHeight() / scale;
+        for(int i = 0; i <= width; i += imgWidth){
             graphics.drawImage(barBackground, i, 0, imgWidth, imgHeight, null);
         }
-
-        imgWidth = barBackgroundRight.getWidth() / scale;
-        imgHeight = barBackgroundRight.getHeight() / scale;
-        graphics.drawImage(barBackgroundRight, width - imgWidth, 0, imgWidth, imgHeight, null);
 
         for(int j = 0; j < buttons.length; j++){
             buttons[j].paint(graphics);
