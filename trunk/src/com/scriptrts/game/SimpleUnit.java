@@ -37,6 +37,11 @@ public class SimpleUnit {
     private BufferedImage art;
 
     /**
+     * Player who controls this unit
+     */
+    private Player player;
+
+    /**
      * The direction in which the unit used to be moving. This is used to determine which direction the
      * unit is facing, even when the direction of movement is null (because unit is stationary).
      */
@@ -70,6 +75,7 @@ public class SimpleUnit {
 
     /**
      * Create a new unit
+     * @param p player to whom this unit owes allegiance
      * @param sprites array of sprites used to display the image
      * @param speed unit's speed of movement
      * @param x unit's starting location x coordinate
@@ -77,7 +83,8 @@ public class SimpleUnit {
      * @param direction direction in which the unit is facing originally
      * @param shaped if false, this unit takes up one square; if true, it can take up more.
      */
-    public SimpleUnit(Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, boolean shaped) {
+    public SimpleUnit(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, boolean shaped) {
+        this.player = p;
         this.sprites = sprites;
         this.speed = speed;
         this.x = x;
@@ -149,14 +156,22 @@ public class SimpleUnit {
 
     /**
      * Create a new unit that takes up one space
+     * @param p player to whom this unit owes allegiance
      * @param sprites array of sprites used to display the image
      * @param speed unit's speed of movement
      * @param x unit's starting location x coordinate
      * @param y unit's starting location y coordinate
      * @param direction direction in which the unit is facing originally
      */
-    public SimpleUnit(Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction) {
-        this(sprites, artImg, speed, x, y, direction, true);
+    public SimpleUnit(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction) {
+        this(p, sprites, artImg, speed, x, y, direction, true);
+    }
+
+    /**
+     * Get the player who currently controls this unit
+     */
+    public Player getAllegiance(){
+        return player;
     }
 
     /**

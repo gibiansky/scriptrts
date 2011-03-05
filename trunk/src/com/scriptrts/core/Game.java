@@ -12,6 +12,7 @@ import com.scriptrts.control.Selection;
 import com.scriptrts.control.SelectionStorage;
 import com.scriptrts.game.Direction;
 import com.scriptrts.game.SimpleUnit;
+import com.scriptrts.game.Player;
 import com.scriptrts.game.Sprite;
 import com.scriptrts.game.UnitGrid;
 import com.scriptrts.util.ResourceManager;
@@ -57,6 +58,11 @@ public class Game {
      * The painter used to draw units onto the screen.
      */
     private UnitPainter unitPainter;
+
+    /**
+     * The current player
+     */
+    private Player player;
 
     /**
      * Top point of the current selection on the map. If this is null, it means there is no selection.
@@ -109,6 +115,9 @@ public class Game {
      * Initialize this game.
      */
     public void init(){
+        /* Create the player */
+        player = new Player("Player-One", Color.MAGENTA);
+
         /* Create and populate map with tiles */
         map = new Map(n);
         map.generateMap(.64);
@@ -219,7 +228,7 @@ public class Game {
                         sprites[d.ordinal()]  = new Sprite(img, 0.3, 87, 25);
                     }
 
-                    SimpleUnit spaceship = new SimpleUnit(sprites, art, uSpeed, 0, 0, Direction.East, true);
+                    SimpleUnit spaceship = new SimpleUnit(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, true);
                     tempUnit = spaceship;
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -432,6 +441,14 @@ public class Game {
      */
     public Map getCurrentMap(){
         return map;
+    }
+
+    /**
+     * Get the player
+     * @return your player
+     */
+    public Player getPlayer(){
+        return player;
     }
 
     /**

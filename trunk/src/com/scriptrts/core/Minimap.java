@@ -16,6 +16,8 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JPanel;
 
+import com.scriptrts.game.UnitGrid;
+import com.scriptrts.game.SimpleUnit;
 
 /**
  * Minimap panel which displays a miniature colored version of the map on the overlay panel
@@ -44,7 +46,7 @@ public class Minimap extends JPanel {
     /**
      * Whether the minimap needs to be updated with new information about the map
      */
-    private boolean changedMinimap = true;
+    private static boolean changedMinimap = true;
 
     /**
      * Create a new minimap
@@ -65,6 +67,13 @@ public class Minimap extends JPanel {
             }
         });
 
+    }
+
+    /**
+     * Tell the minimaps to redraw
+     */
+    public static void updateMinimap(){
+        changedMinimap = true;
     }
 
     /**
@@ -112,7 +121,15 @@ public class Minimap extends JPanel {
         for(int i = 0; i < n; i++){
             for(int j = 0; j < n; j++){
                 Color c = terrain[i][j].getMinimapColor();
+
+                SimpleUnit u;
+                for(int a = 0; a < UnitGrid.SPACES_PER_TILE; a++)
+                    for(int b = 0; b < UnitGrid.SPACES_PER_TILE; b++)
+                        if((u = Main.getGame().getUnitGrid().getUnit(i * UnitGrid.SPACES_PER_TILE + a, j * UnitGrid.SPACES_PER_TILE + b)) != null)
+                            c = u.getAllegiance().getColor();
+
                 graphics.setColor(c);
+
                 int roundedSize = (int) squareSize;
                 graphics.fillRect((int) (i * squareSize), (int) (j * squareSize), (int) (squareSize+1), (int)(squareSize+1));
             }
