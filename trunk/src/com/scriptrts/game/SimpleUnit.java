@@ -2,6 +2,7 @@ package com.scriptrts.game;
 
 import java.util.Queue;
 import java.awt.Point;
+import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 import java.util.Collections;
 
@@ -29,6 +30,11 @@ public class SimpleUnit {
      * The unit's location on the map 
      */
     private int x, y;
+
+    /**
+     * Art image to display in selections
+     */
+    private BufferedImage art;
 
     /**
      * The direction in which the unit used to be moving. This is used to determine which direction the
@@ -71,7 +77,7 @@ public class SimpleUnit {
      * @param direction direction in which the unit is facing originally
      * @param shaped if false, this unit takes up one square; if true, it can take up more.
      */
-    public SimpleUnit(Sprite[] sprites, int speed, int x, int y, Direction direction, boolean shaped) {
+    public SimpleUnit(Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, boolean shaped) {
         this.sprites = sprites;
         this.speed = speed;
         this.x = x;
@@ -84,6 +90,8 @@ public class SimpleUnit {
             shape = UnitShape.SHAPE_2x1;
         else
             shape = UnitShape.SHAPE_1x1;
+
+        this.art = artImg;
 
         /* MAKE A RANDOM WEIRD PATH (TESTING!!!) */
         boolean circular = true;
@@ -147,8 +155,8 @@ public class SimpleUnit {
      * @param y unit's starting location y coordinate
      * @param direction direction in which the unit is facing originally
      */
-    public SimpleUnit(Sprite[] sprites, int speed, int x, int y, Direction direction) {
-        this(sprites, speed, x, y, direction, true);
+    public SimpleUnit(Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction) {
+        this(sprites, artImg, speed, x, y, direction, true);
     }
 
     /**
@@ -158,6 +166,14 @@ public class SimpleUnit {
      */
     public boolean isPassable(SimpleUnit u){
         return false;
+    }
+
+    /**
+     * Get the art image of this unit.
+     * @return image containing art for this unit
+     */
+    public BufferedImage getArt(){
+        return art;
     }
 
     /**

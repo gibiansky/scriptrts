@@ -52,6 +52,11 @@ public class OverlayPane extends JPanel {
     private Minimap minimap;
 
     /**
+     * The selection area shown when multiple units are selected
+     */
+    private SelectionArea selectionArea;
+
+    /**
      * Create a new top bar
      * @param viewport viewport used to display the screen
      */
@@ -72,7 +77,13 @@ public class OverlayPane extends JPanel {
         minimap = new Minimap(viewport);
         Dimension size = minimap.getPreferredSize();
         minimap.setBounds(width - size.width, 0, size.width, size.height);
+        int minimapX = width - size.width;
         add(minimap);
+
+        selectionArea = new SelectionArea();
+        size = selectionArea.getPreferredSize();
+        selectionArea.setBounds(minimapX - size.width, 0, size.width, size.height);
+        add(selectionArea);
     }
 
     /**
@@ -84,6 +95,10 @@ public class OverlayPane extends JPanel {
 
         Dimension size = minimap.getPreferredSize();
         minimap.setBounds(width - size.width, 0, size.width, size.height);
+        int minimapX = width - size.width;
+
+        size = selectionArea.getPreferredSize();
+        selectionArea.setBounds(minimapX - size.width, 0, size.width, size.height);
     }
 
     /**

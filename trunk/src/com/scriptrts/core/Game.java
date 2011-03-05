@@ -213,13 +213,14 @@ public class Game {
 
                 try {
                     /* Retrieve spaceship sprites */
+                    BufferedImage art = ResourceManager.loadImage("resource/unit/spaceship/Art.png", 200, 200);
                     Sprite[] sprites = new Sprite[8];
                     for(Direction d : Direction.values()){
                         BufferedImage img = ResourceManager.loadImage("resource/unit/spaceship/Ship" + d.name() + ".png");
                         sprites[d.ordinal()]  = new Sprite(img, 0.3, 87, 25);
                     }
 
-                    SimpleUnit spaceship = new SimpleUnit(sprites, uSpeed, 0, 0, Direction.East, true);
+                    SimpleUnit spaceship = new SimpleUnit(sprites, art, uSpeed, 0, 0, Direction.East, true);
                     tempUnit = spaceship;
                 } catch (Exception e) {
                     e.printStackTrace();
