@@ -89,12 +89,17 @@ public class Minimap extends JPanel {
             redrawMinimap();
 
         /* Draw viewport */
-        graphics.setColor(Color.black);
+        graphics.setColor(Color.white);
         double scale = ((double) viewport.getMapX()) / width;
         int x = (int) (viewport.getX() / scale);
         int y = (int) (viewport.getY() / scale);
         int w = (int) (viewport.getWidth() / scale);
         int h = (int) (viewport.getHeight() / scale);
+
+        /* Center the viewport around the place where the user clicks */
+        x -= w / 2;
+        y -= h / 2;
+
         graphics.drawRect(x, y, w, h);
         graphics.drawRect(x-1, y-1, w+2, h+2);
 
