@@ -91,24 +91,40 @@ public class SelectionArea extends JPanel {
         image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = (Graphics2D) image.getGraphics();
         
+        ArrayList<SimpleUnit> units = Selection.current().getObjects();
+
         /* Unit size */
         int size = 60;
         int verticalMargin = 5;
-        int horizontalMargin = 6;
-        int rows = height / size;
-        int unitsPerRow = width / size;
+        int horizontalMargin = calculateMargin(units.size());
+        int rows = height / (size+verticalMargin);
+        int unitsPerRow = width / (size+horizontalMargin);
 
         /* Draw each unit */
-        ArrayList<SimpleUnit> units = Selection.current().getObjects();
         for(int i = 0; i < units.size(); i++){
             int col = i % unitsPerRow;
-            int x = col * size + (col+3) * horizontalMargin;
+            int x = col * size + (col) * horizontalMargin;
 
             int row = i / unitsPerRow;
             int y = row * size + (row+1) * verticalMargin;
 
             graphics.drawImage(units.get(i).getArt(), x, y, size, size, null);
         }
+    }
+
+    /**
+     * Calculate how much space there should be between unit icons
+     * @return pixels between units; can be negative to make them stack
+     */
+    private int calculateMargin(int units){
+        if(units <= 18)
+            return 6;
+        else if(units <= 24)
+            return -10;
+        else if(units <= 30)
+            return -26;
+        else 
+            return -42;
     }
 
     /**
