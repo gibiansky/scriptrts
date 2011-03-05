@@ -3,6 +3,7 @@ package com.scriptrts.control;
 import java.util.*;
 
 import com.scriptrts.game.*;
+import com.scriptrts.core.SelectionArea;
 
 /**
  * A selection of units and other map entities
@@ -73,6 +74,9 @@ public class Selection {
         /* Don't add duplicate objects to a selection */
         if(!objects.contains(unit))
             objects.add(unit);
+
+        if(this == Selection.current())
+            SelectionArea.selectionChanged();
     }
 
     /**
@@ -90,6 +94,9 @@ public class Selection {
      */
     public void remove(SimpleUnit unit){
         objects.remove(unit);
+
+        if(this == Selection.current())
+            SelectionArea.selectionChanged();
     }
 
     /**
@@ -97,6 +104,9 @@ public class Selection {
      */
     public void clear(){
         objects.clear();
+
+        if(this == Selection.current())
+            SelectionArea.selectionChanged();
     }
 
     /**
@@ -130,5 +140,7 @@ public class Selection {
 	public static void replaceCurrent(Selection s)
 	{
 		current = s;
+
+        SelectionArea.selectionChanged();
 	}
 }

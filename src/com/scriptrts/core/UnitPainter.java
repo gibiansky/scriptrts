@@ -56,24 +56,6 @@ public class UnitPainter {
 
 		mapPainter = m;
 		grid = g;
-		
-		try {
-			/* Retrieve spaceship sprites */
-			Sprite[] sprites = new Sprite[8];
-            for(Direction d : Direction.values()){
-                BufferedImage img = ResourceManager.loadImage("resource/unit/spaceship/Ship" + d.name() + ".png");
-                sprites[d.ordinal()]  = new Sprite(img, 0.3, 87, 25);
-            }
-			/* Initialize the rider at the middle of the terrain tile (5,5), facing E.
-			 *(Direction, at the moment, doesn't change. */
-			SimpleUnit spaceship = new SimpleUnit(sprites, 1, 210, 186, Direction.East);
-
-
-			/* Put the unit tile in the UnitGrid (to be associated with terrain tiles)*/
-			grid.placeUnit(spaceship, 210, 186);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
     /**
