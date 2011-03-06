@@ -334,7 +334,7 @@ public class Pathfinder {
 
 	/**
 	 * Get directions corresponding to the path found
-	 * @return directions
+	 e @return directions
 	 */
 	public Queue<Direction> getDirections(){
 		Iterator<Point> itr = path.iterator();

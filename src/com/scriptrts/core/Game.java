@@ -14,6 +14,7 @@ import com.scriptrts.game.Direction;
 import com.scriptrts.game.SimpleUnit;
 import com.scriptrts.game.Player;
 import com.scriptrts.game.Sprite;
+import com.scriptrts.game.AnimatedSprite;
 import com.scriptrts.game.UnitGrid;
 import com.scriptrts.util.ResourceManager;
 
@@ -236,10 +237,24 @@ public class Game {
                 try {
                     /* Retrieve spaceship sprites */
                     BufferedImage art = ResourceManager.loadImage("resource/unit/spaceship/Art.png", 200, 200);
-                    Sprite[] sprites = new Sprite[8];
+                    Sprite[] sprites = new Sprite[16];
                     for(Direction d : Direction.values()){
                         BufferedImage img = ResourceManager.loadImage("resource/unit/spaceship/Ship" + d.name() + ".png");
                         sprites[d.ordinal()]  = new Sprite(img, 0.3, 87, 25);
+                    }
+
+                    for(Direction d : Direction.values()){
+                        BufferedImage normalImg = ResourceManager.loadImage("resource/unit/spaceship/Ship" + d.name() + ".png");
+                        BufferedImage attackImg = ResourceManager.loadImage("resource/unit/spaceship/attack/Ship" + d.name() + ".png");
+                        int bX = 87, bY = 25;
+                        if(d == Direction.Northwest)
+                            bY += 43;
+                        if(d == Direction.Southwest)
+                            bX += 30;
+                        sprites[8 + d.ordinal()]  = new AnimatedSprite(
+                                new BufferedImage[]{normalImg, attackImg},
+                                new int[]{10, 10},
+                                0.3, new int[]{87, bX}, new int[]{25, bY});
                     }
 
                     SimpleUnit spaceship = new SimpleUnit(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, true);

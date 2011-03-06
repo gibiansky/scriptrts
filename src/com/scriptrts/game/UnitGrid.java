@@ -95,6 +95,7 @@ public class UnitGrid {
         else {
             unit.setDirection(null);
             unit.clearPath();
+            unit.setState(SpriteState.Attack);
         }
 
         /* Place the unit, in its new orientation, on the map */
