@@ -1,115 +1,318 @@
 package com.scriptrts.core;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Point;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.PriorityQueue;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import com.scriptrts.game.Direction;
+import com.scriptrts.game.SimpleUnit;
+import com.scriptrts.game.UnitGrid;
 
-public class Pathfinder extends JFrame {
+public class Pathfinder {
 
-	private static final int WIDTH = 600, HEIGHT = 600;
-	private MyPanel panel;
-	private Timer timer;
+	private SimpleUnit unit;
+	private Map map;
+	private TerrainType[][] terrainMap;
+	private UnitGrid unitGrid;
+	private HashMap<TerrainType, Integer> terrainValues;
+	private int[] heap;
+	private int[] pathLengths;
+	private int[][] coords;
+	private int[][] pointChecked;
+	private int[][] parent;
+	private int nodeID;
+	private int count;
+	private int n;
+	private ArrayList<Point> path;
+	private ArrayList<Direction> directions;
 
-	private static final int N = 15;
-	private static final int TILEW = WIDTH / N, TILEH = HEIGHT / N;
-	private byte[][] map;
-	// 0 1 2
-    // 7 X 3 
-    // 6 5 4  [x,y]
-	private int[][] neighbors = {{-1, -1}, {0, -1}, {1,-1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}};
-
-	private static final Point start = new Point(0, 0);
-	private static final Point end = new Point(10, 3);
-	
-	ArrayList<Point> q = new ArrayList<Point>();
-	ArrayList<Integer> value = new ArrayList<Integer>();
-
-	public Pathfinder(String file) {
-		
-		if(map[start.x][start.y] == 0 || map[end.x][end.y] == 0) {
-			System.out.println("WARNING: One of the end points is invalid");
-			System.exit(1);
-		}
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setPreferredSize(new Dimension(WIDTH, HEIGHT));
-		pack();
-
-		map = new byte[N][N];
-
-		/* Read in map data */
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(new File(file)));
-			String[][] lines = new String[N][N];
-			String line;
-			int counter = 0;
-			while((line = reader.readLine()) != null) {
-				lines[counter] = line.split(" ");
-				counter ++;
-			}
-			for(int i = 0; i < N; i++)
-				for(int j = 0; j < N; j++)
-					map[i][j] = Byte.parseByte(lines[i][j]);
-			reader.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		panel = new MyPanel();
-		add(panel);
-		setVisible(true);
-
-		timer = new Timer();
-		timer.schedule(new TimerTask() {
-			public void run() {
-				repaint();
-			}
-		}, 0, 75);
+	public Pathfinder(SimpleUnit u, Map m, UnitGrid g){
+		unit = u;
+		map = m;
+		terrainMap = m.getTileArray();
+		unitGrid = g;
+		n = m.getN();
+		heap = new int[n * n];
+		pathLengths = new int[n * n];
+		coords = new int[n * n][2];
+		pointChecked = new int[n][n];
+		parent = new int[n][n];
+		path = new ArrayList<Point>();
+		directions = new ArrayList<Direction>();
+		setTerrainValues();
 	}
 
-	public void bestFirstSearch(Point start, Point end) {
-		
-		for(int[] pt : neighbors) {
+	public void setTerrainValues(){
+		terrainValues = new HashMap<TerrainType, Integer>();
+		terrainValues.put(TerrainType.Grass, 1);
+		terrainValues.put(TerrainType.Dirt, 1);
+		terrainValues.put(TerrainType.Sand, 2);
+		terrainValues.put(TerrainType.Rock, 1);
+		terrainValues.put(TerrainType.Water, 500);
+		terrainValues.put(TerrainType.DeepFire, 3);
+	}
+
+	public void findRoute(int startX, int startY, int endX, int endY){
+
+		/* Add the starting point to the open point list */
+		pointChecked[startX][startY] = 1;
+		coords[nodeID][0] = startX;
+		coords[nodeID][1] = startY;
+		parent[startX][startY] = -1;
+		add();
+
+		while(pointChecked[endX][endY] != -1){
+			int shortestPath = remove();
+			int nextX = coords[shortestPath][0];
+			int nextY = coords[shortestPath][1];
+			pointChecked[nextX][nextY] = -1;
 			
-		}
-	}
-	
-	public static void main(String... argv) {
-		new Pathfinder("resource/pathtest.txt");
-	}
+			int currentLength = pathLengths[shortestPath];
 
-	public class MyPanel extends JPanel {
-		@Override
-		public void paint(Graphics g) {
-			for (int i = 0; i < map.length; i++) {
-				for (int j = 0; j < map[i].length; j++) {
-					g.setColor(Color.black);
-					g.drawRect(i * TILEW, j * TILEH, TILEW, TILEH);
-					if(map[i][j] == 0)
-						g.fillRect(i * TILEW, j * TILEH, TILEW, TILEH);
-					if(i == start.x && j == start.y) {
-						g.setColor(Color.blue);
-						g.fillRect(i * TILEW, j * TILEH, TILEW, TILEH);
-					} else if(i == end.x && j == end.y) {
-						g.setColor(Color.red);
-						g.fillRect(i * TILEW, j * TILEH, TILEW, TILEH);
+			int[][] neighbors = map.getNeighbors(nextX, nextY);
+			for(int i = 0; i < neighbors.length; i++){
+				int x = neighbors[i][0];
+				int y = neighbors[i][1];
+				if(pointChecked[x][y] != -1){
+					double dlength = dist2D(nextX, nextY, x, y) * terrainValues.get(terrainMap[x][y]) + manhattan(x, y, endX, endY);
+					int newLength = currentLength + (int)dlength;
+					
+					/* If neighbor is not on open list, add to open list */
+					if(pointChecked[x][y] == 0){
+						pointChecked[x][y] = 1;
+						pathLengths[nodeID] = newLength;
+						coords[nodeID][0] = x;
+						coords[nodeID][1] = y;
+						parent[x][y] = shortestPath;
+						add();
+					}
+					
+					/* Otherwise neighbor is on open list, so check if better path exists */
+					else{
+						/* Location in heap */
+						int loc = find(x,y);
+						int oldLength = pathLengths[heap[loc]];
+						if(newLength < oldLength){
+							pathLengths[heap[loc]] = newLength;
+							parent[x][y] = shortestPath;
+							heapUp(loc);
+						}
 					}
 				}
 			}
 		}
+		
+		retrace(endX, endY);
+		getDirections();
 	}
+
+	public double dist2D(int startX, int startY, int endX, int endY){
+		return Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+	}
+
+	public int manhattan(int startX, int startY, int endX, int endY){
+		return Math.abs(endX - startX) + Math.abs(endY - startY);
+	}
+
+	/**
+	 * Adds element to heap
+	 */
+	public void add(){
+		heap[count] = nodeID;
+
+		/* Heap up */
+		heapUp(count);
+
+		nodeID++;
+		count++;
+	}
+
+	/**
+	 * Removes first element from heap
+	 */
+	public int remove(){
+		int id = heap[0];
+		heap[0] = heap[count - 1];
+		count--;
+
+		/* Heap down */
+		heapDown();
+
+		return id;
+	}
+
+	/**
+	 * Finds the position of the point (x,y) in the heap
+	 */
+	public int find(int x, int y){
+		int loc = -1;
+		for(int i = 0; i < count; i++)
+			if(coords[heap[i]][0] == x && coords[heap[i]][1] == y){
+				loc = i;
+				break;
+			}
+		return loc;
+	}
+
+	public int[] find(int x1, int y1, int x2, int y2){
+		int[] locs = new int[2];
+		Arrays.fill(locs, -1);
+		for(int i = 0; i <= count; i++){
+			if(coords[heap[i]][0] == x1 && coords[heap[i]][1] == y1){
+				locs[0] = i;
+			} else if(coords[heap[i]][0] == x2 && coords[heap[i]][1] == y2){
+				locs[1] = i;
+			}
+			if(locs[0] != -1 && locs[1] != -1)
+				break;
+		}
+		return locs;
+	}
+
+	public void heapUp(int start){
+		/* Heap up */
+		int i = start;
+		while(i > 0){
+			if(pathLengths[heap[i]] <= pathLengths[heap[(i-1)/2]]){
+				int temp = heap[(i-1)/2];
+				heap[(i-1)/2] = heap[i];
+				heap[i] = temp;
+				i = (i-1)/2;
+			} else
+				break;
+		}
+	}
+	
+	public void heapDown(){
+		/* Heap down */
+		int parent = 0;
+		while(true){
+			int child = parent;
+			if(2*parent + 2 <= count){
+				if(pathLengths[heap[parent]] > pathLengths[heap[2*child + 1]])
+					parent = 2*child + 1;
+				if(pathLengths[heap[parent]] > pathLengths[heap[2*child + 2]])
+					parent = 2*child + 2;
+			} else if(2*parent + 1 <= count){
+				if(pathLengths[heap[parent]] > pathLengths[heap[2*child + 1]])
+					parent = 2*child + 1;
+			}
+			if(parent > child){
+				int temp = heap[child];
+				heap[child] = heap[parent];
+				heap[parent] = temp;
+			} else
+				break;
+		}
+	}
+	
+	public void retrace(int x, int y){
+		path.add(0, new Point(x, y));
+		if(parent[x][y] != -1){
+			int parentID = parent[x][y];
+			retrace(coords[parentID][0], coords[parentID][1]);
+		}
+	}
+	
+	public ArrayList<Point> getPath(){
+		return path;
+	}
+	
+	public ArrayList<Direction> getDirections(){
+		Iterator<Point> itr = path.iterator();
+		Point current = (Point) itr.next();
+		Point next = (Point) itr.next();
+		while(itr.hasNext()){
+			directions.add(getDirection2Pts(current, next));
+			current = next;
+			next = (Point) itr.next();
+		}
+		return directions;
+	}
+	
+	public Direction getDirection2Pts(Point p1, Point p2){
+		int dx = p2.x - p1.x;
+		int dy = p2.y - p1.y;
+		
+		if(dx == -1)
+			switch(dy){
+				case -1:
+					return Direction.Southwest;
+				case 0:
+					return Direction.West;
+				case 1:
+					return Direction.Northwest;
+				default:
+					return null;
+						
+			}
+		else if(dx == 0)
+			switch(dy){
+				case -1:
+					return Direction.South;
+				case 1:
+					return Direction.North;
+				default:
+					return null;
+			}
+		else if(dx == 1)
+			switch(dy){
+				case -1:
+					return Direction.Southeast;
+				case 0:
+					return Direction.East;
+				case 1:
+					return Direction.Northeast;
+				default:
+					return null;
+			}
+		else
+			return null;
+	}
+	
+	/*public void printArray(int[][] array){
+		for(int i = 0; i < array.length; i++)
+			System.out.print("[" + array[i][0] + "," + array[i][1] + "]");
+		System.out.println();
+	}
+	
+	public String printCoords(int id){
+		String s = "[" + coords[id][0] + "," + coords[id][1] + "]";
+		return s;
+	}
+	
+	public void printHeap(){
+		if(count == 0){
+			System.out.println("[]");
+			return;
+		}
+		System.out.print("[");
+		for(int i = 0; i < count - 1; i++)
+			System.out.print(heap[i] + " ");
+		System.out.println(heap[count - 1] + "]");
+	}
+	
+	public void printAllCoords(){
+		if(nodeID == 0){
+			System.out.println("[]");
+			return;
+		}
+		System.out.print("[");
+		for(int i = 0; i < nodeID - 1; i++)
+			System.out.print(printCoords(i) + " ");
+		System.out.println(printCoords(nodeID - 1) + "]");
+	}
+	
+	public void printPathLengths(){
+		if(nodeID == 0){
+			System.out.println("[]");
+			return;
+		}
+		System.out.print("[");
+		for(int i = 0; i < nodeID - 1; i++)
+			System.out.print(pathLengths[i] + " ");
+		System.out.println(pathLengths[nodeID - 1] + "]");
+	}*/
 }
