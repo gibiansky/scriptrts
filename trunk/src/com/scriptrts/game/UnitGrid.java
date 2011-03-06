@@ -296,6 +296,54 @@ public class UnitGrid {
         for(Point p : points)
             setUnit(null, unit.getX() + p.x, unit.getY() + p.y);
     }
+    
+    /**
+     * Get the neighbors of a point
+	 * @return the neighbors of a given point
+	 */
+	public int[][] getNeighbors(int x, int y){
+		int[][] neighbors;
+		int count = 0;
+		if(!this.contains(x,y))
+			return null;
+		if(x == 0 || x == n - 1)
+			if(y == 0 || y == n - 1)
+				neighbors = new int[3][2];
+			else
+				neighbors = new int[5][2];
+		else if(y == 0 || y == n - 1)
+			neighbors = new int[5][2];
+		else
+			neighbors = new int[8][2];
+		for(int i = x - 1; i <= x + 1; i++)
+			for(int j = y - 1; j <= y + 1; j++){
+				if(this.contains(i,j) && !(x == i && y == j)){
+					neighbors[count][0] = i;
+					neighbors[count][1] = j;
+					count++;
+				}
+			}
+		return neighbors;
+	}
+    
+	/**
+     * Check whether the unit grid contains a given point
+	 * @return if the unit grid contains a given point
+	 */
+	
+	public boolean contains(int x, int y){
+		if(0 <= x && x <= n-1 && 0 <= y && y <= n-1)
+			return true;
+		return false;
+	}
+    
+    /**
+     * Get the map tile corresponding to the unit tile
+     */
+    public int[] getMapTile(int x, int y){
+    	int[] mapTile = {x / SPACES_PER_TILE, y / SPACES_PER_TILE};
+    	return mapTile;
+    }
 }
 
 /**
