@@ -536,3 +536,4 @@ public class Main extends JPanel {
         game.paint((Graphics2D) g);
     }
 }
+
