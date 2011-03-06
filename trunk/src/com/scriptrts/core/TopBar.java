@@ -50,25 +50,20 @@ public class TopBar extends JPanel {
      */
     private ImageButton[] buttons;
 
-    protected Main parentMain;
-    
     /**
-     * The main menu, with save/load/settings/etc options on it.
+     * The menus which are called by the buttons
      */
-    protected InGameMenu mainMenu;
+    private GameMenu[] menus;
     
     /**
      * Create a new top bar
      * @param width width of the screen
-     * @param owner the Main instance for the game this is for (for referencing stuff)
      */
-    public TopBar(int width, Main parent) {
+    public TopBar(int width) {
         super(true);
-        parentMain = parent;
         this.width = width;
 
-        mainMenu = new InGameMenu();
-        
+
         /* Load images */
         try {
             barBackground = ResourceManager.loadImage("resource/MenuBackgroundCenter.png");
@@ -79,6 +74,8 @@ public class TopBar extends JPanel {
             BufferedImage img2 = ResourceManager.loadImage("resource/TotalButton2.png");
             BufferedImage img3 = ResourceManager.loadImage("resource/TotalButton3.png");
             buttons = new ImageButton[3];
+            menus = new GameMenu[buttons.length];
+
             for(int i = 0; i < buttons.length; i++){
                 int scale = 3;
                 int horizontal = width - (i+1) * img.getWidth() / scale;
@@ -88,45 +85,30 @@ public class TopBar extends JPanel {
                 final int j = i;
                 buttons[i].addActionListener(new java.awt.event.ActionListener(){
                     public void actionPerformed(java.awt.event.ActionEvent e){
-                        System.out.println("Menu button pressed!");
+                        Main.getMain().showMenu(menus[j]);
                     }
                 });
+
             }
-            
-            /* very beautiful code here */
-            /* Honestly this should probably be made more elegant somehow... put into a method somewhere... */
-            buttons[2].addActionListener(new ActionListener() {
-            	/**
-            	 * The Popup form of the component being shown
-            	 */
-            	protected Popup pMenu;
-            	
-            	/**
-            	 * Whether or not the popup is already displayed
-            	 */
-            	protected boolean popupShown;
-				public void actionPerformed(ActionEvent e) {
-					// don't display it if it's already up, that's bad
-					if(!popupShown) {
-						// apparently PopupFactory doesn't really do relative to parent's coordinates...
-						Point pLoc = parentMain.getLocationOnScreen();
-						pMenu = PopupFactory.getSharedInstance().getPopup(parentMain, mainMenu, (parentMain.getWidth()-mainMenu.getWidth())/2+pLoc.x, (parentMain.getHeight()-mainMenu.getHeight())/2+pLoc.y);
-						mainMenu.close.addActionListener(new ActionListener() {
-							// add closing functionality to the menu's "Close" button
-							public void actionPerformed(ActionEvent arg0) {
-								mainMenu.close.removeActionListener(this); // this is for the old popup
-								pMenu.hide();
-								popupShown = false;
-                                Main.getMain().requestFocus();
-							}
-						});
-						pMenu.show();
-						popupShown = true;
-					}
-				}
-			});
-            
-        } catch (Exception e) { e.printStackTrace(); }
+
+            for(int i = 0; i < buttons.length; i++){
+                ImageButton[] myButs = new ImageButton[buttons.length];
+                int scale = 3;
+                int horizontal = width - (i+1) * img.getWidth() / scale;
+                for(int j = 0; j < buttons.length; j++){
+                    myButs[j] = new ImageButton(img, img2, img3, 1/3.0, horizontal, 0);
+                    myButs[j].addActionListener(new java.awt.event.ActionListener(){
+                        public void actionPerformed(java.awt.event.ActionEvent e){
+                            Main.getMain().showMenu(null);
+                        }
+                    });
+                }
+
+                menus[i] = new GameMenu(myButs, 538);
+            }
+        } catch (Exception e) { 
+            e.printStackTrace(); 
+        }
     }
 
     /**
