@@ -110,6 +110,8 @@ public class UnitPainter {
             boolean moveSucceeded = grid.moveUnitOneTile(unit);
             tilesMoved--;
         }
+
+        unit.progressSpriteAnimation();
     }
 
     /**
@@ -346,7 +348,7 @@ public class UnitPainter {
             }
         }
 
-		sprite.draw(graphics, xLoc, yLoc);
+		sprite.draw(graphics, unit, xLoc, yLoc);
 
         /* Draw the health bar */
         graphics.setColor(Color.GREEN);

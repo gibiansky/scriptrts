@@ -67,6 +67,11 @@ public class SimpleUnit {
     private double animCounter = 0;
 
     /**
+     * How far the current sprite animation has progressed (in frames)
+     */
+    private int spriteAnimationFrameCount = 0;
+
+    /**
      * The shape this unit takes up (which squares it uses)
      */
     private UnitShape shape;
@@ -190,7 +195,37 @@ public class SimpleUnit {
     public SimpleUnit(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction) {
         this(p, sprites, artImg, speed, x, y, direction, true);
     }
-    
+
+    /**
+     * Increment the sprite animation frame count
+     */
+    public void progressSpriteAnimation(){
+        spriteAnimationFrameCount ++;
+    }
+
+    /**
+     * Reset the sprite animation frame count to zero
+     */
+    public void resetSpriteAnimation(){
+        spriteAnimationFrameCount = 0;
+    }
+
+    /**
+     * Get the current sprite animation frame
+     * @return frame on which the sprite animation is
+     */
+    public int getSpriteAnimation(){
+        return spriteAnimationFrameCount;
+    }
+ 
+    /**
+     * Set the sprite animation frame count to a given frame
+     * @param f frame to set sprite animation to
+     */
+    public void resetSpriteAnimation(int f){
+        spriteAnimationFrameCount = f;
+    }
+       
     /**
      * Get the maximum health of the unit
      */
@@ -300,14 +335,6 @@ public class SimpleUnit {
         return 0;
 
     }
-
-    /**
-     * Resets animation counter to zero
-     */
-    public void resetAnimationCounter(){
-        animCounter = 0;
-    }
-
 
     /**
      * Update the direction based on the path the unit wants to take.
@@ -422,6 +449,9 @@ public class SimpleUnit {
      */
     public void setState(SpriteState state) {
         this.state = state;
+
+        /* Reset sprite animation */
+        resetSpriteAnimation();
     }
 
     /**
@@ -525,7 +555,8 @@ public class SimpleUnit {
      * @return the currentSprite
      */
     public Sprite getCurrentSprite() {
-        return sprites[getFacingDirection().ordinal()];
+        int index = getFacingDirection().ordinal() + Direction.values().length * getState().ordinal();
+        return sprites[index];
     }
 
     /**
