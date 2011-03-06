@@ -97,9 +97,13 @@ public class TopBar extends JPanel {
                 int horizontal = width - (i+1) * img.getWidth() / scale;
                 for(int j = 0; j < buttons.length; j++){
                     myButs[j] = new ImageButton(img, img2, img3, 1/3.0, horizontal, 0);
+                    final int k = j;
                     myButs[j].addActionListener(new java.awt.event.ActionListener(){
                         public void actionPerformed(java.awt.event.ActionEvent e){
-                            Main.getMain().showMenu(null);
+                            if(k == 0)
+                                Main.getMain().showMainMenu();
+                            else
+                                Main.getMain().showMenu(null);
                         }
                     });
                 }
