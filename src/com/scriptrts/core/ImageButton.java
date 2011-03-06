@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.awt.Component;
 
 /**
  * A button that can be painted onto the screen.
@@ -26,6 +27,11 @@ public class ImageButton {
      * Location of the button on the screen
      */
     private int x, y;
+
+    /**
+     * The parent component
+     */
+    private Component parent;
 
     /**
      * Input manager used to determine whether the button is being pressed
@@ -86,13 +92,34 @@ public class ImageButton {
     public ImageButton(BufferedImage defImg, BufferedImage highImg, BufferedImage clickedImg, double scale, int x, int y){
         this(defImg, highImg, clickedImg, (int) (defImg.getWidth() * scale), (int) (defImg.getHeight() * scale), x, y);
     }
+
+    /**
+     * Get the width of the button.
+     * @return button width
+     */
+    public int getWidth(){
+        return width;
+    }
+
+    /**
+     * Get the height of the button.
+     * @return button height
+     */
+    public int getHeight(){
+        return height;
+    }
     
     /**
      * Paint the button on the screen
      * @param graphics Graphics object used to draw to the screen
      */
     public void paint(Graphics2D graphics){
+        /* Get the mouse location relative to the parent component */
         Point mouse = manager.getMouseLocation();
+        if(parent != null){
+            Point componentLocation = parent.getLocation();
+            mouse.translate(-componentLocation.x, -componentLocation.y);
+        }
         
         BufferedImage buttonState;
 
@@ -112,12 +139,15 @@ public class ImageButton {
         } else
             buttonState = defaultStateImage;
 
-        AffineTransform prevTransform = graphics.getTransform();
-        AffineTransform identity = new AffineTransform();
-
-        graphics.setTransform(identity);
         graphics.drawImage(buttonState, x, y, width, height, null);
-        graphics.setTransform(prevTransform);
+    }
+
+    /**
+     * Tell the image button the its parent component
+     * @param component the image buttons parent
+     */
+    public void setParentComponent(Component component){
+        parent = component;
     }
 
     /**

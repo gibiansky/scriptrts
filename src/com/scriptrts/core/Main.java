@@ -35,7 +35,7 @@ public class Main extends JPanel {
     /**
      * Default size of the window.
      */
-    private final static int DEFAULT_WIDTH = 1000, DEFAULT_HEIGHT = 600;
+    private final static int DEFAULT_WIDTH = 1024, DEFAULT_HEIGHT = 800;
 
     /**
      * Whether the game has already been initialized.
@@ -81,32 +81,37 @@ public class Main extends JPanel {
     /**
      * Console used to enter commands during the game.
      */
-    Console console = null;
+    private Console console = null;
 
     /**
      * Top bar used to display resources and menu bar items
      */
-    TopBar topBar = null;
+    private TopBar topBar = null;
 
     /**
      * Top bar used to display resources and menu bar items
      */
-    OverlayPane overlay = null;
+    private OverlayPane overlay = null;
 
     /** 
      * Whether or not the console is currently displayed.
      */
-    boolean consoleDown = false;
+    private boolean consoleDown = false;
+
+    /**
+     * Currently showing menu. Set to null when no menu is showing.
+     */
+    private GameMenu currentMenu = null;
 
     /** 
      * Whether or not the menu bar is currently displayed.
      */
-    boolean menuDown = true;
+    private boolean menuDown = true;
 
     /** 
      * Whether or not the overlay is currently displayed.
      */
-    boolean overlayUp = true;
+    private boolean overlayUp = true;
 
     /**
      * Input manager used to deal with inputs throughout the application.
@@ -152,6 +157,12 @@ public class Main extends JPanel {
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setSize(width, height);
 
+        /* If the screen is smaller or equal to default size, use full screen */
+		Toolkit toolkit = Toolkit.getDefaultToolkit();
+		Dimension screenSize = toolkit.getScreenSize();
+        if(screenSize.width <= DEFAULT_WIDTH && screenSize.height <= DEFAULT_HEIGHT)
+            FULLSCREEN = true;
+
         /* Check for fullscreen */
         if(FULLSCREEN){
             /* Disable resizing and decorations */
@@ -159,10 +170,8 @@ public class Main extends JPanel {
             window.setResizable(false);
 
             /* Switch to fullscreen and make window maximum size */
-            Toolkit toolkit = Toolkit.getDefaultToolkit();
-            Dimension scrnsize = toolkit.getScreenSize();
-            width = scrnsize.width;
-            height = scrnsize.height;
+            width = screenSize.width;
+            height = screenSize.height;
             window.setSize(width, height);
 
             GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
@@ -352,6 +361,20 @@ public class Main extends JPanel {
             Dimension size = overlay.getPreferredSize();
             overlay.setBounds(0, getGame().getViewport().getHeight() - size.height, size.width, size.height);
         }
+
+        /* Resize the showing menu, if there is one */
+        if(currentMenu != null){
+            remove(currentMenu);
+            int centerMenu = currentMenu.getCenterHorizontalOffset();
+            int centerScreen = getGame().getViewport().getWidth() / 2;
+
+            int x = centerScreen - centerMenu;
+            int y = 40;
+
+            Dimension size = currentMenu.getPreferredSize();
+            currentMenu.setBounds(x, y, size.width, size.height);
+            add(currentMenu);
+        }
         
         /* Update window size */
         window.pack();
@@ -412,7 +435,7 @@ public class Main extends JPanel {
         manager.registerKeyCode(KeyEvent.VK_F7);
 
         /* Initialize the top bar */
-        topBar = new TopBar(getGame().getViewport().getWidth(), this);
+        topBar = new TopBar(getGame().getViewport().getWidth());
         Dimension size = topBar.getPreferredSize();
         topBar.setBounds(0, 0, size.width, size.height);
         add(topBar);
@@ -446,6 +469,32 @@ public class Main extends JPanel {
     public void requestFocus(){
         super.requestFocus();
         window.requestFocus();
+    }
+
+    /**
+     * Show the provided menu on the screen
+     * @param menu menu to show
+     */
+    public void showMenu(GameMenu menu){
+        /* Remove old menu */
+        if(currentMenu != null)
+            remove(currentMenu);
+
+        /* Update current menu */
+        currentMenu = menu;
+
+        /* Add menu to screen */
+        if(menu != null){
+            int centerMenu = menu.getCenterHorizontalOffset();
+            int centerScreen = getGame().getViewport().getWidth() / 2;
+
+            int x = centerScreen - centerMenu;
+            int y = 40;
+
+            Dimension size = menu.getPreferredSize();
+            menu.setBounds(x, y, size.width, size.height);
+            add(menu);
+        }
     }
 
     /**
@@ -536,4 +585,3 @@ public class Main extends JPanel {
         game.paint((Graphics2D) g);
     }
 }
-
