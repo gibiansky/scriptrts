@@ -260,8 +260,8 @@ public class SimpleUnit {
         destination = p;
 
         pathfinder.findRoute(this.getX(), this.getY(), p.x, p.y);
-        ArrayList<Direction> directions = pathfinder.getDirections();
-        setPath(new LinkedList<Direction>(directions));
+        Queue<Direction> directions = pathfinder.getDirections();
+        setPath(directions);
     }
 
     /**
@@ -315,9 +315,8 @@ public class SimpleUnit {
             previousDirection = direction;
 
         /* If we have no more directions, stop. */
-        if(path == null || path.peek() == null){
+        if(path == null || path.peek() == null)
             direction = null;
-        }
         else {
             direction = path.poll();
         }

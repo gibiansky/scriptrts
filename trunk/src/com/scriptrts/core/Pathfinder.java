@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import com.scriptrts.game.Direction;
 import com.scriptrts.game.SimpleUnit;
@@ -85,7 +87,7 @@ public class Pathfinder {
 	/**
 	 * List of Directions in path
 	 */
-	private ArrayList<Direction> directions;
+	private Queue<Direction> directions;
 
 	/**
 	 * Create a new Pathfinder
@@ -105,10 +107,23 @@ public class Pathfinder {
 		pointChecked = new int[n][n];
 		parent = new int[n][n];
 		path = new ArrayList<Point>();
-		directions = new ArrayList<Direction>();
+		directions = new LinkedList<Direction>();
 		setTerrainValues();
 	}
 
+	/**
+	 * Reset and clear path when done
+	 */
+	public void reset(){
+		heap = new int[n * n];
+		pathLengths = new int[n * n];
+		coords = new int[n * n][2];
+		pointChecked = new int[n][n];
+		parent = new int[n][n];
+		path = new ArrayList<Point>();
+		directions = new LinkedList<Direction>();
+	}
+	
 	/**
 	 * Set the terrain costs for each type of terrain
 	 */
@@ -192,9 +207,6 @@ public class Pathfinder {
 
 		/* Retrace path starting from endpoint */
 		retrace(endX, endY);
-		
-		/* Update directions along path*/
-		getDirections();
 	}
 
 	/**
@@ -324,7 +336,7 @@ public class Pathfinder {
 	 * Get directions corresponding to the path found
 	 * @return directions
 	 */
-	public ArrayList<Direction> getDirections(){
+	public Queue<Direction> getDirections(){
 		Iterator<Point> itr = path.iterator();
 		Point current = (Point) itr.next();
 		Point next = (Point) itr.next();
@@ -333,6 +345,7 @@ public class Pathfinder {
 			current = next;
 			next = (Point) itr.next();
 		}
+		directions.add(getDirection2Pts(current, next));
 		return directions;
 	}
 
