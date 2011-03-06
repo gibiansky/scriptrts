@@ -95,7 +95,21 @@ public class Game {
      */
     private boolean mousePreviouslyPressed = false;
 
+    /**
+     * Default scrolling increment
+     */
+    private static final int SCROLLING_DISTANCE = 30;
 
+    /**
+     * How many frames the map has been scrolling for
+     */
+    int framesScrolled = 0;
+    
+    /**
+     * Current increment in map scrolling
+     */
+    int increment = SCROLLING_DISTANCE;
+    
     /**
      * Create the game.
      * @param n size of the map (length along one edge)
@@ -320,25 +334,57 @@ public class Game {
             }
 
             /* Scrolling */
-            int increment = 30;
-            if(manager.getKeyCodeFlag(KeyEvent.VK_RIGHT)) 
-                viewport.translate(increment, 0);
-            if(manager.getKeyCodeFlag(KeyEvent.VK_LEFT))
-                viewport.translate(-increment, 0);
-            if(manager.getKeyCodeFlag(KeyEvent.VK_UP))
-                viewport.translate(0, -increment);
-            if(manager.getKeyCodeFlag(KeyEvent.VK_DOWN))
-                viewport.translate(0, increment);
-            /* Mouse scrolling. Disabled for windowed mode. */
-            if( Main.FULLSCREEN && manager.getMouseLocation().x > viewport.getWidth() - 30)
-                viewport.translate(increment,0);
-            if( Main.FULLSCREEN && manager.getMouseLocation().x < 30)
-                viewport.translate(-increment,0);
-            if( Main.FULLSCREEN && manager.getMouseLocation().y < 30)
-                viewport.translate(0, -increment);
-            if( Main.FULLSCREEN && manager.getMouseLocation().y > viewport.getHeight() - 30)
-                viewport.translate(0, increment);
+               boolean scrolling = false;
             
+            if (manager.getKeyCodeFlag(KeyEvent.VK_RIGHT)) {
+                viewport.translate(increment, 0);
+                scrolling = true;
+            }
+            if (manager.getKeyCodeFlag(KeyEvent.VK_LEFT)) {
+                viewport.translate(-increment, 0);
+                scrolling = true;
+            }
+            if (manager.getKeyCodeFlag(KeyEvent.VK_UP)) {
+                viewport.translate(0, -increment);
+                scrolling = true;
+            }
+            if (manager.getKeyCodeFlag(KeyEvent.VK_DOWN)) {
+                viewport.translate(0, increment);
+                scrolling = true;
+            }
+            /* Mouse scrolling. Disabled for windowed mode. */
+            if (Main.FULLSCREEN
+                    && manager.getMouseLocation().x > viewport.getWidth() - 30) {
+                viewport.translate(increment, 0);
+                scrolling = true;
+            }
+            if (Main.FULLSCREEN && manager.getMouseLocation().x < 30) {
+                viewport.translate(-increment, 0);
+                scrolling = true;
+            }
+            if (Main.FULLSCREEN && manager.getMouseLocation().y < 30) {
+                viewport.translate(0, -increment);
+                scrolling = true;
+            }
+            if (Main.FULLSCREEN
+                    && manager.getMouseLocation().y > viewport.getHeight() - 30) {
+                viewport.translate(0, increment);
+                scrolling = true;
+            }
+            
+            if(scrolling)
+                framesScrolled++;
+            
+            if(framesScrolled > 2 * Main.getFPS())
+                increment = SCROLLING_DISTANCE * 4;
+            else if(framesScrolled >  Main.getFPS())
+                increment = SCROLLING_DISTANCE * 2;
+            
+            if(!scrolling){
+                framesScrolled = 0;
+                increment = SCROLLING_DISTANCE;
+            }
+
 
         }
 
