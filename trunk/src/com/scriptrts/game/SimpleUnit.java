@@ -1,10 +1,14 @@
 package com.scriptrts.game;
 
-import java.util.Queue;
-import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.util.LinkedList;
+import java.awt.Point;
 import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.ArrayList;
+
+import com.scriptrts.core.Pathfinder;
+import com.scriptrts.core.Main;
 
 /**
  * Unit class which only implements most basic functions.
@@ -83,6 +87,11 @@ public class SimpleUnit {
     private int health;
 
     /**
+     * Pathfinder used to route this unit
+     */
+    private Pathfinder pathfinder;
+
+    /**
      * Create a new unit
      * @param p player to whom this unit owes allegiance
      * @param sprites array of sprites used to display the image
@@ -99,6 +108,7 @@ public class SimpleUnit {
         this.x = x;
         this.y = y;
         this.direction = null;
+        this.pathfinder = new Pathfinder(this, Main.getGame().getCurrentMap(), Main.getGame().getUnitGrid());
         previousDirection = direction;
         state = SpriteState.Idle;
 
@@ -249,7 +259,9 @@ public class SimpleUnit {
     public void setDestination(Point p){
         destination = p;
 
-        /* Route to destination */
+        pathfinder.findRoute(this.getX(), this.getY(), p.x, p.y);
+        ArrayList<Direction> directions = pathfinder.getDirections();
+        setPath(new LinkedList<Direction>(directions));
     }
 
     /**
