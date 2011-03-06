@@ -36,7 +36,7 @@ public class Minimap extends JPanel {
     /**
      * Cached minimap image
      */
-    private BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+    private BufferedImage image; 
 
     /**
      * Viewport currently showing map
@@ -111,6 +111,8 @@ public class Minimap extends JPanel {
     private void redrawMinimap(){
         /* After this redraw, no more updated needed until next change */
         changedMinimap = false;
+        
+        image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
         /* Draw a temporary square map */
         double size = (width / Math.sqrt(2));
@@ -139,7 +141,6 @@ public class Minimap extends JPanel {
                 graphics.fillRect((int) (i * squareSize), (int) (j * squareSize), (int) (squareSize+1), (int)(squareSize+1));
             }
         }
-
 
         /* Transform the map into the minimap */
         AffineTransform transform = new AffineTransform();
