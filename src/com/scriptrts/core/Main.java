@@ -43,6 +43,11 @@ public class Main extends JPanel {
     private boolean initialized = false;
 
     /**
+     * Whether the game is currently paused
+     */
+    private boolean paused = false;
+
+    /**
      * Directories to add to the interpreter path.
      */
     private static ArrayList<String> pyPaths = new ArrayList<String>();
@@ -310,6 +315,28 @@ public class Main extends JPanel {
         return main;
     }
 
+    /**
+     * Get whether the game is paused
+     * @return true if game is paused, false otherwise
+     */
+    public boolean paused() {
+        return paused;
+    }
+
+    /**
+     * Pause the game
+     */
+    public void pause() {
+        paused = true;
+    }
+
+    /**
+     * Resume the game after a pause
+     */
+    public void unpause() {
+        paused = false;
+    }
+
 
     /**
      * Get the frames per second (FPS) that this game should run at
@@ -494,7 +521,10 @@ public class Main extends JPanel {
             Dimension size = menu.getPreferredSize();
             menu.setBounds(x, y, size.width, size.height);
             add(menu);
-        }
+
+            pause();
+        } else
+            unpause();
     }
 
     /**
@@ -550,7 +580,8 @@ public class Main extends JPanel {
         }
 
         /* Update the game */
-        game.update(!console.hasFocus());
+        if(!paused)
+            game.update(!console.hasFocus());
     }
 
     /**
