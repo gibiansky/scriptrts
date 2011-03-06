@@ -121,6 +121,11 @@ public class Game {
         /* Create and populate map with tiles */
         map = new Map(n);
         map.generateMap(.64);
+        
+        /* Test pathfinder **********REMOVE THIS LATER********** */
+        Pathfinder3 pathfinder = new Pathfinder3(null, map, null);
+        pathfinder.findRoute(0,0,120,120);
+        System.out.println(pathfinder.getDirections());
 
         /* Create map painter */
         mapPainter = new MapPainter(map, 128, 64);

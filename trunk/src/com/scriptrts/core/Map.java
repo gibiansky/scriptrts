@@ -2,8 +2,6 @@ package com.scriptrts.core;
 
 import java.awt.Point;
 
-import com.scriptrts.game.Node;
-
 /**
  * Class representing the terrain tiles of a map.
  */
@@ -75,8 +73,8 @@ public class Map {
 	 * @return if the map contains a given point
 	 */
 	
-	public boolean contains(Point p){
-		if(0 <= p.x && p.x <= n-1 && 0 <= p.y && p.y <= n-1)
+	public boolean contains(int x, int y){
+		if(0 <= x && x <= n-1 && 0 <= y && y <= n-1)
 			return true;
 		return false;
 	}
@@ -85,28 +83,25 @@ public class Map {
      * Get the neighbors of a point
 	 * @return the neighbors of a given point
 	 */
-	public Node[] getNeighbors(Node node){
-		Point p = node.getPoint();
-		int x = p.x;
-		int y = p.y;
-		Node[] neighbors;
+	public int[][] getNeighbors(int x, int y){
+		int[][] neighbors;
 		int count = 0;
-		if(!this.contains(p))
+		if(!this.contains(x,y))
 			return null;
 		if(x == 0 || x == n - 1)
 			if(y == 0 || y == n - 1)
-				neighbors = new Node[3];
+				neighbors = new int[3][2];
 			else
-				neighbors = new Node[5];
+				neighbors = new int[5][2];
 		else if(y == 0 || y == n - 1)
-			neighbors = new Node[5];
+			neighbors = new int[5][2];
 		else
-			neighbors = new Node[8];
+			neighbors = new int[8][2];
 		for(int i = x - 1; i <= x + 1; i++)
 			for(int j = y - 1; j <= y + 1; j++){
-				Point q = new Point(i, j);
-				if(this.contains(q) && !p.equals(q)){
-					neighbors[count] = new Node(new Point(i, j));
+				if(this.contains(i,j) && !(x == i && y == j)){
+					neighbors[count][0] = i;
+					neighbors[count][1] = j;
 					count++;
 				}
 			}
