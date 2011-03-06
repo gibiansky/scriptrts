@@ -108,7 +108,9 @@ public class SimpleUnit {
         this.x = x;
         this.y = y;
         this.direction = null;
-        this.pathfinder = new Pathfinder(this, Main.getGame().getCurrentMap(), Main.getGame().getUnitGrid());
+
+        if(sprites != null)
+            this.pathfinder = new Pathfinder(this, Main.getGame().getCurrentMap(), Main.getGame().getUnitGrid());
         previousDirection = direction;
         state = SpriteState.Idle;
 

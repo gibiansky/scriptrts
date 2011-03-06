@@ -159,6 +159,9 @@ public class UnitGrid {
      * @param turnAfterMove which direction the unit will move in after it finishes the current move
      */
     private void reserveNextUnitLocation(SimpleUnit unit, Direction moving, Direction turnAfterMove){
+        if(moving == null)
+            return;
+
         /* Calculate location of next tile */
         int delX = 0, delY = 0;
         switch(moving){
@@ -257,7 +260,8 @@ public class UnitGrid {
      * @param j y coordinate of spot
      */
     private void setUnit(SimpleUnit unit, int i, int j){
-        unitGrid[i][j] = unit;
+        if(!(unit instanceof ReserveUnit))
+            unitGrid[i][j] = unit;
 
         Minimap.updateMinimap();
     }
