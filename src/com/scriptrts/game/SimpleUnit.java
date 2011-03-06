@@ -248,6 +248,8 @@ public class SimpleUnit {
      */
     public void setDestination(Point p){
         destination = p;
+
+        /* Route to destination */
     }
 
     /**
