@@ -8,8 +8,11 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Timer;
@@ -19,6 +22,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import com.scriptrts.control.Selection;
+import com.scriptrts.util.ResourceManager;
 import com.scriptrts.control.SelectionStorage;
 import com.scriptrts.script.Script;
 
@@ -45,7 +49,12 @@ public class Main extends JPanel {
     /**
      * Whether the game is currently paused
      */
-    private boolean paused = false;
+    private boolean paused = true;
+
+    /**
+     * Whether the game is showing the main menu
+     */
+    private boolean showingMainMenu = true;
 
     /**
      * Directories to add to the interpreter path.
@@ -129,6 +138,11 @@ public class Main extends JPanel {
     private static Main main;
 
     /**
+     * Image used as a background before loading is complete
+     */
+    private static BufferedImage loadingImage = null;
+
+    /**
      * Current game instance.
      */
     private Game game;
@@ -190,6 +204,13 @@ public class Main extends JPanel {
         /* Pack window to ensure actual usable area is the right size (ignoring look and feel) */
         window.pack();
 
+        /* Load the loading image */
+        try {
+            loadingImage = ResourceManager.loadImage("resource/LoadingBackground.jpg");
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+
         /* Set window to be visible */
         window.setVisible(true);
 
@@ -202,6 +223,32 @@ public class Main extends JPanel {
 
         /* Initialize the game */
         panel.initializeGame();
+
+        /* Hide game components */
+        if(panel.overlayUp)
+            panel.overlay.setVisible(false);
+        if(panel.consoleDown)
+            panel.console.setVisible(false);
+        if(panel.menuDown)
+            panel.topBar.setVisible(false);
+
+        /* Show the menu */
+        GameMenu mainMenu = createMainMenu();
+        mainMenu.setOpacity(0.0f);
+        panel.showingMainMenu = true;
+        panel.showMenu(mainMenu);
+
+        /* Fade in the menu */
+        for(int i = 0; i < 100; i++){
+            panel.currentMenu.setOpacity((float)(i) / 100);
+            try {
+                Thread.sleep(10);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+            window.repaint();
+        }
+        panel.currentMenu.setOpacity(1.0f);
 
         /* Start game loop */
         float fps = Main.getFPS();
@@ -297,6 +344,52 @@ public class Main extends JPanel {
             MapPainter.DEBUG = false;
         if(noUnit)
             UnitPainter.DEBUG = false;
+    }
+
+    /**
+     * Create the game main menu
+     * @return main menu object
+     */
+    private static GameMenu createMainMenu(){
+        try {
+            ImageButton[] buttons = new ImageButton[]{
+                new ImageButton(
+                        ResourceManager.loadImage("resource/StartGameButton.png"),
+                        ResourceManager.loadImage("resource/StartGameButtonHighlighted.png"),
+                        ResourceManager.loadImage("resource/StartGameButtonDown.png"),
+                        .7, 0, 0
+                        )
+
+            };
+
+            buttons[0].addActionListener(new ActionListener(){
+                public void actionPerformed(ActionEvent e){
+                    Main.getMain().startGame();
+                }
+            });
+
+            return new GameMenu(buttons, 700);
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Show the main menu.
+     */
+    public void showMainMenu(){
+        showingMainMenu = true;
+        showMenu(createMainMenu());
+
+        if(overlayUp)
+            overlay.setVisible(false);
+        if(consoleDown)
+            console.setVisible(false);
+        if(menuDown)
+            topBar.setVisible(false);
+
+        repaint();
     }
 
     /**
@@ -499,6 +592,19 @@ public class Main extends JPanel {
     }
 
     /**
+     * Start the game (leave the main menu)
+     */
+    public void startGame(){
+        showingMainMenu = false;
+        showMenu(null);
+
+
+        topBar.setVisible(true);
+        overlay.setVisible(true);
+        console.setVisible(true);
+    }
+
+    /**
      * Show the provided menu on the screen
      * @param menu menu to show
      */
@@ -532,50 +638,52 @@ public class Main extends JPanel {
      */
     public void updateGame(){
 
-    	/* Calling the console */
-        if(manager.getKeyCodeFlag(KeyEvent.VK_F9)){
-            manager.clearKeyCodeFlag(KeyEvent.VK_F9);
+        if(!showingMainMenu){
+            /* Calling the console */
+            if(manager.getKeyCodeFlag(KeyEvent.VK_F9)){
+                manager.clearKeyCodeFlag(KeyEvent.VK_F9);
 
-            /* Show or unshow the console */
-            consoleDown = !consoleDown;
-            if(consoleDown){
-                add(console);
-                console.requestFocusInWindow();
-            } else {
-                remove(console);
-                window.requestFocusInWindow();
-            }
-        }
-
-        /* Calling the top bar */
-        if(manager.getKeyCodeFlag(KeyEvent.VK_F8)){
-            manager.clearKeyCodeFlag(KeyEvent.VK_F8);
-
-            /* Show or unshow the console */
-            menuDown = !menuDown;
-            if(menuDown){
-                add(topBar);
-            } else {
-                remove(topBar);
+                /* Show or unshow the console */
+                consoleDown = !consoleDown;
+                if(consoleDown){
+                    add(console);
+                    console.requestFocusInWindow();
+                } else {
+                    remove(console);
+                    window.requestFocusInWindow();
+                }
             }
 
-            Dimension size = console.getPreferredSize();
-            if(menuDown)
-                console.setBounds(0, topBar.getPreferredSize().height, size.width, size.height);
-            else
-                console.setBounds(0, 0, size.width, size.height);
-        }
+            /* Calling the top bar */
+            if(manager.getKeyCodeFlag(KeyEvent.VK_F8)){
+                manager.clearKeyCodeFlag(KeyEvent.VK_F8);
 
-        /* Calling the overlay */
-        if(manager.getKeyCodeFlag(KeyEvent.VK_F7)){
-            manager.clearKeyCodeFlag(KeyEvent.VK_F7);
+                /* Show or unshow the console */
+                menuDown = !menuDown;
+                if(menuDown){
+                    add(topBar);
+                } else {
+                    remove(topBar);
+                }
 
-            /* Show or unshow the console */
-            overlayUp = !overlayUp;
-            if(overlayUp){
-                add(overlay);
-            } else {
-                remove(overlay);
+                Dimension size = console.getPreferredSize();
+                if(menuDown)
+                    console.setBounds(0, topBar.getPreferredSize().height, size.width, size.height);
+                else
+                    console.setBounds(0, 0, size.width, size.height);
+            }
+
+            /* Calling the overlay */
+            if(manager.getKeyCodeFlag(KeyEvent.VK_F7)){
+                manager.clearKeyCodeFlag(KeyEvent.VK_F7);
+
+                /* Show or unshow the console */
+                overlayUp = !overlayUp;
+                if(overlayUp){
+                    add(overlay);
+                } else {
+                    remove(overlay);
+                }
             }
         }
 
@@ -593,8 +701,11 @@ public class Main extends JPanel {
         if(!Console.calibrated())
             Console.calibrateFont(g);
 
-        /* Do not draw anything until initialization is done */
-        if(!initialized) return;
+        /* Until initialization is done, just show the loading image */
+        if(!initialized || showingMainMenu) {
+            g.drawImage(loadingImage, 0, 0, window.getSize().width, window.getSize().height, null);
+            return;
+        }
 
         /* Record FPS if the option was enabled (via command-line switch) */
         if(fpsLogging){

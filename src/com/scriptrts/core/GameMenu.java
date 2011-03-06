@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
 import javax.swing.JPanel;
+import java.awt.image.RescaleOp;
 import com.scriptrts.util.ResourceManager;
 
 /**
@@ -20,6 +21,11 @@ public class GameMenu extends JPanel {
      * Image to use as the game menu background
      */
     private BufferedImage background;
+
+    /**
+     * Opacity of this game menu
+     */
+    private float opacity = 1.0f;
 
     /**
      * Create a new game menu
@@ -79,15 +85,28 @@ public class GameMenu extends JPanel {
     }
 
     /**
+     * Set the opacity of this game window
+     * @param opacity desired opacity, from 0 (transparent) to 1 (fully opaque)
+     */
+    public void setOpacity(double opacity){
+        this.opacity = (float) opacity;
+    }
+
+    /**
      * Draw the game menu on the screen
      * @param g graphics handle to the screen
      */
     protected void paintComponent(Graphics g){
         Graphics2D graphics = (Graphics2D) g;
 
-        graphics.drawImage(background, 0, 0, null);
+        /* Create a rescale filter op that makes the image partially transparent */
+        float[] scales = { 1f, 1f, 1f, opacity };
+        float[] offsets = new float[4];
+        RescaleOp opacityOp = new RescaleOp(scales, offsets, null);
+
+        graphics.drawImage(background, opacityOp, 0, 0);
 
         for(ImageButton button : buttons)
-            button.paint(graphics);
+            button.paint(graphics, opacityOp);
     }
 }

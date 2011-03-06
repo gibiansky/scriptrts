@@ -8,6 +8,8 @@ import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.awt.Component;
+import java.awt.image.BufferedImageOp;
+import com.scriptrts.util.ResourceManager;
 
 /**
  * A button that can be painted onto the screen.
@@ -71,9 +73,9 @@ public class ImageButton {
     public ImageButton(BufferedImage defImg, BufferedImage highImg, BufferedImage clickedImg, int width, int height, int x, int y){
         super();
 
-        this.defaultStateImage = defImg;
-        this.downStateImage = clickedImg;
-        this.highlightedStateImage = highImg;
+        this.defaultStateImage = ResourceManager.scaleImage(defImg, width, height);
+        this.downStateImage = ResourceManager.scaleImage(clickedImg, width, height);
+        this.highlightedStateImage = ResourceManager.scaleImage(highImg, width, height);
         this.width = width;
         this.height = height;
         this.x = x;
@@ -114,6 +116,15 @@ public class ImageButton {
      * @param graphics Graphics object used to draw to the screen
      */
     public void paint(Graphics2D graphics){
+        paint(graphics, null);
+    }
+
+    /**
+     * Paint the button on the screen with a given operation performed first
+     * @param graphics Graphics object used to draw to the screen
+     * @param op BufferedImageOp to apply to the image before drawing
+     */
+    public void paint(Graphics2D graphics, BufferedImageOp op){
         /* Get the mouse location relative to the parent component */
         Point mouse = manager.getMouseLocation();
         if(parent != null){
@@ -139,7 +150,10 @@ public class ImageButton {
         } else
             buttonState = defaultStateImage;
 
-        graphics.drawImage(buttonState, x, y, width, height, null);
+        if(op == null)
+            graphics.drawImage(buttonState, x, y, null);
+        else
+            graphics.drawImage(buttonState, op, x, y);
     }
 
     /**

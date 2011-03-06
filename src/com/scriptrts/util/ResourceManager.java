@@ -22,6 +22,22 @@ public class ResourceManager {
     private static HashMap<String, BufferedImage> imageCache = new HashMap<String, BufferedImage>();
 
     /**
+     * Scale an image to a new dimension
+     * @param width horizontal size
+     * @param height vertical size
+     * @return scaled version of the image
+     */
+    public static BufferedImage scaleImage(BufferedImage unscaled, int width, int height){
+        BufferedImage scaledImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = (Graphics2D) scaledImage.getGraphics();
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.drawImage(unscaled, 0, 0, width, height, null);
+        g.dispose();
+
+        return scaledImage;
+    }
+
+    /**
      * Load a scaled image texture from the provided filename
      * @param filename image filename
      * @param width horizontal size
