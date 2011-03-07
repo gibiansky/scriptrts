@@ -1,4 +1,5 @@
 
+package com.scriptrts.combat;
 /**
  * Attack types which do different damage to different attributed units
  */

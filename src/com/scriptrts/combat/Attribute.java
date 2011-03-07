@@ -1,4 +1,5 @@
 
+package com.scriptrts.combat;
 /**
  * Attributes possessed by unit which modify the damage dealt by various attacks
  */
