@@ -95,8 +95,7 @@ public class Pathfinder {
 	 * @param m current map instance
 	 * @param g unit grid
 	 */
-	public Pathfinder(SimpleUnit u, Map m, UnitGrid g){
-		unit = u;
+	public Pathfinder(Map m, UnitGrid g){
 		map = m;
 		terrainMap = map.getTileArray();
 		unitGrid = g;
@@ -110,18 +109,26 @@ public class Pathfinder {
 		directions = new LinkedList<Direction>();
 		setTerrainValues();
 	}
-
+	
 	/**
 	 * Reset and clear path when done
 	 */
 	public void reset(){
-		Arrays.fill(heap, 0);
-		Arrays.fill(pathLengths, 0);
-		fillZeros(coords);
-		fillZeros(pointChecked);
-		fillZeros(parent);
+		for(int i = 0; i < nodeID; i++){
+			heap[i] = 0;
+			pathLengths[i] = 0;
+			coords[i][0] = 0;
+			coords[i][1] = 0;
+		}
+		for(int i = 0; i < n; i++)
+			for(int j = 0; j < n; j++){
+				pointChecked[i][j] = 0;
+				parent[i][j] = 0;
+			}
 		path.clear();
-		directions.clear();
+		directions = new LinkedList<Direction>();
+		nodeID = 0;
+		count = 0;
 	}
 	
 	/**
@@ -140,7 +147,12 @@ public class Pathfinder {
 	/**
 	 * Calculates the route between two points
 	 */
-	public synchronized void findRoute(int startX, int startY, int endX, int endY){
+	public void findRoute(SimpleUnit u, int endX, int endY){
+		
+		int startX = u.getX();
+		int startY = u.getY();
+		
+		System.out.println("Finding path");
 
 		/* Add the starting point to the open point list */
 		pointChecked[startX][startY] = 1;
@@ -207,6 +219,8 @@ public class Pathfinder {
 
 		/* Retrace path starting from endpoint */
 		retrace(endX, endY);
+		
+		System.out.println("Done");
 	}
 
 	/**
@@ -390,10 +404,5 @@ public class Pathfinder {
 			}
 		else
 			return null;
-	}
-	
-	private void fillZeros(int[][] array){
-		for(int i = 0; i < array.length; i++)
-			Arrays.fill(array[i], 0);
 	}
 }

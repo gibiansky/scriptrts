@@ -112,16 +112,15 @@ public class SimpleUnit {
      * @param direction direction in which the unit is facing originally
      * @param shaped if false, this unit takes up one square; if true, it can take up more.
      */
-    public SimpleUnit(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, boolean shaped) {
+    public SimpleUnit(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, boolean shaped, Pathfinder pathfinder) {
         this.player = p;
         this.sprites = sprites;
         this.speed = speed;
         this.x = x;
         this.y = y;
         this.direction = null;
-
-        if(sprites != null)
-            this.pathfinder = new Pathfinder(this, Main.getGame().getCurrentMap(), Main.getGame().getUnitGrid());
+        this.pathfinder = pathfinder;
+        
         previousDirection = direction;
         state = SpriteState.Idle;
 
@@ -198,8 +197,8 @@ public class SimpleUnit {
      * @param y unit's starting location y coordinate
      * @param direction direction in which the unit is facing originally
      */
-    public SimpleUnit(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction) {
-        this(p, sprites, artImg, speed, x, y, direction, true);
+    public SimpleUnit(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, Pathfinder pathfinder) {
+        this(p, sprites, artImg, speed, x, y, direction, true, pathfinder);
     }
 
     /**
@@ -304,12 +303,12 @@ public class SimpleUnit {
         
         if(path != null){
         	direction = null;
-        	pathfinder.reset();
         	clearPath();
         }
-        pathfinder.findRoute(this.getX(), this.getY(), p.x, p.y);
+        pathfinder.findRoute(this, p.x, p.y);
         Queue<Direction> directions = pathfinder.getDirections();
         setPath(directions);
+        pathfinder.reset();
     }
 
     /**
@@ -358,7 +357,6 @@ public class SimpleUnit {
         /* If we have no more directions, stop. */
         if(path == null || path.peek() == null){
             direction = null;
-            this.pathfinder.reset();
         }
         else {
             direction = path.poll();
