@@ -88,7 +88,7 @@ public class Pathfinder {
 	 * List of Directions in path
 	 */
 	private Queue<Direction> directions;
-
+	
 	/**
 	 * Create a new Pathfinder
 	 * @param u unit which pathfinder is for
@@ -115,13 +115,13 @@ public class Pathfinder {
 	 * Reset and clear path when done
 	 */
 	public void reset(){
-		heap = new int[n * n];
-		pathLengths = new int[n * n];
-		coords = new int[n * n][2];
-		pointChecked = new int[n][n];
-		parent = new int[n][n];
-		path = new ArrayList<Point>();
-		directions = new LinkedList<Direction>();
+		Arrays.fill(heap, 0);
+		Arrays.fill(pathLengths, 0);
+		fillZeros(coords);
+		fillZeros(pointChecked);
+		fillZeros(parent);
+		path.clear();
+		directions.clear();
 	}
 	
 	/**
@@ -140,7 +140,7 @@ public class Pathfinder {
 	/**
 	 * Calculates the route between two points
 	 */
-	public void findRoute(int startX, int startY, int endX, int endY){
+	public synchronized void findRoute(int startX, int startY, int endX, int endY){
 
 		/* Add the starting point to the open point list */
 		pointChecked[startX][startY] = 1;
@@ -390,5 +390,10 @@ public class Pathfinder {
 			}
 		else
 			return null;
+	}
+	
+	private void fillZeros(int[][] array){
+		for(int i = 0; i < array.length; i++)
+			Arrays.fill(array[i], 0);
 	}
 }
