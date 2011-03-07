@@ -2,22 +2,21 @@ package com.scriptrts.core;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.geom.AffineTransform;
 import java.awt.Polygon;
-import java.awt.image.BufferedImage;
-import java.awt.image.Kernel;
-import java.awt.image.ConvolveOp;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
-import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
+
 import javax.swing.JPanel;
 
-import com.scriptrts.game.UnitGrid;
 import com.scriptrts.game.SimpleUnit;
+import com.scriptrts.game.UnitGrid;
 
 /**
  * Minimap panel which displays a miniature colored version of the map on the overlay panel
@@ -36,7 +35,17 @@ public class Minimap extends JPanel {
     /**
      * Cached minimap image
      */
-    private BufferedImage image; 
+    private BufferedImage image;
+    
+    /**
+     * Final minimap image drawn to screen
+     */
+    private BufferedImage minimapImage;
+    
+    /**
+     * Cached map image used to generate minimap
+     */
+    private BufferedImage mapImage;
 
     /**
      * Viewport currently showing map
@@ -82,7 +91,7 @@ public class Minimap extends JPanel {
      */
     public void paintComponent(Graphics g){
         Graphics2D graphics = (Graphics2D) g;
-        graphics.drawImage(image, 0, 0, null);
+        graphics.drawImage(minimapImage, 0, 0, null);
 
 
         if(changedMinimap && Main.getGame().getCurrentMap() != null)
@@ -112,11 +121,15 @@ public class Minimap extends JPanel {
         /* After this redraw, no more updated needed until next change */
         changedMinimap = false;
         
-        image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        if(image == null)
+        	image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
         /* Draw a temporary square map */
         double size = (width / Math.sqrt(2));
-        BufferedImage temporary = new BufferedImage((int) size, (int) size, BufferedImage.TYPE_INT_ARGB);
+        if(mapImage == null)
+        	mapImage = new BufferedImage((int) size, (int) size, BufferedImage.TYPE_INT_ARGB);
+        
+        BufferedImage temporary = mapImage;
         Graphics2D graphics = (Graphics2D) temporary.getGraphics();
 
         int n = Main.getGame().getCurrentMap().getN();
@@ -176,7 +189,7 @@ public class Minimap extends JPanel {
         };
         Kernel kernel = new Kernel(3, 3, data);
         ConvolveOp blur = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
-        image = blur.filter(image, null);
+        minimapImage = blur.filter(image, minimapImage);
     }
 
     /**

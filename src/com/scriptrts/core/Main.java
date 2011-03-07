@@ -239,6 +239,7 @@ public class Main extends JPanel {
         panel.showMenu(mainMenu);
 
         /* Fade in the menu */
+        /*
         for(int i = 0; i < 100; i++){
             panel.currentMenu.setOpacity((float)(i) / 100);
             try {
@@ -249,6 +250,8 @@ public class Main extends JPanel {
             window.repaint();
         }
         panel.currentMenu.setOpacity(1.0f);
+        */
+        panel.startGame();
 
         /* Start game loop */
         float fps = Main.getFPS();

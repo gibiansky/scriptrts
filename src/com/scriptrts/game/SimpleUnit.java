@@ -301,7 +301,12 @@ public class SimpleUnit {
      */
     public void setDestination(Point p){
         destination = p;
-
+        
+        if(path != null){
+        	direction = null;
+        	pathfinder.reset();
+        	clearPath();
+        }
         pathfinder.findRoute(this.getX(), this.getY(), p.x, p.y);
         Queue<Direction> directions = pathfinder.getDirections();
         setPath(directions);
@@ -312,6 +317,7 @@ public class SimpleUnit {
      * @param x new unit destination x coordinate
      * @param y new unit destination y coordinate
      */
+     
     public void setDestination(int x, int y){
         setDestination(new Point(x, y));
     }
@@ -350,8 +356,10 @@ public class SimpleUnit {
             previousDirection = direction;
 
         /* If we have no more directions, stop. */
-        if(path == null || path.peek() == null)
+        if(path == null || path.peek() == null){
             direction = null;
+            this.pathfinder.reset();
+        }
         else {
             direction = path.poll();
         }

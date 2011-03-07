@@ -180,6 +180,7 @@ public class Game {
         manager.registerKeyCode(KeyEvent.VK_0);
         manager.registerKeyCode(KeyEvent.VK_BACK_QUOTE);
         manager.registerKeyCode(KeyEvent.VK_CONTROL);
+        manager.registerKeyCode(KeyEvent.VK_SHIFT);
     }
 
     /**
@@ -285,7 +286,7 @@ public class Game {
             }
 
             /* Mouse released, but was never dragged */
-            if(!manager.getLeftMouseDown() && mousePreviouslyPressed && bottomRightSelection == null){
+            if(!manager.getLeftMouseDown() && mousePreviouslyPressed && bottomRightSelection == null && !manager.getKeyCodeFlag(KeyEvent.VK_SHIFT)){
                 /* Get mouse location */
                 Point point = manager.getMouseLocation();
 
@@ -347,7 +348,7 @@ public class Game {
             mousePreviouslyPressed = manager.getLeftMouseDown();
 
             /* Clicking (to set unit destination) */
-            if(manager.getRightMouseClicked()){
+            if(manager.getRightMouseClicked() || (manager.getKeyCodeFlag(KeyEvent.VK_SHIFT) && manager.getLeftMouseClicked())){
                 Point point = manager.getMouseLocation();
                 Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
                 for(SimpleUnit unit : Selection.current().getList()){
