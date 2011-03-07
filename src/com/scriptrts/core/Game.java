@@ -112,6 +112,11 @@ public class Game {
     int increment = SCROLLING_DISTANCE;
     
     /**
+     * Pathfinder used for all units
+     */
+    Pathfinder pathfinder;
+    
+    /**
      * Create the game.
      * @param n size of the map (length along one edge)
      */
@@ -145,6 +150,9 @@ public class Game {
         /* Create the unit grid and unit painter */
         unitGrid = new UnitGrid(n);
         unitPainter = new UnitPainter(unitGrid, mapPainter);
+        
+        /* Create pathfinder */
+        pathfinder = new Pathfinder(map, unitGrid);
 
         /* Create the viewport */
         int totalWidth = map.getN() * mapPainter.getTileWidth();
@@ -265,7 +273,7 @@ public class Game {
                                 0.3, new int[]{87, bX}, new int[]{25, bY});
                     }
 
-                    SimpleUnit spaceship = new SimpleUnit(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, true);
+                    SimpleUnit spaceship = new SimpleUnit(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, true, pathfinder);
                     tempUnit = spaceship;
                 } catch (Exception e) {
                     e.printStackTrace();

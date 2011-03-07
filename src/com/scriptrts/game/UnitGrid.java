@@ -365,7 +365,7 @@ class ReserveUnit extends SimpleUnit {
      * @param  reserveFor which unit to reserve the spot for.
      */
     public ReserveUnit(SimpleUnit reserveFor){
-        super(reserveFor.getAllegiance(), null, null, 0, 0, 0, null);
+        super(reserveFor.getAllegiance(), null, null, 0, 0, 0, null, null);
         reserve = reserveFor;
     }
 
