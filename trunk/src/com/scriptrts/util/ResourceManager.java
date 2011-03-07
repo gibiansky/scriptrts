@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.awt.Color;
 
 import javax.imageio.ImageIO;
 
@@ -75,6 +76,46 @@ public class ResourceManager {
         imageCache.put(filename + " (" + image.getWidth() + ", " + image.getHeight() + ")", image);
         imageCache.put(filename, image);
         return image;
+    }
+
+    /**
+     * Reads an image from a file, then reads a color mask to apply from another file, and returns the combined image.
+     * @param filename image filename
+     * @param band color band image filename
+     * @param color color to band the image with
+     * @return BufferedImage read from file with applied color band
+     */
+    public static BufferedImage loadBandedImage(String filename, String band, Color color) throws IOException {
+        BufferedImage original = loadImage(filename);
+        BufferedImage mask = loadImage(band);
+
+        /* Create the band image */
+        BufferedImage bandImg = new BufferedImage(mask.getWidth(), mask.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        for(int pixel_i = 0; pixel_i < mask.getWidth(); pixel_i++){
+            for(int pixel_j = 0; pixel_j < mask.getHeight(); pixel_j++){
+                /* Get colors of mask image and mask itself */
+                int maskColor = mask.getRGB(pixel_i, pixel_j);
+
+                /* Extract the pieces of the color */
+                int intensity = ((maskColor & 0x00FF0000) >> 16); 
+                int red = color.getRed();
+                int green = color.getGreen();
+                int blue = color.getBlue();
+
+                /* Black means that the alpha is high, white means the alpha is low */
+                int newColor = (intensity << 24) | (red << 16) | (green << 8) | blue;
+
+                bandImg.setRGB(pixel_i, pixel_j, newColor);
+            }
+        }
+
+        BufferedImage bandedImage = new BufferedImage(original.getWidth(), original.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        bandedImage.getGraphics().drawImage(original, 0, 0, null);
+        bandedImage.getGraphics().drawImage(bandImg, 0, 0, null);
+        bandedImage.getGraphics().dispose();
+
+        imageCache.put(filename + " - banded " + band + " (" + original.getWidth() + ", " + original.getHeight() + ")", bandedImage);
+        return bandedImage;
     }
 
     /**

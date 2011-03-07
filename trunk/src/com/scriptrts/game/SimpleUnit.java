@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 import com.scriptrts.core.Pathfinder;
 import com.scriptrts.core.Main;
+import com.scriptrts.combat.Unit;
 
 /**
  * Unit class which only implements most basic functions.
@@ -95,6 +96,11 @@ public class SimpleUnit {
      * Pathfinder used to route this unit
      */
     private Pathfinder pathfinder;
+
+    /**
+     * Unit type that this unit corresponds to
+     */
+    private Unit unitType;
 
     /**
      * Create a new unit

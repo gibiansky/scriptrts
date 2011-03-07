@@ -239,13 +239,20 @@ public class Game {
                     BufferedImage art = ResourceManager.loadImage("resource/unit/spaceship/Art.png", 200, 200);
                     Sprite[] sprites = new Sprite[16];
                     for(Direction d : Direction.values()){
-                        BufferedImage img = ResourceManager.loadImage("resource/unit/spaceship/Ship" + d.name() + ".png");
+                        String unitDir = "resource/unit/spaceship/";
+                        String unitFilename = "Ship" + d.name() + ".png";
+                        BufferedImage img = ResourceManager.loadBandedImage(
+                                unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, getPlayer().getColor());
                         sprites[d.ordinal()]  = new Sprite(img, 0.3, 87, 25);
                     }
 
                     for(Direction d : Direction.values()){
-                        BufferedImage normalImg = ResourceManager.loadImage("resource/unit/spaceship/Ship" + d.name() + ".png");
-                        BufferedImage attackImg = ResourceManager.loadImage("resource/unit/spaceship/attack/Ship" + d.name() + ".png");
+                        String unitDir = "resource/unit/spaceship/";
+                        String unitFilename = "Ship" + d.name() + ".png";
+                        BufferedImage normalImg = ResourceManager.loadBandedImage(
+                                unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, getPlayer().getColor());
+                        BufferedImage attackImg = ResourceManager.loadBandedImage(
+                                unitDir + "attack/" + unitFilename, unitDir + "allegiance/" + unitFilename, getPlayer().getColor());
                         int bX = 87, bY = 25;
                         if(d == Direction.Northwest)
                             bY += 43;
