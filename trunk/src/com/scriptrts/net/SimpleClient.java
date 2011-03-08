@@ -6,7 +6,6 @@ import java.net.Socket;
 /**
  * This class is used as the client for testing bandwidth
  * and data transfer.
- *
  */
 public class SimpleClient {
 
@@ -32,9 +31,12 @@ public class SimpleClient {
 			/* Wait until there is something to read */
 			while(input.available() == 0)
 				;
+
 			/* Read whatever is available to read */
-			while(input.available() > 0 && counter < SIZE)
+			while(counter < SIZE){
 				counter += input.read(buf, counter, SIZE - counter);
+                System.out.println(counter);
+            }
 			double sum = 0;
 			for(byte b : buf)
 				sum += b;
