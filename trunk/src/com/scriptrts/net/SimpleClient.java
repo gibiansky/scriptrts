@@ -34,8 +34,14 @@ public class SimpleClient {
 
 			/* Read whatever is available to read */
 			while(counter < SIZE){
+                int prev = counter;
 				counter += input.read(buf, counter, SIZE - counter);
-                System.out.println(counter);
+                int sum = 0;
+                for(int i = prev; i < counter; i++){
+                    sum += buf[i];
+                }
+                System.out.println("avg of incoming " + (double)(sum) / (counter - prev));
+                System.out.println("counter " + counter);
             }
 			double sum = 0;
 			for(byte b : buf)
