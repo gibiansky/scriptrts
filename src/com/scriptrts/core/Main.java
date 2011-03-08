@@ -25,6 +25,7 @@ import com.scriptrts.control.Selection;
 import com.scriptrts.util.ResourceManager;
 import com.scriptrts.control.SelectionStorage;
 import com.scriptrts.script.Script;
+import com.scriptrts.net.GameServer;
 
 /**
  * Main game class which starts the application, parses command line arguments, and initializes the game loop.
@@ -148,6 +149,11 @@ public class Main extends JPanel {
     private Game game;
 
     /**
+     * Game server running the game
+     */
+    private GameServer server;
+
+    /**
      * Create a new Main object
      */
     public Main() {
@@ -158,8 +164,10 @@ public class Main extends JPanel {
         main = this;
         
 
-        /* Create game */
+        /* Create game and server */
         game = new Game(129, window.getWidth(), window.getHeight());
+        server = new GameServer();
+        server.start(game);
     }
 
     /**
@@ -691,8 +699,9 @@ public class Main extends JPanel {
         }
 
         /* Update the game */
-        if(!paused)
-            game.update(!console.hasFocus());
+        if(!paused){
+            game.handleInput(!console.hasFocus());
+        }
     }
 
     /**
