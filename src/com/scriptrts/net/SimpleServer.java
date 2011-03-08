@@ -16,8 +16,9 @@ public class SimpleServer {
 	 * @param args
 	 */
 	public static void main(String... args) {
-        while(true)
+        while(true) {
             new SimpleServer().start();
+        }
 	}
 
 	private void start() {
