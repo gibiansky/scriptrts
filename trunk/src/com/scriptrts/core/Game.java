@@ -22,7 +22,7 @@ import com.scriptrts.util.ResourceManager;
  * Game class which stores all information about a currently running game and manages
  * updating and drawing of the map and game features.
  */
-public class Game {
+public class Game extends HeadlessGame {
 
     /**
      * Viewport used to display the map on the scren.
@@ -30,25 +30,9 @@ public class Game {
     private Viewport viewport;
 
     /**
-     * The map on which this game is being played
-     */
-    private Map map;
-
-    /**
-     * Size of the map (length along one edge). This is measured in map tiles, not unit tiles.
-     * Each map tile has some number of unit tiles in it (3 as of last check).
-     */
-    private int n; 
-
-    /**
      * Input manager used to deal with inputs throughout the application.
      */
     private InputManager manager = InputManager.getInputManager();
-
-    /**
-     * The grid of units on the board.
-     */
-    private UnitGrid unitGrid;
 
     /**
      * The painter used to draw the map onto the screen.
@@ -121,10 +105,7 @@ public class Game {
      * @param n size of the map (length along one edge)
      */
     public Game(int n, int width, int height) {
-        super();
-
-        /* Store map size */
-        this.n = n;
+        super(n);
 
         /* Initialize viewport */
         viewport = new Viewport();
@@ -135,24 +116,19 @@ public class Game {
      * Initialize this game.
      */
     public void init(){
+        super.init();
+
         /* Create the player */
         player = new Player("Player-One", Color.MAGENTA);
 
-        /* Create and populate map with tiles */
-        map = new Map(n);
-        map.generateMap(.64);
+        /* Create painters */
+        int tileX = 128;
+        int tileY = 64;
+        mapPainter = new MapPainter(map, tileX, tileY);
+        unitPainter = new UnitPainter(grid, mapPainter);
 
-        /* Create map painter */
-        mapPainter = new MapPainter(map, 128, 64);
-        int tileX = mapPainter.getTileWidth();
-        int tileY = mapPainter.getTileHeight();
-
-        /* Create the unit grid and unit painter */
-        unitGrid = new UnitGrid(n);
-        unitPainter = new UnitPainter(unitGrid, mapPainter);
-        
         /* Create pathfinder */
-        pathfinder = new Pathfinder(map, unitGrid);
+        pathfinder = new Pathfinder(map, grid);
 
         /* Create the viewport */
         int totalWidth = map.getN() * mapPainter.getTileWidth();
@@ -192,9 +168,9 @@ public class Game {
     }
 
     /**
-     * Update the game by one timestep. Called once per frame.
+     * Handle game input. Called once per frame.
      */
-    public void update(boolean focused){
+    public void handleInput(boolean focused){
         /* Respond to input if the game has focus (as opposed to the console) */
         if(focused){
             /* Grouping */
@@ -233,7 +209,7 @@ public class Game {
                 if(manager.getKeyCodeFlag(KeyEvent.VK_D))
                     uSpeed = 0;
                 else
-                    uSpeed = 1;
+                    uSpeed = 5;
 
                 manager.clearKeyCodeFlag(KeyEvent.VK_S);
                 manager.clearKeyCodeFlag(KeyEvent.VK_D);
@@ -268,9 +244,15 @@ public class Game {
                         if(d == Direction.Southwest)
                             bX += 30;
                         sprites[8 + d.ordinal()]  = new AnimatedSprite(
-                                new BufferedImage[]{normalImg, attackImg},
-                                new int[]{10, 10},
-                                0.3, new int[]{87, bX}, new int[]{25, bY});
+                                new BufferedImage[]{
+                                    normalImg, attackImg
+                                }, new int[]{
+                                    10, 10
+                                }, 0.3, new int[]{
+                                    87, bX
+                                }, new int[]{
+                                    25, bY
+                                });
                     }
 
                     SimpleUnit spaceship = new SimpleUnit(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, true, pathfinder);
@@ -303,7 +285,7 @@ public class Game {
                     Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
                     tempUnit.setX(unitTile.x);
                     tempUnit.setY(unitTile.y);
-                    unitGrid.placeUnit(tempUnit, unitTile.x, unitTile.y);
+                    grid.placeUnit(tempUnit, unitTile.x, unitTile.y);
 
                     placingUnit = false;
                 }
@@ -418,9 +400,6 @@ public class Game {
 
 
         }
-
-        /* Update all units */
-        unitPainter.update();
     }
 
     /**
@@ -513,27 +492,11 @@ public class Game {
     }
 
     /**
-     * Get the map.
-     * @return the current map
-     */
-    public Map getCurrentMap(){
-        return map;
-    }
-
-    /**
      * Get the player
      * @return your player
      */
     public Player getPlayer(){
         return player;
-    }
-
-    /**
-     * Get the unit grid.
-     * @return current unit grid
-     */
-    public UnitGrid getUnitGrid(){
-        return unitGrid;
     }
 
     /**

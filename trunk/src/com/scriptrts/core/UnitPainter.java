@@ -59,62 +59,6 @@ public class UnitPainter {
 	}
 
     /**
-     * Change the zoom level by resizing all units
-     * @param scale to apply to all sprites and images
-     */
-    public void zoom(double scale){
-        /* Loop over all unit positions, scale where there are units */
-        int n = mapPainter.getMap().getN() * UnitGrid.SPACES_PER_TILE;
-        for(int i = 0; i < n; i++){
-            for(int j = 0; j < n; j++){
-                if(grid.getUnit(i, j) != null)
-                    for(Sprite s : grid.getUnit(i, j).getSprites())
-                        s.scale(scale);
-            }
-        }
-    }
-
-    /**
-     * Updates unit positions and animations
-     */
-    public void update(){
-        /* Loop over all unit positions, update where there are units */
-        int n = mapPainter.getMap().getN() * UnitGrid.SPACES_PER_TILE;
-        for(int i = 0; i < n; i++){
-            for(int j = 0; j < n; j++){
-                if(grid.getUnit(i, j) != null && grid.getUnit(i, j).getX() == i && grid.getUnit(i, j).getY() == j)
-                    updateUnit(i, j);
-            }
-        }
-    }
-
-    /**
-     * Update the unit at the given location 
-     * @param i x coordinate in unit grid
-     * @param j y coordinate in unit grid
-     */
-    private void updateUnit(int i, int j){
-        /* Get fps */
-        int fps = Main.getFPS();
-        
-        SimpleUnit unit = grid.getUnit(i, j);
-
-        /* Unit speed is in subtiles per second */
-        int uSpeed = unit.getSpeed();
-        double subtilesMovedPerFrame = (double)(uSpeed) /* subtiles per second */ / fps /* times seconds */;
-
-        int tilesMoved = unit.incrementAnimationCounter(subtilesMovedPerFrame);
-
-        /* Move it however many tiles it wants to be moved */
-        while(tilesMoved > 0){
-            boolean moveSucceeded = grid.moveUnitOneTile(unit);
-            tilesMoved--;
-        }
-
-        unit.progressSpriteAnimation();
-    }
-
-    /**
      * Get the coordinates of the back point on the unit.
      * @param unit which unit to get the back point of
      */
