@@ -6,5 +6,6 @@ package com.scriptrts.net;
 public enum ServerResponse {
     OperationSuccess,
     NameTaken,
-    ColorTaken;
+    ColorTaken,
+    MapUpdate;
 }

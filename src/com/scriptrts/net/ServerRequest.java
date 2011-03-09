@@ -4,5 +4,8 @@ package com.scriptrts.net;
  */
 public enum ServerRequest {
     PlayerNameChange,
-    PlayerColorChange;
+    PlayerColorChange,
+    PathAppended,
+    PathChanged
+        ;
 }

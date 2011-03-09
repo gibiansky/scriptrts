@@ -85,7 +85,7 @@ public class Game extends HeadlessGame {
      */
     private static final int SCROLLING_DISTANCE = 30;
 
-    /**
+    /*)et
      * How many frames the map has been scrolling for
      */
     int framesScrolled = 0;

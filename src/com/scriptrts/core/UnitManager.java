@@ -55,10 +55,13 @@ public class UnitManager {
 
         int tilesMoved = unit.incrementAnimationCounter(subtilesMovedPerFrame);
 
-        /* Move it however many tiles it wants to be moved */
-        while(tilesMoved > 0){
-            boolean moveSucceeded = grid.moveUnitOneTile(unit);
-            tilesMoved--;
+        /* Move it however many tiles it wants to be moved if this is the server;
+         * the client will change positions when the server sends updated data. */
+        if(Main.getGameServer() != null){
+            while(tilesMoved > 0){
+                boolean moveSucceeded = grid.moveUnitOneTile(unit);
+                tilesMoved--;
+            }
         }
 
         unit.progressSpriteAnimation();

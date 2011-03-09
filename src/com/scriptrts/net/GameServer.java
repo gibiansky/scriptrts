@@ -1,6 +1,7 @@
 package com.scriptrts.net;
 
 import java.util.Vector;
+import java.util.Queue;
 import java.awt.Color;
 import java.io.*;
 import java.net.ServerSocket;
@@ -8,6 +9,7 @@ import java.net.Socket;
 
 
 
+import com.scriptrts.game.Direction;
 import com.scriptrts.game.Player;
 import com.scriptrts.core.HeadlessGame;
 
@@ -74,6 +76,17 @@ public class GameServer {
                         }
                     }).start();
 
+                    /* Start a new thread to update collections */
+                    new Thread(new Runnable(){
+                        public void run(){
+                            try {
+                                sendUpdates();
+                            } catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
+
                     /* Keep accepting connections until we're full */
                     while(connections.size() < GameServer.MAX_CONNECTIONS){
                         Socket connection = server.accept();
@@ -117,6 +130,9 @@ public class GameServer {
                                 case PlayerColorChange:
                                     changeColorRequest(socket, objIn);
                                     break;
+                                case PathAppended:
+                                    pathAppendedRequest(socket, objIn);
+                                    break;
                                 default:
                                     break;
                             }
@@ -125,6 +141,29 @@ public class GameServer {
                 }
             }
         }
+    }
+
+    /**
+     * Send updates to clients
+     */
+    private void sendUpdates() throws IOException, ClassNotFoundException {
+        while(true){
+            /* Clone the array list so it isn't modified by a new player joining while we're processing requests */
+            synchronized (connections){
+                for(Socket socket : connections){
+                    if(socket.isClosed())
+                        connections.remove(socket);
+                    else if(socket.getOutputStream() != null){
+                        ObjectOutputStream out = objectOutputs.get(connections.indexOf(socket));
+                        updateClient(out, game.getPlayers().get(connections.indexOf(socket)));
+                    }
+                }
+            }
+        }
+    }
+
+    private void updateClient(ObjectOutputStream output, Player player) throws IOException, ClassNotFoundException {
+
     }
 
     /**
@@ -209,6 +248,44 @@ public class GameServer {
             objectOutputs.get(connections.indexOf(socket)).writeObject(ServerResponse.OperationSuccess);
         else
             objectOutputs.get(connections.indexOf(socket)).writeObject(ServerResponse.ColorTaken);
+    }
+
+    /**
+     * Respond to a appended path request
+     * @param socket Socket to get data from
+     * @param in input stream to read from
+     */
+    public void pathAppendedRequest(Socket socket, ObjectInputStream in) throws IOException, ClassNotFoundException {
+        Integer id = (Integer) in.readObject();
+        Direction dir = (Direction) in.readObject();
+        pathAppendedRequest(id, dir);
+    }
+
+    /**
+     * Respond to a appended path request
+     * @param id unique unit id
+     * @param d direction appended to path
+     */
+    public void pathAppendedRequest(Integer id, Direction d){
+    }
+
+    /**
+     * Respond to a changed path request
+     * @param socket Socket to get data from
+     * @param in input stream to read from
+     */
+    public void pathChangedRequest(Socket socket, ObjectInputStream in) throws IOException, ClassNotFoundException {
+        Integer id = (Integer) in.readObject();
+        Queue<Direction> dir = (Queue<Direction>) in.readObject();
+        pathChangedRequest(id, dir);
+    }
+    /**
+     * Respond to a path changed request
+     * @param id unique unit id
+     * @param queue new path
+     */
+    public void pathChangedRequest(Integer id, Queue<Direction> ds){
+
     }
 
     /**

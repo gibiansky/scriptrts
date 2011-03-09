@@ -47,6 +47,16 @@ public class SimpleUnit {
     private Player player;
 
     /**
+     * Unit ID
+     */
+    private int id;
+
+    /**
+     * Unit ID counter
+     */
+    private static int idCounter = 0;
+
+    /**
      * The direction in which the unit used to be moving. This is used to determine which direction the
      * unit is facing, even when the direction of movement is null (because unit is stationary).
      */
@@ -120,6 +130,8 @@ public class SimpleUnit {
         this.y = y;
         this.direction = null;
         this.pathfinder = pathfinder;
+        this.id = idCounter;
+        idCounter++;
         
         previousDirection = direction;
         state = SpriteState.Idle;
@@ -309,6 +321,7 @@ public class SimpleUnit {
         Queue<Direction> directions = pathfinder.getDirections();
         setPath(directions);
         pathfinder.reset();
+
     }
 
     /**
@@ -393,6 +406,8 @@ public class SimpleUnit {
         this.path =  path;
         if(direction == null && path != null && path.peek() != null)
             direction = path.poll();
+
+        Main.getGameClient().sendPathChangedNotification(this, path);
     }
 
     /**
@@ -400,6 +415,8 @@ public class SimpleUnit {
      */
     public void clearPath(){
         path.clear();
+
+        Main.getGameClient().sendPathChangedNotification(this, path);
     }
 
     /**
@@ -411,6 +428,8 @@ public class SimpleUnit {
             direction = d;
         else
             path.add(d);
+
+        Main.getGameClient().sendPathAppendedNotification(this, d);
     }
 
     /**
@@ -420,6 +439,14 @@ public class SimpleUnit {
     public void addToPath(Queue<Direction> additionalPath){
         while(additionalPath != null && additionalPath.peek() != null)
             addToPath(additionalPath.poll());
+    }
+
+    /**
+     * Get the unit ID
+     * @return unique id of unit
+     */
+    public int getID(){
+        return id;
     }
 
     /**
@@ -580,6 +607,15 @@ public class SimpleUnit {
             return direction;
         else
             return previousDirection;
+    }
+
+    /**
+     * Check if this unit is the same unit as another one, based on ID.
+     * @param unit unit to check against
+     * @return true if the unit is the same, false otherwise
+     */
+    public boolean equals(SimpleUnit unit){
+        return unit.id == id;
     }
 }
 
