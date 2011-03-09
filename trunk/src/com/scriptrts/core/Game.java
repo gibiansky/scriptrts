@@ -354,8 +354,7 @@ public class Game extends HeadlessGame {
             /* Scrolling */
                boolean scrolling = false;
             
-            if(manager.getKeyCodeFlag(KeyEvent.VK_RIGHT) || manager.getKeyCodeFlag(KeyEvent.VK_LEFT) 
-            		|| manager.getKeyCodeFlag(KeyEvent.VK_UP) || manager.getKeyCodeFlag(KeyEvent.VK_DOWN)){
+
             	
             	int viewportPrevX = viewport.getX();
                 int viewportPrevY = viewport.getY();
@@ -377,9 +376,8 @@ public class Game extends HeadlessGame {
                     scrolling = true;
                 }
                 
-                if(topLeftSelection != null)
-                	topLeftSelection.translate(viewportPrevX - viewport.getX(), viewportPrevY - viewport.getY());
-            }
+                
+
             
             /* Mouse scrolling. Disabled for windowed mode. */
             if (Main.FULLSCREEN
@@ -401,8 +399,11 @@ public class Game extends HeadlessGame {
                 scrolling = true;
             }
             
-            if(scrolling)
+            if(scrolling){
                 framesScrolled++;
+                if(topLeftSelection != null)
+                    topLeftSelection.translate(viewportPrevX - viewport.getX(), viewportPrevY - viewport.getY());
+            }
             
             if(framesScrolled > 2 * Main.getFPS())
                 increment = SCROLLING_DISTANCE * 4;
