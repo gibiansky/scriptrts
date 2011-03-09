@@ -659,7 +659,7 @@ public class Main extends JPanel {
                 consoleDown = !consoleDown;
                 if(consoleDown){
                     add(console);
-                    console.requestFocusInWindow();
+                    console.requestFocus();
                 } else {
                     remove(console);
                     window.requestFocusInWindow();
