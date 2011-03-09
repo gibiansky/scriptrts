@@ -510,45 +510,29 @@ public class MapPainter {
      * @param viewport viewport that is being used to view map
      * @return (i, j) map coordinates of tile that was clicked on
      */
-    public Point getTileAtPoint(Point point, Viewport viewport){
-        /* Calculate boundaries of what the viewport sees */
-        getViewportTileBounds(mapBoundsPaintArray, viewport);
-        int west    = mapBoundsPaintArray[0];
-        int east     = mapBoundsPaintArray[1];
-        int south   = mapBoundsPaintArray[2];
-        int north  = mapBoundsPaintArray[3];
-
-        /* Avoid modifying original point object */
-        point = new Point(point);
-
-        /* Translate the point to be on the map coordinates instead of in screen coordinates */
-        point.translate(viewport.getX(), viewport.getY());
-
-        /* Loop through visible tiles */
-        for(int i = west; i < east; i++) {
-            for(int j = south; j < north; j++) {
-                /*
-                 * Shift every other row to the right to create the zig-zag pattern going down 
-                 * We have to do this because we are using fake isometric perspective.
-                 */
-                int x = (i+j+1)*tileX/2;
-                int y = tileY * toPaint.getN() / 2 + (i - j - 1) * tileY / 2;
-
-                int[] xpts = {
-                    tileX/2, tileX, tileX/2, 0
-                };
-                int[] ypts = {
-                    0, tileY/2, tileY, tileY/2
-                };
-                Polygon mainTile = new Polygon(xpts, ypts, 4);
-                mainTile.translate(x - tileX / 2, y);
-
-                if(mainTile.contains(point))
-                    return new Point(i, j);
-            }
-        }
-
-        return null;
+    
+    public Point getTileAtPoint(Point point, Viewport viewport){   	
+    	int mapHeight = tileY * toPaint.getN();
+    	
+    	/* Avoid modifying the input point, in case they will be used later by the caller */
+    	point = new Point(point);
+    	/* Point in map coordinates */
+    	point.translate(viewport.getX(), viewport.getY());
+    	
+    	/* Solve the linear transformation */
+    	double term1 = (double) (point.x) / (double) (tileX / 2);
+    	double term2 = (double) (point.y - mapHeight / 2) / (double) (tileY / 2);
+    	
+    	int mapX = (int) ((term1 + term2) / 2);
+    	int mapY = (int) ((term1 - term2) / 2);
+    	
+    	/* If tile is not on map, return null */
+    	if(mapX < 0 || mapX > toPaint.getN() || mapY < 0 || mapY > toPaint.getN())
+    		return null;
+    	
+    	Point mapTile = new Point(mapX, mapY);
+    	
+    	return mapTile;
     }
 
     /**

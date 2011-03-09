@@ -10,6 +10,7 @@ import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import com.scriptrts.control.Selection;
 import com.scriptrts.game.Direction;
@@ -383,21 +384,10 @@ public class UnitPainter {
         ArrayList<Shape> unitPolys = new ArrayList<Shape>();
         ArrayList<SimpleUnit> unitsWithPolys = new ArrayList<SimpleUnit>();
 
-        /* Calculate viewport boundaries */
-        mapPainter.getViewportTileBounds(mapBoundsArray, viewport);
-        int west    = mapBoundsArray[0];
-        int east    = mapBoundsArray[1];
-        int south   = mapBoundsArray[2];
-        int north   = mapBoundsArray[3];
-
         /* Avoid modifying the input points, in case they will be used later by the caller */
         topLeft = new Point(topLeft);
         bottomRight = new Point(bottomRight);
-
-        /* Translate the points to be on the map coordinates instead of in screen coordinates */
-        topLeft.translate(viewport.getX(), viewport.getY());
-        bottomRight.translate(viewport.getX(), viewport.getY());
-
+        
         /* Rearrange coordinates so the top left point really is the top left, and bottom right really is bottom right */
         if(topLeft.x > bottomRight.x){
             int temp = topLeft.x;
@@ -409,22 +399,30 @@ public class UnitPainter {
             topLeft.y = bottomRight.y;
             bottomRight.y = temp;
         }
+        
+        /* Change to map tiles */
+        int topLeftTileX = unitTileAtPoint(topLeft, viewport).x;
+        int topRightTileY = unitTileAtPoint(new Point(bottomRight.x, topLeft.y), viewport).y;
+        int bottomLeftTileY = unitTileAtPoint(new Point(topLeft.x, bottomRight.y), viewport).y;
+        int bottomRightTileX = unitTileAtPoint(bottomRight, viewport).x;
 
+        /* Translate the points to be on the map coordinates instead of in screen coordinates */
+        topLeft.translate(viewport.getX(), viewport.getY());
+        bottomRight.translate(viewport.getX(), viewport.getY());
+        
         /* Clear polygons from previous click */
         unitPolys.clear();
         unitsWithPolys.clear();
 
         /* Loop through visible tiles. Loop backwards, because units in front take precedence. */
-        for(int j = south; j <= north; j++)
-            for(int b = 0; b < UnitGrid.SPACES_PER_TILE; b++)
-                for(int i = west; i < east; i++) 
-                    for(int a = 0; a < UnitGrid.SPACES_PER_TILE; a++)
-                        addVisibleUnitPoly(unitPolys, unitsWithPolys, i * 3 + a, j * 3 + b);
+        for(int j = bottomLeftTileY; j < topRightTileY; j++)
+        	for(int i = topLeftTileX; i < bottomRightTileX; i++) 
+        		addVisibleUnitPoly(unitPolys, unitsWithPolys, i, j);
 
         /* Bounds inside which we're looking for units */
         Rectangle rect = new Rectangle(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
 
-        /* Cound units inside bounds */
+        /* Count units inside bounds */
         int count = 0;
         for(int i = 0; i < unitPolys.size(); i++)
             if(rect.intersects(unitPolys.get(i).getBounds()))
@@ -499,42 +497,32 @@ public class UnitPainter {
      * @param viewport viewport through which map is being displayed
      */
     public Point unitTileAtPoint(Point point, Viewport viewport){
-        Point mapCoords = mapPainter.getTileAtPoint(point, viewport);
-        int iMap = mapCoords.x;
-        int jMap = mapCoords.y;
-
-        /* Avoid modifying original point object */
-        point = new Point(point);
-
-        /* Translate the point to be on the map coordinates instead of in screen coordinates */
-        point.translate(viewport.getX(), viewport.getY());
-
-        /* Find where this map tile is drawn */
-        Point mapTileDrawnAt = mapPainter.getTileCoordinates(iMap, jMap);
-
-        /* Now we can just draw a map tile and look at the coordinates of the point to figure out which part of the tile it's in */
-        int tileX = mapPainter.getTileWidth();
-        int tileY = mapPainter.getTileHeight();
-
-        /* Try each unit tile in this map tile, return if the point is inside */
-        for(int a = 0; a < UnitGrid.SPACES_PER_TILE; a++)
-            for(int b = 0; b < UnitGrid.SPACES_PER_TILE; b++) {
-                Point backCorner = getUnitTileBackLocation(a, b);
-                backCorner.translate(mapTileDrawnAt.x, mapTileDrawnAt.y);
-                /* The +- 5 elements make the tiles slightly bigger, to avoid floating point errors */
-                int[] xpts = {
-                   backCorner.x, backCorner.x + tileX / 6 + 5, backCorner.x, backCorner.x - tileX / 6 - 5
-                };
-                int[] ypts = {
-                    backCorner.y - 5, backCorner.y + tileY / 6, backCorner.y + tileY / 3 + 5, backCorner.y + tileY / 6
-                };
-
-
-                if(new Polygon(xpts, ypts, 4).contains(point))
-                    return new Point(a + iMap * UnitGrid.SPACES_PER_TILE, b + jMap * UnitGrid.SPACES_PER_TILE);
-            }
-
-        return null;
+    	double tileX = (double) mapPainter.getTileWidth() / (double) UnitGrid.SPACES_PER_TILE;
+    	double tileY = (double) mapPainter.getTileHeight() / (double) UnitGrid.SPACES_PER_TILE;
+    	int n = UnitGrid.SPACES_PER_TILE * mapPainter.getMap().getN();
+    	int mapHeight = mapPainter.getTileHeight() * mapPainter.getMap().getN();
+    	
+    	/* Avoid modifying the input point, in case they will be used later by the caller */
+    	point = new Point(point);
+    	/* Point in map coordinates */
+    	point.translate(viewport.getX(), viewport.getY());
+    	
+    	/* Solve the linear transformation */
+    	double term1 = point.x / (tileX / 2);
+    	double term2 = (point.y - mapHeight / 2) / (tileY / 2);
+    	
+    	int mapX = (int) ((term1 + term2) / 2);
+    	int mapY = (int) ((term1 - term2) / 2);
+    	
+    	/* If tile is not on map, choose point on boundary */
+    	if(mapX < 0) mapX = 0;
+    	if(mapX > n) mapX = n;
+    	if(mapY < 0) mapY = 0;
+    	if(mapY > n) mapY = n;
+    	
+    	Point unitGridTile = new Point(mapX, mapY);
+    	
+    	return unitGridTile;
     }
 
     /**

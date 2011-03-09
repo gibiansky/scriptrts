@@ -100,6 +100,9 @@ public class Game extends HeadlessGame {
      */
     Pathfinder pathfinder;
     
+    int movedX;
+    int movedY;
+    
     /**
      * Create the game.
      * @param n size of the map (length along one edge)
@@ -266,6 +269,8 @@ public class Game extends HeadlessGame {
                 /* Get mouse location */
                 Point point = manager.getMouseLocation();
                 topLeftSelection = point;
+                movedX = 0;
+                movedY = 0;
 
             }
 
@@ -349,22 +354,33 @@ public class Game extends HeadlessGame {
             /* Scrolling */
                boolean scrolling = false;
             
-            if (manager.getKeyCodeFlag(KeyEvent.VK_RIGHT)) {
-                viewport.translate(increment, 0);
-                scrolling = true;
+            if(manager.getKeyCodeFlag(KeyEvent.VK_RIGHT) || manager.getKeyCodeFlag(KeyEvent.VK_LEFT) 
+            		|| manager.getKeyCodeFlag(KeyEvent.VK_UP) || manager.getKeyCodeFlag(KeyEvent.VK_DOWN)){
+            	
+            	int viewportPrevX = viewport.getX();
+                int viewportPrevY = viewport.getY();
+                
+                if (manager.getKeyCodeFlag(KeyEvent.VK_RIGHT)) {
+                    viewport.translate(increment, 0);
+                    scrolling = true;
+                }
+                if (manager.getKeyCodeFlag(KeyEvent.VK_LEFT)) {
+                    viewport.translate(-increment, 0);
+                    scrolling = true;
+                }
+                if (manager.getKeyCodeFlag(KeyEvent.VK_UP)) {
+                    viewport.translate(0, -increment);
+                    scrolling = true;
+                }
+                if (manager.getKeyCodeFlag(KeyEvent.VK_DOWN)) {
+                    viewport.translate(0, increment);
+                    scrolling = true;
+                }
+                
+                if(topLeftSelection != null)
+                	topLeftSelection.translate(viewportPrevX - viewport.getX(), viewportPrevY - viewport.getY());
             }
-            if (manager.getKeyCodeFlag(KeyEvent.VK_LEFT)) {
-                viewport.translate(-increment, 0);
-                scrolling = true;
-            }
-            if (manager.getKeyCodeFlag(KeyEvent.VK_UP)) {
-                viewport.translate(0, -increment);
-                scrolling = true;
-            }
-            if (manager.getKeyCodeFlag(KeyEvent.VK_DOWN)) {
-                viewport.translate(0, increment);
-                scrolling = true;
-            }
+            
             /* Mouse scrolling. Disabled for windowed mode. */
             if (Main.FULLSCREEN
                     && manager.getMouseLocation().x > viewport.getWidth() - 30) {

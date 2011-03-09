@@ -128,7 +128,7 @@ public class Viewport {
                 increments++;
 
                 /* No infinite looping */
-                if(increments >= 100){
+                if(increments >= 500){
                     x = origX;
                     y = origY;
                     return;
