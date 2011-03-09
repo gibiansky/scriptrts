@@ -375,7 +375,7 @@ public class Game extends HeadlessGame {
                 viewport.translate(-increment, 0);
                 scrolling = true;
             }
-            if (Main.FULLSCREEN && manager.getMouseLocation().y < 30) {
+            if (Main.FULLSCREEN && manager.getMouseLocation().y < 3) {
                 viewport.translate(0, -increment);
                 scrolling = true;
             }
