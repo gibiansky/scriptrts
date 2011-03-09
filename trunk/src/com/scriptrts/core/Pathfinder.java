@@ -151,8 +151,6 @@ public class Pathfinder {
 		
 		int startX = u.getX();
 		int startY = u.getY();
-		
-		System.out.println("Finding path");
 
 		/* Add the starting point to the open point list */
 		pointChecked[startX][startY] = 1;
@@ -219,8 +217,6 @@ public class Pathfinder {
 
 		/* Retrace path starting from endpoint */
 		retrace(endX, endY);
-		
-		System.out.println("Done");
 	}
 
 	/**
