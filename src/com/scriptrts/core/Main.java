@@ -2,11 +2,13 @@ package com.scriptrts.core;
 
 import jargs.gnu.CmdLineParser;
 
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.event.ComponentAdapter;
@@ -14,6 +16,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -142,6 +145,11 @@ public class Main extends JPanel {
      * Image used as a background before loading is complete
      */
     private static BufferedImage loadingImage = null;
+    
+    /**
+     * Image used for cursor
+     */
+    private static Cursor cursor;
 
     /**
      * Current game instance.
@@ -212,6 +220,16 @@ public class Main extends JPanel {
         
         /* Pack window to ensure actual usable area is the right size (ignoring look and feel) */
         window.pack();
+        
+        /* Load cursor */
+        try {
+            BufferedImage cursorImage = ResourceManager.loadImage("resource/cursor.png");
+            Point hotSpot = new Point(0,0); 
+            Cursor cursor = toolkit.createCustomCursor(cursorImage, hotSpot, "spaceship"); 
+            window.setCursor(cursor);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         /* Load the loading image */
         try {
