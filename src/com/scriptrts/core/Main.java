@@ -194,7 +194,8 @@ public class Main extends JPanel {
         if(FULLSCREEN){
             /* Disable resizing and decorations */
             window.setUndecorated(true);
-            window.setResizable(false);
+            // Next line commented out to fix Ubuntu fullscreen issue -- @lev
+           // window.setResizable(false);
 
             /* Switch to fullscreen and make window maximum size */
             width = screenSize.width;
