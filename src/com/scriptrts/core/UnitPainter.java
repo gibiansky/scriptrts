@@ -11,7 +11,9 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 
+import com.scriptrts.control.Order;
 import com.scriptrts.control.Selection;
 import com.scriptrts.game.Direction;
 import com.scriptrts.game.SimpleUnit;
@@ -38,6 +40,11 @@ public class UnitPainter {
      * Image used to denote where a unit is going.
      */
     private Image destinationImage = null;
+    
+    /**
+     * Image used to denote where a unit is going in the future.
+     */
+    private Image destinationQueuedImage = null;
 
     /**
      * Enable debug drawing
@@ -554,6 +561,67 @@ public class UnitPainter {
 
         graphics.drawImage(destinationImage, 
                 backCorner.x - destinationImage.getWidth(null)/2, backCorner.y - destinationImage.getHeight(null)/2, null);
+    }
+
+    /**
+     * Paints the destination queue
+     * @param graphics
+     * @param queue
+     */
+    public void paintDestinationQueue(Graphics2D graphics, LinkedList<Order> queue) {
+        if(destinationImage == null)
+            try {
+            destinationImage = ResourceManager.loadImage("resource/Destination.png", 50, 50);
+            } catch (IOException io) {
+                io.printStackTrace();
+            }
+            
+        if(destinationQueuedImage == null)
+            try {
+            destinationQueuedImage = ResourceManager.loadImage("resource/Destination_queued.png", 50, 50);
+            } catch (IOException io) {
+                io.printStackTrace();
+            }
+            
+        boolean first = true;
+        int number = 0;
+        if(queue.peek() != null)
+        for(Order order : queue){
+            int i = order.getPoint().x;
+            int j = order.getPoint().y;
+            
+            int iMap = i / 3;
+            int jMap = j / 3;
+            int tileX = mapPainter.getTileWidth();
+            int tileY = mapPainter.getTileHeight();
+            int x = (iMap+jMap)*tileX/2;
+            int y = tileY * mapPainter.getMap().getN() / 2 + (iMap - jMap - 1) * tileY / 2;
+
+            /* Indices inside the map tile */
+            int a = i % 3;
+            int b = j % 3;
+            Point backCorner = getUnitTileBackLocation(a, b);
+            backCorner.translate(x, y);
+            
+            Image imageToUse = first ? destinationImage : destinationQueuedImage;
+            
+            graphics.drawImage(imageToUse, 
+                    backCorner.x - imageToUse.getWidth(null)/2, backCorner.y - imageToUse.getHeight(null)/2, null);
+            
+            number++;
+            
+            graphics.setColor(Color.white);
+            /* If two digits, shift left a little */
+            // TODO: this could be not hard-coded
+            int rightShift = Math.log10(number) >= 1 ? 19 : 23;
+            if(!first){
+                graphics.drawString(number + "",backCorner.x - imageToUse.getWidth(null)/2 + rightShift,
+                        backCorner.y - imageToUse.getHeight(null)/2 + 42);
+            }
+            
+            first = false;
+            
+        }
     }
 
 }
