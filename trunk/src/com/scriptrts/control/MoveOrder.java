@@ -43,4 +43,9 @@ public class MoveOrder extends Order implements Comparable<MoveOrder> {
         double distance = Math.pow(this.point.x - other.point.x,2) + Math.pow(this.point.y - other.point.y,2);
         return (int)distance == 0 ? 0 : 1 + (int)distance;
     }
+
+	@Override
+	public boolean equals(Order o) {
+		return (this.point.x == o.getPoint().x) && (this.point.y == o.getPoint().y);
+	}
 }

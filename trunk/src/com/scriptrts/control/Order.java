@@ -13,4 +13,5 @@ public abstract class Order {
     
     public abstract Point getPoint();
     
+    public abstract boolean equals(Order o);
 }
