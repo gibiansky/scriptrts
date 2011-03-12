@@ -140,11 +140,18 @@ public class GameClient {
             if(input.available() > 0){
                 ServerResponse serverResponse = (ServerResponse) input.readObject();
                 if(serverResponse == ServerResponse.MapUpdate){
-
+                    int id = input.readInt();
+                    int x = input.readInt();
+                    int y = input.readInt();
+                    int sprite = input.readInt();
+                    updateUnit(id, x, y, sprite);
                 }
             }
-
         }
+    }
+
+    private void updateUnit(int id, int x, int y, int sprite){
+
     }
 
     private void start(String ip) {
