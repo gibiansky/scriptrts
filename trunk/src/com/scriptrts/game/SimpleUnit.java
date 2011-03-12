@@ -112,7 +112,7 @@ public class SimpleUnit implements Serializable {
     /**
      * The OrderHandler used to control this unit
      */
-    private transient OrderHandler orderhandler;
+    private transient OrderHandler orderHandler;
 
     /**
      * Unit type that this unit corresponds to
@@ -140,7 +140,7 @@ public class SimpleUnit implements Serializable {
         this.id = idCounter;
         idCounter++;
         
-        this.orderhandler = new OrderHandler(this);
+        this.orderHandler = new OrderHandler(this);
         
         previousDirection = direction;
         state = SpriteState.Idle;
@@ -644,11 +644,11 @@ public class SimpleUnit implements Serializable {
     }
 
     public void setOrderhandler(OrderHandler orderhandler) {
-        this.orderhandler = orderhandler;
+        this.orderHandler = orderhandler;
     }
 
-    public OrderHandler getOrderhandler() {
-        return orderhandler;
+    public OrderHandler getOrderHandler() {
+        return orderHandler;
     }
 
     public boolean isPassable(Construct c) {

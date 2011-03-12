@@ -25,19 +25,37 @@ public class OrderHandler {
     }
     
     /**
+     * Checks the current queued order whether it's complete.
+     * If it isn't, keep going. If it is, get next order from queue.
+     */
+    public void update(){
+        if(orders.peek() instanceof MoveOrder)
+            if(orders.peek().isComplete(unit)){
+                orders.poll();
+                this.handleOrder(orders.peek());
+            }
+            
+    }
+    
+    /**
      * Put an order in the queue.
      * @param order Order to queue.
      */
     public void queueOrder(Order order){
+        if(orders.peek() == null){
+            handleOrder(order);
+        }
         orders.add(order);
     }
     
     /**
-     * Perform this order now.
+     * Perform this order now. Cancels all other orders.
      * @param order Order to perform.
      */
     public void order(Order order){
         handleOrder(order);
+        orders.clear();
+        orders.add(order);
     }
 
     public Queue<Order> getOrders() {

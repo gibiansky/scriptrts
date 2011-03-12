@@ -7,8 +7,11 @@ import java.awt.Polygon;
 import java.awt.geom.AffineTransform;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import com.scriptrts.control.MoveOrder;
+import com.scriptrts.control.Order;
 import com.scriptrts.control.Selection;
 import com.scriptrts.control.SelectionStorage;
 import com.scriptrts.game.Direction;
@@ -344,14 +347,17 @@ public class Game extends HeadlessGame {
             mousePreviouslyPressed = manager.getLeftMouseDown();
 
             /* Clicking (to set unit destination) */
-            if(manager.getRightMouseClicked() || (manager.getKeyCodeFlag(KeyEvent.VK_SHIFT) && manager.getLeftMouseClicked())){
+            if(manager.getRightMouseClicked()){
                 Point point = manager.getMouseLocation();
                 Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
                 for(SimpleUnit unit : Selection.current().getList()){
-                    unit.getOrderhandler().order(new MoveOrder(unitTile));
+                    if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
+                        unit.getOrderHandler().queueOrder(new MoveOrder(unitTile));
+                    else
+                        unit.getOrderHandler().order(new MoveOrder(unitTile));
                 }
             }
-
+            
             /* Scrolling */
                boolean scrolling = false;
             
@@ -447,22 +453,41 @@ public class Game extends HeadlessGame {
 
         /* Paint the destination of all current selected units, if they share one */
         if(Selection.current().getList().size() != 0){
-            /* Check if units share a destination */
-            boolean shareDestination = true;
-            Point destination = null;
+           
+            
+            /* Check if units share the same order queue */
+            boolean shareQueue = true;
+            LinkedList<Order> queue = null;
             for(SimpleUnit unit : Selection.current().getList()){
-                if(destination == null)
-                    destination = unit.getDestination();
+                if(queue == null)
+                    queue = (LinkedList<Order>) unit.getOrderHandler().getOrders();
                 else
-                    if(!destination.equals(unit.getDestination())){
-                        shareDestination = false;
+                    if(!queue.equals((LinkedList<Order>)unit.getOrderHandler().getOrders())){
+                        shareQueue = false;
                         break;
                     }
             }
-
-            if(shareDestination && destination != null){
-                unitPainter.paintDestination(graphics, destination.x, destination.y);
+            
+            boolean shareDestination = false;
+            Point destination = null;
+            if(queue == null){
+                /* Check if units share a destination */
+                shareDestination = true;
+                for(SimpleUnit unit : Selection.current().getList()){
+                    if(destination == null)
+                        destination = unit.getDestination();
+                    else
+                        if(!destination.equals(unit.getDestination())){
+                            shareDestination = false;
+                            break;
+                        }
+                }
             }
+
+            if(shareQueue && queue != null){
+                drawDestinationQueue(graphics, queue);
+            } else if(shareDestination)
+                unitPainter.paintDestination(graphics, destination.x, destination.y);
         }
 
         /* On top of the map, paint all the units and buildings */
@@ -516,6 +541,13 @@ public class Game extends HeadlessGame {
      */
     private void drawTemporaryUnits(Graphics2D graphics, Viewport viewport){
         unitPainter.paintTemporaryUnit(graphics, viewport, tempUnit, tempUnitX, tempUnitY);
+    }
+    
+    /**
+     * Draw the destination queue.
+     */
+    private void drawDestinationQueue(Graphics2D graphics, LinkedList<Order> queue){
+        unitPainter.paintDestinationQueue(graphics, queue);
     }
 
     /**
