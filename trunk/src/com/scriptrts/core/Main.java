@@ -185,6 +185,7 @@ public class Main extends JPanel {
 
         /* Create game and server */
         game = new Game(129, window.getWidth(), window.getHeight());
+        game.init();
         if(serverIP == null){
             server = new GameServer();
             client = new GameClient();
@@ -642,8 +643,6 @@ public class Main extends JPanel {
         size = overlay.getPreferredSize();
         overlay.setBounds(0, getGame().getViewport().getHeight() - size.height, size.width, size.height);
         add(overlay);
-
-        game.init();
 
         /* Done with initialization */
         initialized = true;

@@ -302,6 +302,8 @@ public class SimpleUnit implements Serializable {
         speed = source.speed;
         direction = source.direction;
         previousDirection = source.previousDirection;
+        animCounter = source.animCounter;
+        animCounter = 0;
     }
 
     /**

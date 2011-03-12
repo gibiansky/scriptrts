@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import com.scriptrts.core.Main;
+import com.scriptrts.core.Map;
 import com.scriptrts.game.Player;
 import com.scriptrts.game.Direction;
 import com.scriptrts.game.SimpleUnit;
@@ -108,6 +109,8 @@ public class GameClient {
 
                 String name = (String) input.readObject();
                 Color color = (Color) input.readObject();
+                Map map = (Map) input.readObject();
+                Main.getGame().setCurrentMap(map);
             } catch (Exception e){
                 e.printStackTrace();
             }
@@ -160,12 +163,9 @@ public class GameClient {
                 e.printStackTrace();
             }
 
-            System.out.println("READING");
             ServerResponse serverResponse = (ServerResponse) input.readObject();
-            System.out.println("Response: " + serverResponse.name());
             if(serverResponse == ServerResponse.UnitUpdate){
                 int size = input.readInt();
-                System.out.println("Size: " + size);
                 for(int i = 0; i < size; i++) {
                     SimpleUnit updatedUnit = (SimpleUnit) input.readObject();
                     Main.getGame().getUnitManager().updateUnit(updatedUnit);
@@ -173,7 +173,6 @@ public class GameClient {
                 }
 
             }
-            System.out.println("READ\n");
         }
     }
 
@@ -189,10 +188,8 @@ public class GameClient {
             String assignedName = (String) input.readObject();
             Color assignedColor = (Color) input.readObject();
 
-            System.out.println("Attempt: " + player);
             player.setName(assignedName);
             player.setColor(assignedColor);
-            System.out.println("Result: " + player);
 
             /* Attempt to change player name and color */
             output.writeObject(ServerRequest.PlayerNameChange);

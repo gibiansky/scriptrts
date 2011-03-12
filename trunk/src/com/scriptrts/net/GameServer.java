@@ -250,6 +250,11 @@ public class GameServer {
         System.out.println("Allowing " + player + " to join.");
         objOut.writeObject(name);
         objOut.writeObject(color);
+
+        /* Send back map */
+        objOut.writeObject(game.getCurrentMap());
+
+
         objOut.flush();
     }
 
