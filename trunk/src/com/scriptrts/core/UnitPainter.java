@@ -500,7 +500,7 @@ public class UnitPainter {
 
     /**
      * Find which part of the map tile was clicked on, in unit tile coordinates
-     * @param point point to examing
+     * @param point point to examine
      * @param viewport viewport through which map is being displayed
      */
     public Point unitTileAtPoint(Point point, Viewport viewport){
@@ -518,18 +518,41 @@ public class UnitPainter {
     	double term1 = point.x / (tileX / 2);
     	double term2 = (point.y - mapHeight / 2) / (tileY / 2);
     	
-    	int mapX = (int) ((term1 + term2) / 2);
-    	int mapY = (int) ((term1 - term2) / 2);
+    	/* Coordinates of the unit tile clicked on */
+    	int gridX = (int) ((term1 + term2) / 2);
+    	int gridY = (int) ((term1 - term2) / 2);
     	
     	/* If tile is not on map, choose point on boundary */
-    	if(mapX < 0) mapX = 0;
-    	if(mapX > n) mapX = n;
-    	if(mapY < 0) mapY = 0;
-    	if(mapY > n) mapY = n;
+    	if(gridX < 0) gridX = 0;
+    	if(gridX > n) gridX = n;
+    	if(gridY < 0) gridY = 0;
+    	if(gridY > n) gridY = n;
     	
-    	Point unitGridTile = new Point(mapX, mapY);
-    	
+    	Point unitGridTile = new Point(gridX, gridY);
     	return unitGridTile;
+    }
+    
+    /**
+     * Get the map coordinates of the given unit
+     * @param unit the unit to get the coordinates of
+     * @param viewport viewport through which map is being displayed
+     * @return
+     */
+    public Point getUnitCoords(SimpleUnit unit, Viewport viewport){    	
+    	double tileX = (double) mapPainter.getTileWidth() / (double) UnitGrid.SPACES_PER_TILE;
+    	double tileY = (double) mapPainter.getTileHeight() / (double) UnitGrid.SPACES_PER_TILE;
+    	int mapHeight = mapPainter.getTileHeight() * mapPainter.getMap().getN();
+    	
+    	/* Coordinates of the unit tile the unit is on */
+    	int x = unit.getX();
+    	int y = unit.getY();
+    	
+    	/* Change into map coordinates */
+    	int mapX = (int) ((x + y) * tileX - viewport.getWidth()) / 2;
+    	int mapY = (int) ((x - y) * tileY + mapHeight - viewport.getHeight()) / 2;
+    	
+    	Point mapCoords = new Point(mapX, mapY);
+    	return mapCoords;
     }
 
     /**
