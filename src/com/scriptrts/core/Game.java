@@ -421,6 +421,15 @@ public class Game extends HeadlessGame {
     }
 
     /**
+     * Set the map
+     * @param m new map
+     */
+    public void setCurrentMap(Map m){
+        this.map = m;
+        mapPainter.update();
+    }
+
+    /**
      * Draw the game onto the screen.
      * @param graphics Graphics object on which to draw the game.
      */
