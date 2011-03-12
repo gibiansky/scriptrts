@@ -9,10 +9,12 @@ import com.scriptrts.game.SimpleUnit;
 public class OrderHandler {
     Queue<Order> orders;
     SimpleUnit unit;
+    Order lastOrder;
     
     public OrderHandler(SimpleUnit unit){
         this.unit = unit;
         orders = new LinkedList<Order>();
+        lastOrder = null;
     }
     
     /**
@@ -45,7 +47,10 @@ public class OrderHandler {
         if(orders.peek() == null){
             handleOrder(order);
         }
-        orders.add(order);
+        if(lastOrder == null || !order.equals(lastOrder)){
+        	orders.add(order);
+        	lastOrder = order;
+        }
     }
     
     /**
@@ -56,6 +61,7 @@ public class OrderHandler {
         handleOrder(order);
         orders.clear();
         orders.add(order);
+        lastOrder = order;
     }
 
     public Queue<Order> getOrders() {
