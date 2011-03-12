@@ -8,6 +8,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 
+import com.scriptrts.control.MoveOrder;
 import com.scriptrts.control.Selection;
 import com.scriptrts.control.SelectionStorage;
 import com.scriptrts.game.Direction;
@@ -347,7 +348,7 @@ public class Game extends HeadlessGame {
                 Point point = manager.getMouseLocation();
                 Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
                 for(SimpleUnit unit : Selection.current().getList()){
-                    unit.setDestination(unitTile);
+                    unit.getOrderhandler().order(new MoveOrder(unitTile));
                 }
             }
 
