@@ -10,11 +10,12 @@ import java.util.ArrayList;
 import com.scriptrts.core.Pathfinder;
 import com.scriptrts.core.Main;
 import com.scriptrts.combat.Unit;
+import com.scriptrts.control.OrderHandler;
 
 /**
  * Unit class which only implements most basic functions.
  */
-public class SimpleUnit {
+public class SimpleUnit extends Entity{
 
     /**
      * The sprites used to display this unit.
@@ -106,6 +107,11 @@ public class SimpleUnit {
      * Pathfinder used to route this unit
      */
     private Pathfinder pathfinder;
+    
+    /**
+     * The OrderHandler used to control this unit
+     */
+    private OrderHandler orderhandler;
 
     /**
      * Unit type that this unit corresponds to
@@ -132,6 +138,8 @@ public class SimpleUnit {
         this.pathfinder = pathfinder;
         this.id = idCounter;
         idCounter++;
+        
+        this.orderhandler = new OrderHandler(this);
         
         previousDirection = direction;
         state = SpriteState.Idle;
@@ -616,6 +624,20 @@ public class SimpleUnit {
      */
     public boolean equals(SimpleUnit unit){
         return unit.id == id;
+    }
+
+    public void setOrderhandler(OrderHandler orderhandler) {
+        this.orderhandler = orderhandler;
+    }
+
+    public OrderHandler getOrderhandler() {
+        return orderhandler;
+    }
+
+    @Override
+    public boolean isPassable(Construct c) {
+        // TODO Auto-generated method stub
+        return false;
     }
 }
 

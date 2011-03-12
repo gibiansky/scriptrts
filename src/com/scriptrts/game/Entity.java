@@ -1,9 +1,13 @@
 package com.scriptrts.game;
 
+import java.awt.Point;
+
 public abstract class Entity {
     // Location of top left corner
     private int x;
     private int y;
+    // Location point
+    private Point point;
     // Size
     private int height;
     private int width;
@@ -47,5 +51,13 @@ public abstract class Entity {
      * @return true if this is passable, false otherwise.
      */
     public abstract boolean isPassable(Construct c);
+
+    public void setPoint(Point point) {
+        this.point = point;
+    }
+
+    public Point getPoint() {
+        return point;
+    }
    
 }
