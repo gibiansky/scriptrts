@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.ArrayList;
+import java.io.Serializable;
 
 import com.scriptrts.core.Pathfinder;
 import com.scriptrts.core.Main;
@@ -15,12 +16,12 @@ import com.scriptrts.control.OrderHandler;
 /**
  * Unit class which only implements most basic functions.
  */
-public class SimpleUnit extends Entity{
+public class SimpleUnit implements Serializable {
 
     /**
      * The sprites used to display this unit.
      */
-    private Sprite[] sprites;
+    private transient Sprite[] sprites;
 
     /**
      * Which sprite to display.
@@ -40,7 +41,7 @@ public class SimpleUnit extends Entity{
     /**
      * Art image to display in selections
      */
-    private BufferedImage art;
+    private transient BufferedImage art;
 
     /**
      * Player who controls this unit
@@ -106,12 +107,12 @@ public class SimpleUnit extends Entity{
     /**
      * Pathfinder used to route this unit
      */
-    private Pathfinder pathfinder;
+    private transient Pathfinder pathfinder;
     
     /**
      * The OrderHandler used to control this unit
      */
-    private OrderHandler orderhandler;
+    private transient OrderHandler orderhandler;
 
     /**
      * Unit type that this unit corresponds to
@@ -287,6 +288,20 @@ public class SimpleUnit extends Entity{
      */
     public Player getAllegiance(){
         return player;
+    }
+
+    /**
+     * Set this unit's state to another unit's
+     */
+    public void setParameters(SimpleUnit source){
+        player = source.player;
+        x = source.x;
+        y = source.y;
+        state = source.state;
+        id = source.id;
+        speed = source.speed;
+        direction = source.direction;
+        previousDirection = source.previousDirection;
     }
 
     /**
@@ -634,9 +649,7 @@ public class SimpleUnit extends Entity{
         return orderhandler;
     }
 
-    @Override
     public boolean isPassable(Construct c) {
-        // TODO Auto-generated method stub
         return false;
     }
 }
@@ -645,7 +658,7 @@ public class SimpleUnit extends Entity{
  * The shape of the unit, defined by what points it takes up 
  * around the center point.
  */
-class UnitShape {
+class UnitShape implements Serializable {
     /**
      * An array of point arrays, with each element being an array that corresponds to the shape
      * of the unit when it is facing in each of the 8 directions.

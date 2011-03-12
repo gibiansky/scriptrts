@@ -1,7 +1,6 @@
 package com.scriptrts.net;
 
-import java.util.Vector;
-import java.util.Queue;
+import java.util.*;
 import java.awt.Color;
 import java.io.*;
 import java.nio.*;
@@ -10,6 +9,7 @@ import java.net.*;
 
 import com.scriptrts.game.Direction;
 import com.scriptrts.game.Player;
+import com.scriptrts.game.SimpleUnit;
 import com.scriptrts.core.HeadlessGame;
 import com.scriptrts.core.Main;
 
@@ -105,6 +105,7 @@ public class GameServer {
                                 /* Add the player */
                                 addPlayerConnection(connection);
                             }
+
                         }
 
                         try {
@@ -172,26 +173,40 @@ public class GameServer {
                 e.printStackTrace();
             }
 
-            /* Clone the array list so it isn't modified by a new player joining while we're processing requests */
-            synchronized (connections){
-                for(Socket socket : connections){
-                    if(socket.isClosed())
-                        connections.remove(socket);
-                    else if(socket.getOutputStream() != null){
-                        ObjectOutputStream out = objectOutputs.get(connections.indexOf(socket));
-                        updateClient(out, game.getPlayers().get(connections.indexOf(socket)));
+            if(game.getUnitManager() != null){
+                /* Clone the array list so it isn't modified by a new player joining while we're processing requests */
+                synchronized (connections){
+                    for(Socket socket : connections){
+                        if(socket.isClosed())
+                            connections.remove(socket);
+                        else if(socket.getOutputStream() != null){
+                            ObjectOutputStream out = objectOutputs.get(connections.indexOf(socket));
+                            updateClient(out, game.getPlayers().get(connections.indexOf(socket)));
+                        }
+                    }
+
+                    if(Main.getGameClient() != null){
+                        /* We don't need to do anything because the server's game is already updated */
                     }
                 }
 
-                if(Main.getGameClient() != null){
-                    /* We don't need to do anything because the server's game is already updated */
-                }
+                game.getUnitManager().clearUpdates();
             }
         }
     }
 
     private void updateClient(ObjectOutputStream output, Player player) throws IOException, ClassNotFoundException {
+        List<SimpleUnit> updated = game.getUnitManager().updatedUnits();
+        if(updated.size() > 0) {
+            output.writeObject(ServerResponse.UnitUpdate);
+            output.writeInt(updated.size());
+            output.reset();
+            for(SimpleUnit unit : updated){
+                output.writeObject(unit);
+            }
 
+            System.out.println("Sent");
+        }
     }
 
     /**

@@ -101,6 +101,13 @@ public class GameClient {
 
                 output = new ObjectOutputStream(connection.getOutputStream());
                 input = new ObjectInputStream(connection.getInputStream());
+
+                /* Request name and color */
+                output.writeObject("Player One");
+                output.writeObject(java.awt.Color.RED);
+
+                String name = (String) input.readObject();
+                Color color = (Color) input.readObject();
             } catch (Exception e){
                 e.printStackTrace();
             }
@@ -116,6 +123,16 @@ public class GameClient {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+                    }
+                }
+            }.start();
+
+            new Thread(){
+                public void run(){
+                    try {
+                        processUpdates();
+                    } catch (Exception e){
+                        e.printStackTrace();
                     }
                 }
             }.start();
@@ -137,21 +154,27 @@ public class GameClient {
      */
     private void processUpdates() throws IOException, ClassNotFoundException {
         while (true) {
-            if(input.available() > 0){
-                ServerResponse serverResponse = (ServerResponse) input.readObject();
-                if(serverResponse == ServerResponse.MapUpdate){
-                    int id = input.readInt();
-                    int x = input.readInt();
-                    int y = input.readInt();
-                    int sprite = input.readInt();
-                    updateUnit(id, x, y, sprite);
-                }
+            try {
+                Thread.sleep(20);
+            } catch (Exception e){
+                e.printStackTrace();
             }
+
+            System.out.println("READING");
+            ServerResponse serverResponse = (ServerResponse) input.readObject();
+            System.out.println("Response: " + serverResponse.name());
+            if(serverResponse == ServerResponse.UnitUpdate){
+                int size = input.readInt();
+                System.out.println("Size: " + size);
+                for(int i = 0; i < size; i++) {
+                    SimpleUnit updatedUnit = (SimpleUnit) input.readObject();
+                    Main.getGame().getUnitManager().updateUnit(updatedUnit);
+
+                }
+
+            }
+            System.out.println("READ\n");
         }
-    }
-
-    private void updateUnit(int id, int x, int y, int sprite){
-
     }
 
     private void start(String ip) {

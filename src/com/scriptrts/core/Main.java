@@ -168,6 +168,11 @@ public class Main extends JPanel {
     private static GameClient client;
 
     /**
+     * IP to connect to
+     */
+    private static String serverIP = null;
+
+    /**
      * Create a new Main object
      */
     public Main() {
@@ -180,9 +185,14 @@ public class Main extends JPanel {
 
         /* Create game and server */
         game = new Game(129, window.getWidth(), window.getHeight());
-        server = new GameServer();
-        client = new GameClient();
-        server.start(game);
+        if(serverIP == null){
+            server = new GameServer();
+            client = new GameClient();
+            server.start(game);
+        } else {
+            server = null;
+            client = new GameClient(serverIP);
+        }
     }
 
     /**
@@ -209,8 +219,6 @@ public class Main extends JPanel {
         if(FULLSCREEN){
             /* Disable resizing and decorations */
             window.setUndecorated(true);
-            // Next line commented out to fix Ubuntu fullscreen issue -- @lev
-           // window.setResizable(false);
 
             /* Switch to fullscreen and make window maximum size */
             width = screenSize.width;
@@ -324,12 +332,15 @@ public class Main extends JPanel {
         CmdLineParser.Option noMapDebugOpt = parser.addBooleanOption("nomapdebug");
         CmdLineParser.Option noUnitDebugOpt = parser.addBooleanOption("nounitdebug");
         CmdLineParser.Option noMaskOpt = parser.addBooleanOption("nomasking");
-        CmdLineParser.Option noScriptOpt = parser.addBooleanOption("disable-jython");
+        CmdLineParser.Option noScriptOpt = parser.addBooleanOption('n', "disable-jython");
 
         /* Script options */
         CmdLineParser.Option scriptOpt = parser.addStringOption('m', "module");
         CmdLineParser.Option pathOpt = parser.addStringOption('p', "path");
         CmdLineParser.Option exprOpt = parser.addStringOption('e', "eval");
+
+        /* Multiplayer options */
+        CmdLineParser.Option ipOpt = parser.addStringOption('s', "server");
 
         /* Parse */
         try {
@@ -362,6 +373,9 @@ public class Main extends JPanel {
             else
                 pyExprs.add(expr);
         }
+
+
+        serverIP = (String) parser.getOptionValue(ipOpt);
 
         /* Interpret arguments */
         DEBUG = (Boolean) parser.getOptionValue(debugOpt, Boolean.FALSE);
