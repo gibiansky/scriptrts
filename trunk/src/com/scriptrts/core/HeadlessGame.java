@@ -99,4 +99,12 @@ public class HeadlessGame {
     public UnitGrid getUnitGrid(){
         return grid;
     }
+
+    /**
+     * Get the unit manager
+     * @return current unit manager
+     */
+    public UnitManager getUnitManager(){
+        return unitManager;
+    }
 }

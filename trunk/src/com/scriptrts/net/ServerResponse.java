@@ -7,5 +7,5 @@ public enum ServerResponse {
     OperationSuccess,
     NameTaken,
     ColorTaken,
-    MapUpdate;
+    UnitUpdate;
 }

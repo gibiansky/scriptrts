@@ -1,8 +1,9 @@
 package com.scriptrts.game;
 
 import java.awt.Color;
+import java.io.Serializable;
 
-public class Player {
+public class Player implements Serializable {
     /* Available default colors */
     public static Color[] COLORS = {
         Color.RED, Color.BLUE, Color.YELLOW, Color.MAGENTA, Color.BLACK, Color.GRAY, Color.GREEN, Color.ORANGE
