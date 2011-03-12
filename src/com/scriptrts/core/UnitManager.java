@@ -1,5 +1,7 @@
 package com.scriptrts.core;
 
+import java.util.*;
+
 import com.scriptrts.game.SimpleUnit;
 import com.scriptrts.game.UnitGrid;
 
@@ -13,12 +15,25 @@ public class UnitManager {
     private HeadlessGame game;
 
     /**
+     * Hashed list of all units, hashed by ID
+     */
+    private HashMap<Integer, SimpleUnit> allUnits;
+
+    /**
      * Create a new unit manager
      * @param g game instance for which units are being managed
      */
     public UnitManager(HeadlessGame g){
         super();
         this.game = g;
+    }
+
+    /**
+     * Add a unit to the manager
+     * @param u unit to add
+     */
+    public void addUnit(SimpleUnit u){
+        allUnits.put(u.getID(), u);
     }
 
 

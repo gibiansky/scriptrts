@@ -4,14 +4,14 @@ import java.util.Vector;
 import java.util.Queue;
 import java.awt.Color;
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-
-
+import java.nio.*;
+import java.nio.channels.*;
+import java.net.*;
 
 import com.scriptrts.game.Direction;
 import com.scriptrts.game.Player;
 import com.scriptrts.core.HeadlessGame;
+import com.scriptrts.core.Main;
 
 /**
  * Game server used to communicate between game clients in a networked game
@@ -63,7 +63,9 @@ public class GameServer {
             public void run(){
                 try{
                     /* Creates a server socket that lurks about our port waiting for connections */
-                    ServerSocket server = new ServerSocket(GameServer.PORT, GameServer.MAX_CONNECTIONS);
+                    ServerSocketChannel serverChannel = ServerSocketChannel.open();
+                    serverChannel.configureBlocking(false);
+                    serverChannel.socket().bind(new InetSocketAddress(GameServer.PORT));
 
                     /* Start a new thread to deal with connections */
                     new Thread(new Runnable(){
@@ -88,17 +90,27 @@ public class GameServer {
                     }).start();
 
                     /* Keep accepting connections until we're full */
-                    while(connections.size() < GameServer.MAX_CONNECTIONS){
-                        Socket connection = server.accept();
+                    while(connections.size() < GameServer.MAX_CONNECTIONS && game != null){
+                        SocketChannel connectionChannel = serverChannel.accept();
 
-                        /* Store object input and output streams */
-                        synchronized(connections){
-                            connections.add(connection);
-                            objectInputs.add(new ObjectInputStream(connection.getInputStream()));
-                            objectOutputs.add(new ObjectOutputStream(connection.getOutputStream()));
+                        if(connectionChannel != null){
+                            Socket connection = connectionChannel.socket();
 
-                            /* Add the player */
-                            addPlayerConnection(connection);
+                            /* Store object input and output streams */
+                            synchronized(connections){
+                                connections.add(connection);
+                                objectInputs.add(new ObjectInputStream(connection.getInputStream()));
+                                objectOutputs.add(new ObjectOutputStream(connection.getOutputStream()));
+
+                                /* Add the player */
+                                addPlayerConnection(connection);
+                            }
+                        }
+
+                        try {
+                            Thread.sleep(300);
+                        } catch (Exception e){
+                            e.printStackTrace();
                         }
                     }
                 } catch(Exception e) {
@@ -113,7 +125,13 @@ public class GameServer {
      * Handle requests made by clients
      */
     private void handleRequests() throws IOException, ClassNotFoundException {
-        while(true){
+        while(game != null){
+            try {
+                Thread.sleep(10);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+
             /* Clone the array list so it isn't modified by a new player joining while we're processing requests */
             synchronized (connections){
                 for(Socket socket : connections){
@@ -147,7 +165,13 @@ public class GameServer {
      * Send updates to clients
      */
     private void sendUpdates() throws IOException, ClassNotFoundException {
-        while(true){
+        while(game != null){
+            try {
+                Thread.sleep(10);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+
             /* Clone the array list so it isn't modified by a new player joining while we're processing requests */
             synchronized (connections){
                 for(Socket socket : connections){
@@ -157,6 +181,10 @@ public class GameServer {
                         ObjectOutputStream out = objectOutputs.get(connections.indexOf(socket));
                         updateClient(out, game.getPlayers().get(connections.indexOf(socket)));
                     }
+                }
+
+                if(Main.getGameClient() != null){
+                    /* We don't need to do anything because the server's game is already updated */
                 }
             }
         }
@@ -310,5 +338,25 @@ public class GameServer {
             if(p.getColor().equals(color))
                 return true;
         return false;
+    }
+
+    /**
+     * Destroy this server and stop all background threads
+     */
+    public void destroy() throws IOException {
+        game = null;
+
+        synchronized(connections){
+            for(ObjectInputStream in : objectInputs)
+                in.close();
+            for(ObjectOutputStream out : objectOutputs)
+                out.close();
+            for(Socket sock : connections)
+                sock.close();
+
+            objectOutputs.clear();
+            objectInputs.clear();
+            connections.clear();
+        }
     }
 }
