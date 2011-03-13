@@ -646,5 +646,13 @@ public class UnitPainter {
             
         }
     }
+    
+    /**
+     * Gets the unit grid used by the painter
+     * @return unit grid
+     */
+    public UnitGrid getGrid(){
+    	return grid;
+    }
 
 }

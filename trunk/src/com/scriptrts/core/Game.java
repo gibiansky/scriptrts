@@ -172,7 +172,6 @@ public class Game extends HeadlessGame {
         manager.registerKeyCode(KeyEvent.VK_BACK_QUOTE);
         manager.registerKeyCode(KeyEvent.VK_CONTROL);
         manager.registerKeyCode(KeyEvent.VK_SHIFT);
-        manager.registerKeyCode(KeyEvent.VK_ESCAPE);
         manager.registerKeyCode(KeyEvent.VK_C);
     }
 
@@ -205,9 +204,6 @@ public class Game extends HeadlessGame {
                     manager.clearKeyCodeFlag(digits[x]);
                 }
             }
-            
-            if(manager.getKeyCodeFlag(KeyEvent.VK_ESCAPE))
-            	System.exit(0);
 
             if(manager.getKeyCodeFlag(KeyEvent.VK_BACK_QUOTE) && !SelectionStorage.retrieve(10).isEmpty() && !Selection.current().equals(SelectionStorage.retrieve(10)) ) {
             	Selection s = SelectionStorage.retrieve(10);
@@ -352,8 +348,9 @@ public class Game extends HeadlessGame {
             mousePreviouslyPressed = manager.getLeftMouseDown();
             
             if(manager.getKeyCodeFlag(KeyEvent.VK_C)){
-            	if(Selection.current().getList().size() == 1){
-            		SimpleUnit unit = Selection.current().getList().get(0);
+            	if(!Selection.current().getList().isEmpty()){
+            		int size = Selection.current().getList().size();
+            		SimpleUnit unit = Selection.current().getList().get(size - 1);
             		viewport.setLocation(unitPainter.getUnitCoords(unit, viewport));
             	}
             }
@@ -361,12 +358,16 @@ public class Game extends HeadlessGame {
             /* Clicking (to set unit destination) */
             if(manager.getRightMouseClicked()){
                 Point point = manager.getMouseLocation();
-                Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
-                for(SimpleUnit unit : Selection.current().getList()){
-                    if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
-                        unit.getOrderHandler().queueOrder(new MoveOrder(unitTile));
-                    else
-                        unit.getOrderHandler().order(new MoveOrder(unitTile));
+                Point unitTile = unitPainter.unitTileAtPoint(point, viewport);    
+                /* If there is no unit at destination, move there */
+                //TODO: make it do something different if there is a unit there
+                if(unitPainter.getGrid().getUnit(unitTile.x, unitTile.y) == null){
+                	for(SimpleUnit unit : Selection.current().getList()){
+                		if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
+                			unit.getOrderHandler().queueOrder(new MoveOrder(unitTile));
+                		else
+                			unit.getOrderHandler().order(new MoveOrder(unitTile));
+                	}
                 }
             }
             
