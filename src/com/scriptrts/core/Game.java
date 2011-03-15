@@ -296,6 +296,10 @@ public class Game extends HeadlessGame {
                     tempUnit.setX(unitTile.x);
                     tempUnit.setY(unitTile.y);
                     grid.placeUnit(tempUnit, unitTile.x, unitTile.y);
+                    unitManager.addUnit(tempUnit);
+
+                    if(Main.getGameClient() != null)
+                        Main.getGameClient().sendNewUnitNotification(tempUnit);
 
                     placingUnit = false;
                 }

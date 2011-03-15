@@ -6,6 +6,7 @@ public enum ServerRequest {
     PlayerNameChange,
     PlayerColorChange,
     PathAppended,
-    PathChanged
+    PathChanged,
+    NewUnit
         ;
 }

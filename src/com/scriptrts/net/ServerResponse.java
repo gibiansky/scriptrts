@@ -1,4 +1,3 @@
-
 package com.scriptrts.net;
 /**
  * Possible responses from the server
