@@ -27,11 +27,6 @@ public class MapPainter {
     public static boolean NO_MASKING = false;
 
     /**
-     * Map which this painter is created to draw on the screen
-     */
-    private Map toPaint;
-
-    /**
      * Array of integers representing the map, where each integer specifies the index of the corresponding texture
      * in the list of texture images.
      */
@@ -127,7 +122,6 @@ public class MapPainter {
      */
     public MapPainter(Map map, int tileX, int tileY){
         /* Store fields */
-        this.toPaint = map;
         this.tileX = tileX;
         this.tileY = tileY;
 
@@ -425,7 +419,7 @@ public class MapPainter {
     public Point getTileCoordinates(int i, int j){
         /* Coordinates of top corner of tile */
         int x = (i+j+1)*tileX/2;
-        int y = tileY * toPaint.getN() / 2 + (i - j - 1) * tileY / 2;
+        int y = tileY * Main.getGame().getCurrentMap().getN() / 2 + (i - j - 1) * tileY / 2;
 
         /* Coordinates of tile image */
         return new Point(x - tileX / 2, y);
@@ -501,7 +495,7 @@ public class MapPainter {
      * @return map drawn by this painter
      */
     public Map getMap(){
-        return toPaint;
+        return Main.getGame().getCurrentMap();
     }
 
     /**
@@ -512,7 +506,7 @@ public class MapPainter {
      */
     
     public Point getTileAtPoint(Point point, Viewport viewport){   	
-    	int mapHeight = tileY * toPaint.getN();
+    	int mapHeight = tileY * Main.getGame().getCurrentMap().getN();
     	
     	/* Avoid modifying the input point, in case they will be used later by the caller */
     	point = new Point(point);
@@ -527,7 +521,7 @@ public class MapPainter {
     	int mapY = (int) ((term1 - term2) / 2);
     	
     	/* If tile is not on map, return null */
-    	if(mapX < 0 || mapX > toPaint.getN() || mapY < 0 || mapY > toPaint.getN())
+    	if(mapX < 0 || mapX > Main.getGame().getCurrentMap().getN() || mapY < 0 || mapY > Main.getGame().getCurrentMap().getN())
     		return null;
     	
     	Point mapTile = new Point(mapX, mapY);
@@ -540,7 +534,7 @@ public class MapPainter {
      * should change its internal state to reflect the change in the map.
      */
     public synchronized void update(){
-        TerrainType[][] terrainTypes = toPaint.getTileArray();
+        TerrainType[][] terrainTypes = Main.getGame().getCurrentMap().getTileArray();
         terrain = new int[terrainTypes.length][terrainTypes[0].length];
         for(int i = 0; i < terrain.length; i++)
             for(int j = 0; j < terrain[0].length; j++)
@@ -562,14 +556,14 @@ public class MapPainter {
         int north   = mapBoundsPaintArray[3];
 
         /* Only draw what we need to */
-        int n = toPaint.getN();
+        int n = Main.getGame().getCurrentMap().getN();
         for(int i = west; i < east; i++) {
             for(int j = south; j < north; j++) {
                 /*
                  * Calculate the locations of the back corners of the tiles.
                  */
                 int x = (i+j+1)*tileX/2;
-                int y = tileY * toPaint.getN() / 2 + (i - j - 1) * tileY / 2;
+                int y = tileY * Main.getGame().getCurrentMap().getN() / 2 + (i - j - 1) * tileY / 2;
 
                 /* Draw the tile */
                 Image image = scaledImages[terrain[i][j]];
@@ -636,7 +630,7 @@ public class MapPainter {
         double y = viewport.getY();
         double width = viewport.getWidth();
         double height = viewport.getHeight();
-        int n = toPaint.getN();
+        int n = Main.getGame().getCurrentMap().getN();
 
         /* Find minimum i using (x, y) */
         double j = (x / (tileX/2) - 2 - (y - tileY * n / 2) / (tileY / 2))/2;

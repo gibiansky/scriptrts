@@ -154,59 +154,6 @@ public class SimpleUnit implements Serializable {
 
         maxHealth = 10;
         health = (int) (Math.random() * maxHealth);
-
-        /* MAKE A RANDOM WEIRD PATH (TESTING!!!) */
-        boolean circular = true;
-        for(int i = 0; i < 50; i++){
-            if(circular){
-            if(i % 2 == 0){
-                addToPath(Direction.East);
-                addToPath(Direction.East);
-                addToPath(Direction.East);
-                addToPath(Direction.East);
-                addToPath(Direction.North);
-                addToPath(Direction.North);
-                addToPath(Direction.North);
-                addToPath(Direction.North);
-                addToPath(Direction.West);
-                addToPath(Direction.West);
-                addToPath(Direction.West);
-                addToPath(Direction.West);
-                addToPath(Direction.South);
-                addToPath(Direction.South);
-                addToPath(Direction.South);
-                addToPath(Direction.South);
-            }
-            else{
-                addToPath(Direction.Northeast);
-                addToPath(Direction.Northeast);
-                addToPath(Direction.Northeast);
-                addToPath(Direction.Northeast);
-                addToPath(Direction.Northwest);
-                addToPath(Direction.Northwest);
-                addToPath(Direction.Northwest);
-                addToPath(Direction.Northwest);
-                addToPath(Direction.Southwest);
-                addToPath(Direction.Southwest);
-                addToPath(Direction.Southwest);
-                addToPath(Direction.Southwest);
-                addToPath(Direction.Southeast);
-                addToPath(Direction.Southeast);
-                addToPath(Direction.Southeast);
-                addToPath(Direction.Southeast);
-            }
-            }
-            else {
-                addToPath(Direction.East);
-                addToPath(Direction.East);
-                addToPath(Direction.East);
-                addToPath(Direction.East);
-                addToPath(Direction.East);
-                addToPath(Direction.East);
-                addToPath(Direction.East);
-                addToPath(Direction.East);
-            }
-        }
     }
 
     /**

@@ -136,26 +136,39 @@ public class GameServer {
             /* Clone the array list so it isn't modified by a new player joining while we're processing requests */
             synchronized (connections){
                 for(Socket socket : connections){
-                    if(socket.isClosed())
-                        connections.remove(socket);
-                    else {
-                        if(socket.getInputStream() != null && socket.getInputStream().available() > 0){
-                            ObjectInputStream objIn = objectInputs.get(connections.indexOf(socket));
-                            ServerRequest request = (ServerRequest) objIn.readObject();
-                            switch(request){
-                                case PlayerNameChange:
-                                    changeNameRequest(socket, objIn);
-                                    break;
-                                case PlayerColorChange:
-                                    changeColorRequest(socket, objIn);
-                                    break;
-                                case PathAppended:
-                                    pathAppendedRequest(socket, objIn);
-                                    break;
-                                default:
-                                    break;
+                    try {
+                        if(socket.isClosed())
+                            connections.remove(socket);
+                        else {
+                            if(socket.getInputStream() != null && socket.getInputStream().available() > 0){
+                                ObjectInputStream objIn = objectInputs.get(connections.indexOf(socket));
+                                System.out.println("RECEIVING?");
+                                ServerRequest request = (ServerRequest) objIn.readObject();
+                                System.out.println("RETRIEVED " + request);
+                                switch(request){
+                                    case PlayerNameChange:
+                                        changeNameRequest(socket, objIn);
+                                        break;
+                                    case PlayerColorChange:
+                                        changeColorRequest(socket, objIn);
+                                        break;
+                                    case PathAppended:
+                                        pathAppendedRequest(socket, objIn);
+                                        break;
+                                    case NewUnit:
+                                        newUnitRequest(socket, objIn);
+                                        break;
+                                    default:
+                                        break;
+                                }
                             }
                         }
+
+                    } catch (IOException e){
+                        if(e.getMessage().trim().equals("Broken pipe"))
+                            connections.remove(socket);
+                        else
+                            throw e;
                     }
                 }
             }
@@ -177,17 +190,26 @@ public class GameServer {
                 /* Clone the array list so it isn't modified by a new player joining while we're processing requests */
                 synchronized (connections){
                     for(Socket socket : connections){
-                        if(socket.isClosed())
-                            connections.remove(socket);
-                        else if(socket.getOutputStream() != null){
-                            ObjectOutputStream out = objectOutputs.get(connections.indexOf(socket));
-                            updateClient(out, game.getPlayers().get(connections.indexOf(socket)));
+                        try {
+                            /* We can't remove the socket from the list because we're iterating over the list */
+                            if(!socket.isClosed() && socket.getOutputStream() != null){
+                                ObjectOutputStream out = objectOutputs.get(connections.indexOf(socket));
+                                updateClient(out, game.getPlayers().get(connections.indexOf(socket)));
+                            }
+                        } catch (IOException e){
+                            if(e.getMessage().trim().equals("Broken pipe"))
+                                connections.remove(socket);
+                            else
+                                throw e;
                         }
                     }
+                }
 
-                    if(Main.getGameClient() != null){
-                        /* We don't need to do anything because the server's game is already updated */
-                    }
+                /* If we have removed connections, remove them */
+                for(int i = 0; i < connections.size(); i++){
+                    Socket socket = connections.get(i);
+                    if(socket.isClosed())
+                        connections.remove(socket);
                 }
 
                 game.getUnitManager().clearUpdates();
@@ -195,17 +217,26 @@ public class GameServer {
         }
     }
 
+    /**
+     * Send an update to a given client.
+     * @param output output stream connecting server to client
+     * @param player player receiving the update
+     */
     private void updateClient(ObjectOutputStream output, Player player) throws IOException, ClassNotFoundException {
         List<SimpleUnit> updated = game.getUnitManager().updatedUnits();
-        if(updated.size() > 0) {
+        List<SimpleUnit> created = game.getUnitManager().newUnits();
+        if(updated.size() > 0 || created.size() > 0) {
             output.writeObject(ServerResponse.UnitUpdate);
-            output.writeInt(updated.size());
-            output.reset();
-            for(SimpleUnit unit : updated){
-                output.writeObject(unit);
-            }
 
-            System.out.println("Sent");
+            output.writeInt(created.size());
+            for(SimpleUnit unit : created)
+                output.writeObject(unit);
+
+            output.writeInt(updated.size());
+            for(SimpleUnit unit : updated)
+                output.writeObject(unit);
+
+            output.reset();
         }
     }
 
@@ -243,7 +274,6 @@ public class GameServer {
 
         Player player = new Player(name, color);
         game.addPlayer(player);
-        System.out.println(game.getPlayers());
 
         /* Send back the player color and name */
         ObjectOutputStream objOut = objectOutputs.get(connections.indexOf(socket));
@@ -334,6 +364,19 @@ public class GameServer {
      */
     public void pathChangedRequest(Integer id, Queue<Direction> ds){
 
+    }
+
+    /**
+     * Respond to a new unit request
+     * @param socket Socket to get data from
+     * @param in input stream to read from
+     */
+    private void newUnitRequest(Socket socket, ObjectInputStream in) throws IOException, ClassNotFoundException {
+        SimpleUnit newUnit = (SimpleUnit) in.readObject();
+
+        System.out.println("SERVER Found new unit with ID " + newUnit.getID());
+        Main.getGame().getUnitGrid().placeUnit(newUnit, newUnit.getX(), newUnit.getY());
+        Main.getGame().getUnitManager().addUnit(newUnit);
     }
 
     /**
