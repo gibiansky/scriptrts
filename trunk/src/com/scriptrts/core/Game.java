@@ -99,11 +99,6 @@ public class Game extends HeadlessGame {
      */
     int increment = SCROLLING_DISTANCE;
     
-    /**
-     * Pathfinder used for all units
-     */
-    Pathfinder pathfinder;
-    
     int movedX;
     int movedY;
     
@@ -133,9 +128,6 @@ public class Game extends HeadlessGame {
         int tileY = 64;
         mapPainter = new MapPainter(map, tileX, tileY);
         unitPainter = new UnitPainter(grid, mapPainter);
-
-        /* Create pathfinder */
-        pathfinder = new Pathfinder(map, grid);
 
         /* Create the viewport */
         int totalWidth = map.getN() * mapPainter.getTileWidth();

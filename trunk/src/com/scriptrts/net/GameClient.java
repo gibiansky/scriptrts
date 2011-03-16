@@ -47,19 +47,22 @@ public class GameClient {
     public GameClient(String ip){
         if(Main.getGameServer() == null){
             try {
-                connection = new Socket(ip, GameServer.PORT); 
+                synchronized(this){
+                    connection = new Socket(ip, GameServer.PORT); 
 
-                output = new ObjectOutputStream(connection.getOutputStream());
-                input = new ObjectInputStream(connection.getInputStream());
+                    output = new ObjectOutputStream(connection.getOutputStream());
+                    input = new ObjectInputStream(connection.getInputStream());
 
-                /* Request name and color */
-                output.writeObject("Player One");
-                output.writeObject(java.awt.Color.RED);
+                    /* Request name and color */
+                    output.writeObject("Player One");
+                    output.writeObject(java.awt.Color.RED);
 
-                String name = (String) input.readObject();
-                Color color = (Color) input.readObject();
-                Map map = (Map) input.readObject();
-                Main.getGame().setCurrentMap(map);
+                    String name = (String) input.readObject();
+                    Color color = (Color) input.readObject();
+                    Map map = (Map) input.readObject();
+                    Main.getGame().setCurrentMap(map);
+                    System.out.println("Done initializing game client.");
+                }
             } catch (Exception e){
                 e.printStackTrace();
             }
@@ -68,9 +71,7 @@ public class GameClient {
                 public void run(){
                     while(true){
                         try {
-                            synchronized(toSend){
-                                flushRequests();
-                            }
+                            flushRequests();
                             Thread.sleep(10);
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -131,11 +132,7 @@ public class GameClient {
      * @param d direction added to path
      */
     public void sendPathAppendedNotification(SimpleUnit unit, Direction d){
-        /* If the server is on this computer, just call the server method */
-        if(Main.getGameServer() != null)
-            Main.getGameServer().pathAppendedRequest(unit.getID(), d);
-        else
-            sendRequest(ServerRequest.PathAppended, new Integer(unit.getID()), d);
+        sendRequest(ServerRequest.PathAppended, new Integer(unit.getID()), d);
     }
 
     /**
@@ -144,11 +141,7 @@ public class GameClient {
      * @param newPath the new path of the unit
      */
     public void sendPathChangedNotification(SimpleUnit unit, Queue<Direction> newPath){
-        /* If the server is on this computer, just call the server method */
-        if(Main.getGameServer() != null)
-            Main.getGameServer().pathChangedRequest(unit.getID(), newPath);
-        else
-            sendRequest(ServerRequest.PathChanged, new Integer(unit.getID()), newPath);
+        sendRequest(ServerRequest.PathChanged, new Integer(unit.getID()), newPath);
     }
 
     /**
@@ -156,10 +149,8 @@ public class GameClient {
      * @param unit added unit
      */
     public void sendNewUnitNotification(SimpleUnit unit){
-        if(Main.getGameServer() == null){
-            System.out.println("Found new unit with ID " + unit.getID());
-            sendRequest(ServerRequest.NewUnit, unit);
-        }
+        System.out.println("Found new unit with ID " + unit.getID());
+        sendRequest(ServerRequest.NewUnit, unit);
     }
 
     /**
@@ -183,74 +174,72 @@ public class GameClient {
                 e.printStackTrace();
             }
 
-            ServerResponse serverResponse = (ServerResponse) input.readObject();
-            if(serverResponse == ServerResponse.UnitUpdate){
-                int sizeNew = input.readInt();
-                for(int i = 0; i < sizeNew; i++) {
-                    SimpleUnit newUnit = (SimpleUnit) input.readObject();
-                    System.out.println("Reading new " + sizeNew);
+            synchronized(this){
+                System.out.println("Reading.");
+                ServerResponse serverResponse = (ServerResponse) input.readObject();
+                System.out.println("Read.");
+                if(serverResponse == ServerResponse.UnitUpdate){
+                    System.out.println("Reading as UnitUpdate");
+                    int sizeNew = input.readInt();
+                    System.out.println("NEW " + sizeNew);
+                    for(int i = 0; i < sizeNew; i++) {
+                        SimpleUnit newUnit = (SimpleUnit) input.readObject();
 
-                    try {
-                        /* Retrieve spaceship sprites */
-                        BufferedImage art = ResourceManager.loadImage("resource/unit/spaceship/Art.png", 200, 200);
-                        Sprite[] sprites = new Sprite[16];
-                        for(Direction d : Direction.values()){
-                            String unitDir = "resource/unit/spaceship/";
-                            String unitFilename = "Ship" + d.name() + ".png";
-                            BufferedImage img = ResourceManager.loadBandedImage(
-                                    unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, Main.getGame().getPlayer().getColor());
-                            sprites[d.ordinal()]  = new Sprite(img, 0.3, 87, 25);
+                        try {
+                            /* Retrieve spaceship sprites */
+                            BufferedImage art = ResourceManager.loadImage("resource/unit/spaceship/Art.png", 200, 200);
+                            Sprite[] sprites = new Sprite[16];
+                            for(Direction d : Direction.values()){
+                                String unitDir = "resource/unit/spaceship/";
+                                String unitFilename = "Ship" + d.name() + ".png";
+                                BufferedImage img = ResourceManager.loadBandedImage(
+                                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, Main.getGame().getPlayer().getColor());
+                                sprites[d.ordinal()]  = new Sprite(img, 0.3, 87, 25);
+                            }
+
+                            for(Direction d : Direction.values()){
+                                String unitDir = "resource/unit/spaceship/";
+                                String unitFilename = "Ship" + d.name() + ".png";
+                                BufferedImage normalImg = ResourceManager.loadBandedImage(
+                                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, Main.getGame().getPlayer().getColor());
+                                BufferedImage attackImg = ResourceManager.loadBandedImage(
+                                        unitDir + "attack/" + unitFilename, unitDir + "allegiance/" + unitFilename, Main.getGame().getPlayer().getColor());
+                                int bX = 87, bY = 25;
+                                if(d == Direction.Northwest)
+                                    bY += 43;
+                                if(d == Direction.Southwest)
+                                    bX += 30;
+                                sprites[8 + d.ordinal()]  = new AnimatedSprite(
+                                        new BufferedImage[]{
+                                            normalImg, attackImg
+                                        }, new int[]{
+                                            10, 10
+                                        }, 0.3, new int[]{
+                                            87, bX
+                                        }, new int[]{
+                                            25, bY
+                                        });
+                            }
+
+                            SimpleUnit spaceship = new SimpleUnit(null, sprites, art, 0, 0, 0, null, true, Main.getGame().getPathfinder());
+                            spaceship.setParameters(newUnit);
+                            SimpleUnit unit = spaceship;
+                            Main.getGame().getUnitGrid().placeUnit(unit, unit.getX(), unit.getY());
+                            Main.getGame().getUnitManager().addUnit(unit);
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-
-                    System.out.println("Reading XXX " + sizeNew);
-                        for(Direction d : Direction.values()){
-                            String unitDir = "resource/unit/spaceship/";
-                            String unitFilename = "Ship" + d.name() + ".png";
-                            BufferedImage normalImg = ResourceManager.loadBandedImage(
-                                    unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, Main.getGame().getPlayer().getColor());
-                            BufferedImage attackImg = ResourceManager.loadBandedImage(
-                                    unitDir + "attack/" + unitFilename, unitDir + "allegiance/" + unitFilename, Main.getGame().getPlayer().getColor());
-                            int bX = 87, bY = 25;
-                            if(d == Direction.Northwest)
-                                bY += 43;
-                            if(d == Direction.Southwest)
-                                bX += 30;
-                            sprites[8 + d.ordinal()]  = new AnimatedSprite(
-                                    new BufferedImage[]{
-                                        normalImg, attackImg
-                                    }, new int[]{
-                                        10, 10
-                                    }, 0.3, new int[]{
-                                        87, bX
-                                    }, new int[]{
-                                        25, bY
-                                    });
-                        }
-                    System.out.println("Reading YYY " + sizeNew);
-
-                    System.out.println("Reading ZZZ1 " + sizeNew);
-                        SimpleUnit spaceship = new SimpleUnit(null, sprites, art, 0, 0, 0, null, true, null);
-                    System.out.println("Reading ZZZ2 " + sizeNew);
-                        spaceship.setParameters(newUnit);
-                    System.out.println("Reading ZZZ2 " + sizeNew);
-                        SimpleUnit unit = spaceship;
-                    System.out.println("Reading ZZZ3 " + sizeNew);
-                        Main.getGame().getUnitGrid().placeUnit(unit, unit.getX(), unit.getY());
-                    System.out.println("Reading DDD " + sizeNew);
-                        Main.getGame().getUnitManager().addUnit(unit);
-                    System.out.println("Reading MMM " + sizeNew);
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
-                }
 
-                int sizeUpdated = input.readInt();
-                for(int i = 0; i < sizeUpdated; i++) {
-                    System.out.println("Reading updated " + sizeUpdated);
-                    SimpleUnit updatedUnit = (SimpleUnit) input.readObject();
-                    Main.getGame().getUnitManager().updateUnit(updatedUnit);
-                }
+                    int sizeUpdated = input.readInt();
+                    System.out.println("UPDATE " + sizeUpdated);
+                    for(int i = 0; i < sizeUpdated; i++) {
+                        SimpleUnit updatedUnit = (SimpleUnit) input.readObject();
+                        Main.getGame().getUnitManager().synchronizeUnit(updatedUnit);
+                    }
 
+                    System.out.println("Done reading unitupdate");
+                }
             }
         }
     }

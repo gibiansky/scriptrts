@@ -6,9 +6,10 @@ import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
 import java.net.*;
+import java.awt.image.BufferedImage;
 
-import com.scriptrts.game.Direction;
-import com.scriptrts.game.Player;
+import com.scriptrts.game.*;
+import com.scriptrts.util.ResourceManager;
 import com.scriptrts.game.SimpleUnit;
 import com.scriptrts.core.HeadlessGame;
 import com.scriptrts.core.Main;
@@ -104,6 +105,7 @@ public class GameServer {
 
                                 /* Add the player */
                                 addPlayerConnection(connection);
+                                System.out.println("Done initializing player.");
                             }
 
                         }
@@ -134,43 +136,44 @@ public class GameServer {
             }
 
             /* Clone the array list so it isn't modified by a new player joining while we're processing requests */
-            synchronized (connections){
+            try {
+                Socket toRemove = null;
                 for(Socket socket : connections){
                     try {
-                        if(socket.isClosed())
-                            connections.remove(socket);
-                        else {
-                            if(socket.getInputStream() != null && socket.getInputStream().available() > 0){
-                                ObjectInputStream objIn = objectInputs.get(connections.indexOf(socket));
-                                System.out.println("RECEIVING?");
-                                ServerRequest request = (ServerRequest) objIn.readObject();
-                                System.out.println("RETRIEVED " + request);
-                                switch(request){
-                                    case PlayerNameChange:
-                                        changeNameRequest(socket, objIn);
-                                        break;
-                                    case PlayerColorChange:
-                                        changeColorRequest(socket, objIn);
-                                        break;
-                                    case PathAppended:
-                                        pathAppendedRequest(socket, objIn);
-                                        break;
-                                    case NewUnit:
-                                        newUnitRequest(socket, objIn);
-                                        break;
-                                    default:
-                                        break;
-                                }
+                        if(socket.getInputStream() != null){
+                            ObjectInputStream objIn = objectInputs.get(connections.indexOf(socket));
+                            System.out.println("Reading request.");
+                            ServerRequest request = (ServerRequest) objIn.readObject();
+                            System.out.println("Request " + request);
+                            switch(request){
+                                case PlayerNameChange:
+                                    changeNameRequest(socket, objIn);
+                                    break;
+                                case PlayerColorChange:
+                                    changeColorRequest(socket, objIn);
+                                    break;
+                                case PathAppended:
+                                    pathAppendedRequest(socket, objIn);
+                                    break;
+                                case NewUnit:
+                                    newUnitRequest(socket, objIn);
+                                    break;
+                                default:
+                                    break;
                             }
                         }
-
                     } catch (IOException e){
-                        if(e.getMessage().trim().equals("Broken pipe"))
-                            connections.remove(socket);
+                        if(e instanceof EOFException || e.getMessage() != null && e.getMessage().trim().equals("Broken pipe"))
+                            toRemove = socket;
                         else
                             throw e;
                     }
                 }
+
+                if(toRemove != null)
+                    removePlayerConnection(toRemove);
+            } catch (Exception e){
+                e.printStackTrace();
             }
         }
     }
@@ -187,29 +190,33 @@ public class GameServer {
             }
 
             if(game.getUnitManager() != null){
-                /* Clone the array list so it isn't modified by a new player joining while we're processing requests */
-                synchronized (connections){
-                    for(Socket socket : connections){
-                        try {
-                            /* We can't remove the socket from the list because we're iterating over the list */
-                            if(!socket.isClosed() && socket.getOutputStream() != null){
-                                ObjectOutputStream out = objectOutputs.get(connections.indexOf(socket));
-                                updateClient(out, game.getPlayers().get(connections.indexOf(socket)));
+                synchronized(connections){
+                    try {
+                        for(Socket socket : connections){
+                            try {
+                                /* We can't remove the socket from the list because we're iterating over the list */
+                                if(!socket.isClosed() && socket.getOutputStream() != null){
+                                    ObjectOutputStream out = objectOutputs.get(connections.indexOf(socket));
+                                    updateClient(out, game.getPlayers().get(connections.indexOf(socket)));
+                                }
+                            } catch (IOException e){
+                                System.out.println("Error in socket!");
+                                e.printStackTrace();
                             }
-                        } catch (IOException e){
-                            if(e.getMessage().trim().equals("Broken pipe"))
-                                connections.remove(socket);
-                            else
-                                throw e;
                         }
-                    }
-                }
 
-                /* If we have removed connections, remove them */
-                for(int i = 0; i < connections.size(); i++){
-                    Socket socket = connections.get(i);
-                    if(socket.isClosed())
-                        connections.remove(socket);
+                        /* If we have removed connections, remove them */
+                        for(int i = 0; i < connections.size(); i++){
+                            Socket socket = connections.get(i);
+                            if(socket.isClosed()){
+                                removePlayerConnection(socket);
+                                System.out.println("Connection removed.");
+                            }
+                        }
+
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
                 }
 
                 game.getUnitManager().clearUpdates();
@@ -226,7 +233,9 @@ public class GameServer {
         List<SimpleUnit> updated = game.getUnitManager().updatedUnits();
         List<SimpleUnit> created = game.getUnitManager().newUnits();
         if(updated.size() > 0 || created.size() > 0) {
+            System.out.println("Writing server response.");
             output.writeObject(ServerResponse.UnitUpdate);
+            System.out.println("Written.");
 
             output.writeInt(created.size());
             for(SimpleUnit unit : created)
@@ -284,8 +293,37 @@ public class GameServer {
         /* Send back map */
         objOut.writeObject(game.getCurrentMap());
 
+        /* Send back all units as a unit update */
+        objOut.writeObject(ServerResponse.UnitUpdate);
 
+        Collection<SimpleUnit> all = game.getUnitManager().allUnits();
+        objOut.writeInt(all.size());
+        for(SimpleUnit unit : all)
+            objOut.writeObject(unit);
+
+        objOut.writeInt(0);
         objOut.flush();
+        objOut.reset();
+    }
+
+    /**
+     * Remove a connection and the associated player
+     * @param socket socket associated with connection to remove
+     */
+    private void removePlayerConnection(Socket socket) throws IOException {
+        int index = connections.indexOf(socket);
+        if(index < 0)
+            return;
+
+        connections.remove(index);
+
+        objectInputs.get(index).close();
+        objectInputs.remove(index);
+
+        objectOutputs.get(index).close();
+        objectOutputs.remove(index);
+
+        game.getPlayers().remove(index);
     }
 
     /**
@@ -374,9 +412,50 @@ public class GameServer {
     private void newUnitRequest(Socket socket, ObjectInputStream in) throws IOException, ClassNotFoundException {
         SimpleUnit newUnit = (SimpleUnit) in.readObject();
 
-        System.out.println("SERVER Found new unit with ID " + newUnit.getID());
-        Main.getGame().getUnitGrid().placeUnit(newUnit, newUnit.getX(), newUnit.getY());
-        Main.getGame().getUnitManager().addUnit(newUnit);
+        try {
+            /* Retrieve spaceship sprites */
+            BufferedImage art = ResourceManager.loadImage("resource/unit/spaceship/Art.png", 200, 200);
+            Sprite[] sprites = new Sprite[16];
+            for(Direction d : Direction.values()){
+                String unitDir = "resource/unit/spaceship/";
+                String unitFilename = "Ship" + d.name() + ".png";
+                BufferedImage img = ResourceManager.loadBandedImage(
+                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, Main.getGame().getPlayer().getColor());
+                sprites[d.ordinal()]  = new Sprite(img, 0.3, 87, 25);
+            }
+
+            for(Direction d : Direction.values()){
+                String unitDir = "resource/unit/spaceship/";
+                String unitFilename = "Ship" + d.name() + ".png";
+                BufferedImage normalImg = ResourceManager.loadBandedImage(
+                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, Main.getGame().getPlayer().getColor());
+                BufferedImage attackImg = ResourceManager.loadBandedImage(
+                        unitDir + "attack/" + unitFilename, unitDir + "allegiance/" + unitFilename, Main.getGame().getPlayer().getColor());
+                int bX = 87, bY = 25;
+                if(d == Direction.Northwest)
+                    bY += 43;
+                if(d == Direction.Southwest)
+                    bX += 30;
+                sprites[8 + d.ordinal()]  = new AnimatedSprite(
+                        new BufferedImage[]{
+                            normalImg, attackImg
+                        }, new int[]{
+                            10, 10
+                        }, 0.3, new int[]{
+                            87, bX
+                        }, new int[]{
+                            25, bY
+                        });
+            }
+
+            SimpleUnit spaceship = new SimpleUnit(null, sprites, art, 0, 0, 0, null, true, Main.getGame().getPathfinder());
+            spaceship.setParameters(newUnit);
+            SimpleUnit unit = spaceship;
+            Main.getGame().getUnitGrid().placeUnit(unit, unit.getX(), unit.getY());
+            Main.getGame().getUnitManager().addUnit(unit);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
