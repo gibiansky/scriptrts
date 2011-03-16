@@ -7,9 +7,10 @@ import com.scriptrts.game.SimpleUnit;
 
 public abstract class Order {
     protected Point point;
+    protected SimpleUnit unit;
     
     // should be entity
-    public abstract boolean isComplete(SimpleUnit e);
+    public abstract boolean isComplete();
     
     public abstract Point getPoint();
     

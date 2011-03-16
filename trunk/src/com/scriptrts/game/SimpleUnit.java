@@ -11,7 +11,7 @@ import java.io.Serializable;
 import com.scriptrts.core.PathHandler;
 import com.scriptrts.core.Pathfinder;
 import com.scriptrts.core.Main;
-import com.scriptrts.combat.Unit;
+import com.scriptrts.game.Unit;
 import com.scriptrts.control.OrderHandler;
 
 /**
@@ -104,6 +104,11 @@ public class SimpleUnit implements Serializable {
 	 * The current health of the unit
 	 */
 	private int health;
+	
+	/**
+	 * Whether the unit is alive
+	 */
+	private boolean alive = true;
 
 	/**
 	 * Path handler used to route this unit
@@ -606,6 +611,14 @@ public class SimpleUnit implements Serializable {
 	public boolean isPassable(Construct c) {
 		return false;
 	}
+
+    public void setAlive(boolean alive) {
+        this.alive = alive;
+    }
+
+    public boolean isAlive() {
+        return alive;
+    }
 }
 
 /**
