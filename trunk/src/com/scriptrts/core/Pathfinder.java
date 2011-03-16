@@ -11,7 +11,12 @@ import com.scriptrts.game.Direction;
 import com.scriptrts.game.SimpleUnit;
 import com.scriptrts.game.UnitGrid;
 
-public class Pathfinder extends Thread{	
+public class Pathfinder extends Thread{
+	/**
+	 * Unit to find path for
+	 */
+	private SimpleUnit unit;
+	
 	/**
 	 * Current map instance
 	 */
@@ -63,8 +68,17 @@ public class Pathfinder extends Thread{
 	private Queue<Direction> directions;
 	
 	/**
+	 * End coordinates of path
+	 */
+	private int endX, endY;
+	
+	/**
+	 * Path handler queue used to manage this pathfinder
+	 */
+	private PathHandler pathHandler;
+	
+	/**
 	 * Create a new Pathfinder
-	 * @param u unit which pathfinder is for
 	 * @param m current map instance
 	 * @param g unit grid
 	 */
@@ -78,6 +92,17 @@ public class Pathfinder extends Thread{
 		path = new ArrayList<Point>();
 		directions = new LinkedList<Direction>();
 		setTerrainValues();
+	}
+	
+	/**
+	 * Create a new Pathfinder
+	 * @param u unit which pathfinder is for
+	 * @param m current map instance
+	 * @param g unit grid
+	 */
+	public Pathfinder(SimpleUnit u, Map m, UnitGrid g){
+		this(m, g);
+		unit = u;
 	}
 	
 	/**
@@ -106,6 +131,28 @@ public class Pathfinder extends Thread{
 		terrainValues.put(TerrainType.DeepFire, 3);
 	}
 
+	/**
+	 * Set the unit to route
+	 */
+	public void setUnit(SimpleUnit unit){
+		this.unit = unit;
+	}
+	
+	/**
+	 * Set the destination
+	 */
+	public void setDestination(int endX, int endY){
+		this.endX = endX;
+		this.endY = endY;
+	}
+	
+	/**
+	 * Set the path handler
+	 */
+	public void setPathHandler(PathHandler pathHandler){
+		this.pathHandler = pathHandler;
+	}
+	
 	/**
 	 * Calculates the route between two points
 	 */
@@ -368,5 +415,12 @@ public class Pathfinder extends Thread{
 			}
 		else
 			return null;
+	}
+	
+	public void run(){
+		findRoute(unit, endX, endY);
+		unit.setPath(getDirections());
+		this.reset();
+		pathHandler.add(this);
 	}
 }

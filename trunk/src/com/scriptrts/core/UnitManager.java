@@ -162,6 +162,7 @@ public class UnitManager {
         }
 
         unit.progressSpriteAnimation();
+        unit.getOrderHandler().update();
     }
 
 }
