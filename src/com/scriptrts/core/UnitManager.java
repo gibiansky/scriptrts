@@ -76,6 +76,14 @@ public class UnitManager {
     }
 
     /**
+     * Get all units
+     * @return a collection of all units
+     */
+    public Collection<SimpleUnit> allUnits(){
+        return allUnits.values();
+    }
+
+    /**
      * Get all new units
      * @return a list of new units
      */
@@ -86,7 +94,7 @@ public class UnitManager {
     /**
      * Update a single unit with info from the given unit object
      */
-    public void updateUnit(SimpleUnit unit){
+    public void synchronizeUnit(SimpleUnit unit){
         UnitGrid grid = game.getUnitGrid();
 
         /* Get the unit that was on the map, remove it so we can make updates */
@@ -154,8 +162,6 @@ public class UnitManager {
         }
 
         unit.progressSpriteAnimation();
-        
-        unit.getOrderHandler().update();
     }
 
 }

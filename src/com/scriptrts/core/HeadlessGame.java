@@ -17,6 +17,11 @@ public class HeadlessGame {
     protected Map map;
 
     /**
+     * Pathfinder used for all units
+     */
+    protected Pathfinder pathfinder;
+
+    /**
      * Size of the map (length along one edge). This is measured in map tiles, not unit tiles.
      * Each map tile has some number of unit tiles in it (3 as of last check).
      */
@@ -60,6 +65,9 @@ public class HeadlessGame {
         
         /* Create the unit manager */
         unitManager = new UnitManager(this);
+
+        /* Create pathfinder */
+        pathfinder = new Pathfinder(map, grid);
     }
 
     /**
@@ -90,6 +98,14 @@ public class HeadlessGame {
      */
     public Map getCurrentMap(){
         return map;
+    }
+
+    /**
+     * Return the global pathfinder
+     * @return the pathfinder
+     */
+    public Pathfinder getPathfinder(){
+        return pathfinder;
     }
 
     /**
