@@ -161,6 +161,7 @@ public class GameClient {
             Object o = toSend.poll();
             output.writeObject(o);
         }
+        output.writeObject(ServerRequest.Fake);
     }
 
     /**
