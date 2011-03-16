@@ -3,7 +3,7 @@ package com.scriptrts.control;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import com.scriptrts.combat.Unit;
+
 import com.scriptrts.game.SimpleUnit;
 
 public class OrderHandler {
@@ -24,6 +24,8 @@ public class OrderHandler {
     public void handleOrder(Order order){
         if(order instanceof MoveOrder)
             unit.setDestination(((MoveOrder) order).getPoint());
+        if(order instanceof FollowOrder)
+            unit.setDestination(((FollowOrder) order).getPoint());
     }
     
     /**
@@ -31,11 +33,12 @@ public class OrderHandler {
      * If it isn't, keep going. If it is, get next order from queue.
      */
     public void update(){
-        if(orders.peek() instanceof MoveOrder)
-            if(orders.peek().isComplete(unit)){
+        if(orders.peek() instanceof MoveOrder || orders.peek() instanceof FollowOrder)
+            if(orders.peek().isComplete()){
                 orders.poll();
                 this.handleOrder(orders.peek());
-            }
+            } else if(orders.peek() instanceof FollowOrder)
+                handleOrder(orders.peek());
             
     }
     

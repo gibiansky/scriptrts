@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import com.scriptrts.control.FollowOrder;
 import com.scriptrts.control.MoveOrder;
 import com.scriptrts.control.Order;
 import com.scriptrts.control.Selection;
@@ -359,11 +360,21 @@ public class Game extends HeadlessGame {
                 if(unitPainter.getGrid().getUnit(unitTile.x, unitTile.y) == null){
                 	for(SimpleUnit unit : Selection.current().getList()){
                 		if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
-                			unit.getOrderHandler().queueOrder(new MoveOrder(unitTile));
+                			unit.getOrderHandler().queueOrder(new MoveOrder(unitTile, unit));
                 		else
-                			unit.getOrderHandler().order(new MoveOrder(unitTile));
+                			unit.getOrderHandler().order(new MoveOrder(unitTile, unit));
                 	}
+                } else {
+                    for(SimpleUnit unit : Selection.current().getList()){
+                        if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
+                            unit.getOrderHandler().queueOrder(new FollowOrder(unit,
+                                    unitPainter.getGrid().getUnit(unitTile.x, unitTile.y)));
+                        else
+                            unit.getOrderHandler().order(new FollowOrder(unit, 
+                                    unitPainter.getGrid().getUnit(unitTile.x, unitTile.y)));
+                    }
                 }
+                    
             }
             
             /* Scrolling */

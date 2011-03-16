@@ -6,10 +6,11 @@ import com.scriptrts.game.Entity;
 import com.scriptrts.game.SimpleUnit;
 
 public class MoveOrder extends Order implements Comparable<MoveOrder> {
-
+   
     
-    public MoveOrder(Point point){
+    public MoveOrder(Point point, SimpleUnit unit){
         this.point = point;
+        this.unit = unit;
     }
    
     public Point getPoint(){
@@ -30,8 +31,8 @@ public class MoveOrder extends Order implements Comparable<MoveOrder> {
      * @param e unit being moved.
      */
     @Override
-    public boolean isComplete(SimpleUnit e) {
-        return e.getX() == point.getX() && e.getY() == point.getY();
+    public boolean isComplete() {
+        return unit.getX() == point.getX() && unit.getY() == point.getY();
     }
 
     /**
