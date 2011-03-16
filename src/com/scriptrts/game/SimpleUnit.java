@@ -8,6 +8,7 @@ import java.util.Queue;
 import java.util.ArrayList;
 import java.io.Serializable;
 
+import com.scriptrts.core.PathHandler;
 import com.scriptrts.core.Pathfinder;
 import com.scriptrts.core.Main;
 import com.scriptrts.combat.Unit;
@@ -105,9 +106,9 @@ public class SimpleUnit implements Serializable {
 	private int health;
 
 	/**
-	 * Pathfinder used to route this unit
+	 * Path handler used to route this unit
 	 */
-	private transient Pathfinder pathfinder;
+	private transient PathHandler pathHandler;
 
 	/**
 	 * The OrderHandler used to control this unit
@@ -129,14 +130,14 @@ public class SimpleUnit implements Serializable {
 	 * @param direction direction in which the unit is facing originally
 	 * @param shaped if false, this unit takes up one square; if true, it can take up more.
 	 */
-	public SimpleUnit(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, boolean shaped, Pathfinder pathfinder) {
+	public SimpleUnit(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, boolean shaped, PathHandler pathHandler) {
 		this.player = p;
 		this.sprites = sprites;
 		this.speed = speed;
 		this.x = x;
 		this.y = y;
 		this.direction = null;
-		this.pathfinder = pathfinder;
+		this.pathHandler = pathHandler;
 		this.id = idCounter;
 		idCounter++;
 
@@ -165,8 +166,8 @@ public class SimpleUnit implements Serializable {
 	 * @param y unit's starting location y coordinate
 	 * @param direction direction in which the unit is facing originally
 	 */
-	public SimpleUnit(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, Pathfinder pathfinder) {
-		this(p, sprites, artImg, speed, x, y, direction, true, pathfinder);
+	public SimpleUnit(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, PathHandler pathHandler) {
+		this(p, sprites, artImg, speed, x, y, direction, true, pathHandler);
 	}
 
 	/**
@@ -289,10 +290,15 @@ public class SimpleUnit implements Serializable {
 			direction = null;
 			clearPath();
 		}
-		pathfinder.findRoute(this, p.x, p.y);
-		Queue<Direction> directions = pathfinder.getDirections();
-		setPath(directions);
-		pathfinder.reset();
+		if(!pathHandler.isEmpty()){
+			Pathfinder pathfinder = pathHandler.remove();
+			pathfinder.setUnit(this);
+			pathfinder.setDestination(p.x, p.y);
+			Thread runner = new Thread(pathfinder);
+			runner.setPriority(Thread.MIN_PRIORITY);
+			runner.start();
+		} else
+			pathHandler.addPath(this, p);
 	}
 
 	/**

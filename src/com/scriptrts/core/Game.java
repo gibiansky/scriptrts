@@ -254,8 +254,7 @@ public class Game extends HeadlessGame {
                                     25, bY
                                 });
                     }
-
-                    SimpleUnit spaceship = new SimpleUnit(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, true, pathfinder);
+                    SimpleUnit spaceship = new SimpleUnit(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, true, pathHandler);
                     tempUnit = spaceship;
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -430,7 +429,10 @@ public class Game extends HeadlessGame {
                 framesScrolled = 0;
                 increment = SCROLLING_DISTANCE;
             }
-
+            
+            /* Update path handler */
+            //TODO probably not the right place for this, but it works
+            pathHandler.update();
 
         }
     }

@@ -222,7 +222,7 @@ public class GameClient {
                                         });
                             }
 
-                            SimpleUnit spaceship = new SimpleUnit(null, sprites, art, 0, 0, 0, null, true, Main.getGame().getPathfinder());
+                            SimpleUnit spaceship = new SimpleUnit(null, sprites, art, 0, 0, 0, null, true, Main.getGame().getPathHandler());
                             spaceship.setParameters(newUnit);
                             SimpleUnit unit = spaceship;
                             Main.getGame().getUnitGrid().placeUnit(unit, unit.getX(), unit.getY());
