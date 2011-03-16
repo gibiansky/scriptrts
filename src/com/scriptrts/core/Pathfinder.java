@@ -2,7 +2,6 @@ package com.scriptrts.core;
 
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -12,13 +11,7 @@ import com.scriptrts.game.Direction;
 import com.scriptrts.game.SimpleUnit;
 import com.scriptrts.game.UnitGrid;
 
-public class Pathfinder {
-
-	/**
-	 * Unit which the pathfinder is for - unused
-	 */
-	private SimpleUnit unit;
-	
+public class Pathfinder extends Thread{	
 	/**
 	 * Current map instance
 	 */
@@ -40,34 +33,14 @@ public class Pathfinder {
 	private HashMap<TerrainType, Integer> terrainValues;
 	
 	/**
-	 * Open list of ids to be checked
+	 * Open list of nodes to be checked
 	 */
-	private int[] heap;
+	private Node[] heap;
 	
 	/**
-	 * Path lengths corresponding to a given id
+	 * List of nodes corresponding to each unit tile on the map
 	 */
-	private int[] pathLengths;
-	
-	/**
-	 * Coordinates of the point corresponding to a given id
-	 */
-	private int[][] coords;
-	
-	/**
-	 * Whether a point is 1: on the open list, 0: unchecked, -1 checked 
-	 */
-	private int[][] pointChecked;
-	
-	/**
-	 * Parent id of a point (x,y)
-	 */
-	private int[][] parent;
-	
-	/**
-	 * Unique id for each point added to open list
-	 */
-	private int nodeID;
+	private HashMap<Point, Node> nodeList;
 	
 	/**
 	 * Number of points in the open list
@@ -100,11 +73,8 @@ public class Pathfinder {
 		terrainMap = map.getTileArray();
 		unitGrid = g;
 		n = map.getN() * UnitGrid.SPACES_PER_TILE;
-		heap = new int[n * n];
-		pathLengths = new int[n * n];
-		coords = new int[n * n][2];
-		pointChecked = new int[n][n];
-		parent = new int[n][n];
+		heap = new Node[n * n];
+		nodeList = new HashMap<Point, Node>();
 		path = new ArrayList<Point>();
 		directions = new LinkedList<Direction>();
 		setTerrainValues();
@@ -114,20 +84,12 @@ public class Pathfinder {
 	 * Reset and clear path when done
 	 */
 	public void reset(){
-		for(int i = 0; i < nodeID; i++){
-			heap[i] = 0;
-			pathLengths[i] = 0;
-			coords[i][0] = 0;
-			coords[i][1] = 0;
+		for(int i = 0; i < count; i++){
+			heap[i].reset();
 		}
-		for(int i = 0; i < n; i++)
-			for(int j = 0; j < n; j++){
-				pointChecked[i][j] = 0;
-				parent[i][j] = 0;
-			}
+		nodeList.clear();
 		path.clear();
 		directions = new LinkedList<Direction>();
-		nodeID = 0;
 		count = 0;
 	}
 	
@@ -149,65 +111,70 @@ public class Pathfinder {
 	 */
 	public void findRoute(SimpleUnit u, int endX, int endY){
 		
-		int startX = u.getX();
-		int startY = u.getY();
+		Node start = new Node(u.getX(), u.getY());
+		Point end = new Point(endX, endY);
+		
+		if(start.getPoint().equals(end))
+			return;
 
 		/* Add the starting point to the open point list */
-		pointChecked[startX][startY] = 1;
-		coords[nodeID][0] = startX;
-		coords[nodeID][1] = startY;
-		parent[startX][startY] = -1;
-		add();
+		start.setOpen();
+		start.setParent(null);
+		nodeList.put(start.getPoint(), start);
+		add(start);
 		
 		/* While the end point has not been added to the closed list */
-		while(pointChecked[endX][endY] != -1){
+		while(!nodeList.containsKey(end)){
 			
 			/* Find the point with the shortest path length */
-			int shortestPath = remove();
-			int nextX = coords[shortestPath][0];
-			int nextY = coords[shortestPath][1];
-			pointChecked[nextX][nextY] = -1;
+			Node next = remove();
+			
+			/* Add it to the closed list */
+			next.setClosed();
+			nodeList.put(next.getPoint(), next);
 
 			/* Length of path from start point to current point */
-			int currentLength = pathLengths[shortestPath];
-
+			int currentLength = next.getMinPathLength();
+			
 			/* Find the neighbors of the current point */
-			int[][] neighbors = unitGrid.getNeighbors(nextX, nextY);
+			Point[] neighbors = unitGrid.getNeighbors(next.getX(), next.getY());
 			
 			for(int i = 0; i < neighbors.length; i++){
-				int x = neighbors[i][0];
-				int y = neighbors[i][1];
+				Point p = neighbors[i];
 				
 				/* Only check neighbors not on the closed list */
-				if(pointChecked[x][y] != -1){
+				if(!nodeList.containsKey(p) || nodeList.get(p).isOpen()){
+					
+					//System.out.println(p);
 					
 					/* Map tile corresponding to unit grid tile */
-					int[] mapTile = unitGrid.getMapTile(x, y);
+					int[] mapTile = unitGrid.getMapTile(p.x, p.y);
 					
 					/* Increment path length by length of path from current point to neighbor point */
-					double dlength = dist2D(nextX, nextY, x, y) * terrainValues.get(terrainMap[mapTile[0]][mapTile[1]]) + manhattan(x, y, endX, endY);
+					double dlength = dist2D(next.getX(), next.getY(), p.x, p.y) * terrainValues.get(terrainMap[mapTile[0]][mapTile[1]]) + manhattan(p.x, p.y, endX, endY);
 					int newLength = currentLength + (int)dlength;
 
-					/* If neighbor is not on open list, add to open list and update info*/
-					if(pointChecked[x][y] == 0){
-						pointChecked[x][y] = 1;
-						pathLengths[nodeID] = newLength;
-						coords[nodeID][0] = x;
-						coords[nodeID][1] = y;
-						parent[x][y] = shortestPath;
-						add();
+					/* If neighbor is not on open list, add to open list and update info */
+					if(!nodeList.containsKey(p)){
+						Node newNode = new Node(p.x, p.y);
+						newNode.setMinPathLength(newLength);
+						newNode.setOpen();
+						newNode.setParent(next);
+						nodeList.put(p, newNode);
+						add(newNode);
 					}
 
 					/* Otherwise neighbor is on open list, so check if better path exists */
 					else{
 						/* Location in heap */
-						int loc = find(x,y);
-						int oldLength = pathLengths[heap[loc]];
+						int loc = find(p.x,p.y);
+						Node oldNode = heap[loc];
+						int oldLength = oldNode.getMinPathLength();
 						
 						/* If better path exists, update info */
 						if(newLength < oldLength){
-							pathLengths[heap[loc]] = newLength;
-							parent[x][y] = shortestPath;
+							oldNode.setMinPathLength(newLength);
+							oldNode.setParent(next);
 							heapUp(loc);
 						}
 					}
@@ -216,7 +183,7 @@ public class Pathfinder {
 		}
 
 		/* Retrace path starting from endpoint */
-		retrace(endX, endY);
+		retrace(nodeList.get(end));
 	}
 
 	/**
@@ -236,24 +203,23 @@ public class Pathfinder {
 	/**
 	 * Adds element to heap
 	 */
-	private void add(){
-		/* Add current id to end of heap */
-		heap[count] = nodeID;
+	private void add(Node n){		
+		/* Add current node to end of heap */
+		heap[count] = n;
 
 		/* Heap up */
 		heapUp(count);
-
-		/* Increment id and number of open points in heap */
-		nodeID++;
+		
+		/* Increment number of open points in heap */
 		count++;
 	}
 
 	/**
 	 * Removes first element from heap
 	 */
-	private int remove(){
+	private Node remove(){
 		/* Move last element to top of heap */
-		int id = heap[0];
+		Node first = heap[0];
 		heap[0] = heap[count - 1];
 		
 		/* Decrement number of open points in heap */
@@ -262,17 +228,17 @@ public class Pathfinder {
 		/* Heap down */
 		heapDown();
 
-		return id;
+		return first;
 	}
 
 	/**
-	 * Finds the id in the heap corresponding to the point (x,y)
+	 * Finds the node (x,y) in the heap
 	 * @return -1 if not found
 	 */
 	private int find(int x, int y){
 		int loc = -1;
 		for(int i = 0; i < count; i++)
-			if(coords[heap[i]][0] == x && coords[heap[i]][1] == y){
+			if(heap[i].getX() == x && heap[i].getY() == y){
 				loc = i;
 				break;
 			}
@@ -287,8 +253,8 @@ public class Pathfinder {
 		/* Heap up */
 		int i = start;
 		while(i > 0){
-			if(pathLengths[heap[i]] <= pathLengths[heap[(i-1)/2]]){
-				int temp = heap[(i-1)/2];
+			if(heap[i].getMinPathLength() <= heap[(i-1)/2].getMinPathLength()){
+				Node temp = heap[(i-1)/2];
 				heap[(i-1)/2] = heap[i];
 				heap[i] = temp;
 				i = (i-1)/2;
@@ -306,16 +272,16 @@ public class Pathfinder {
 		while(true){
 			int child = parent;
 			if(2*parent + 2 <= count){
-				if(pathLengths[heap[parent]] > pathLengths[heap[2*child + 1]])
+				if(heap[parent].getMinPathLength() > heap[2*child + 1].getMinPathLength())
 					parent = 2*child + 1;
-				if(pathLengths[heap[parent]] > pathLengths[heap[2*child + 2]])
+				if(heap[parent].getMinPathLength() > heap[2*child + 2].getMinPathLength())
 					parent = 2*child + 2;
 			} else if(2*parent + 1 <= count){
-				if(pathLengths[heap[parent]] > pathLengths[heap[2*child + 1]])
+				if(heap[parent].getMinPathLength() > heap[2*child + 1].getMinPathLength())
 					parent = 2*child + 1;
 			}
 			if(parent > child){
-				int temp = heap[child];
+				Node temp = heap[child];
 				heap[child] = heap[parent];
 				heap[parent] = temp;
 			} else
@@ -324,13 +290,13 @@ public class Pathfinder {
 	}
 
 	/**
-	 * Retrace the path starting at the end point (x,y)
+	 * Retrace the path starting at the end node (x,y)
 	 */
-	private void retrace(int x, int y){
-		path.add(0, new Point(x, y));
-		if(parent[x][y] != -1){
-			int parentID = parent[x][y];
-			retrace(coords[parentID][0], coords[parentID][1]);
+	private void retrace(Node n){
+		path.add(0, n.getPoint());
+		if(n.getParent() != null){
+			Node parent = n.getParent();
+			retrace(parent);
 		}
 	}
 
@@ -347,6 +313,8 @@ public class Pathfinder {
 	 e @return directions
 	 */
 	public Queue<Direction> getDirections(){
+		if(path.size() == 0)
+			return directions;
 		Iterator<Point> itr = path.iterator();
 		Point current = (Point) itr.next();
 		Point next = (Point) itr.next();
