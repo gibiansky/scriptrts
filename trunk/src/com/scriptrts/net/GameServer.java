@@ -100,8 +100,8 @@ public class GameServer {
                             /* Store object input and output streams */
                             synchronized(connections){
                                 connections.add(connection);
-                                objectInputs.add(new ObjectInputStream(connection.getInputStream()));
                                 objectOutputs.add(new ObjectOutputStream(connection.getOutputStream()));
+                                objectInputs.add(new ObjectInputStream(connection.getInputStream()));
 
                                 /* Add the player */
                                 addPlayerConnection(connection);
@@ -140,27 +140,25 @@ public class GameServer {
                 Socket toRemove = null;
                 for(Socket socket : connections){
                     try {
-                        if(socket.getInputStream() != null){
-                            ObjectInputStream objIn = objectInputs.get(connections.indexOf(socket));
-                            System.out.println("Reading request.");
-                            ServerRequest request = (ServerRequest) objIn.readObject();
-                            System.out.println("Request " + request);
-                            switch(request){
-                                case PlayerNameChange:
-                                    changeNameRequest(socket, objIn);
-                                    break;
-                                case PlayerColorChange:
-                                    changeColorRequest(socket, objIn);
-                                    break;
-                                case PathAppended:
-                                    pathAppendedRequest(socket, objIn);
-                                    break;
-                                case NewUnit:
-                                    newUnitRequest(socket, objIn);
-                                    break;
-                                default:
-                                    break;
-                            }
+                        ObjectInputStream objIn = objectInputs.get(connections.indexOf(socket));
+                        System.out.println("Reading request.");
+                        ServerRequest request = (ServerRequest) objIn.readObject();
+                        System.out.println("Request " + request);
+                        switch(request){
+                            case PlayerNameChange:
+                                changeNameRequest(socket, objIn);
+                                break;
+                            case PlayerColorChange:
+                                changeColorRequest(socket, objIn);
+                                break;
+                            case PathAppended:
+                                pathAppendedRequest(socket, objIn);
+                                break;
+                            case NewUnit:
+                                newUnitRequest(socket, objIn);
+                                break;
+                            default:
+                                break;
                         }
                     } catch (IOException e){
                         if(e instanceof EOFException || e.getMessage() != null && e.getMessage().trim().equals("Broken pipe"))
@@ -194,7 +192,6 @@ public class GameServer {
                     try {
                         for(Socket socket : connections){
                             try {
-                                /* We can't remove the socket from the list because we're iterating over the list */
                                 if(!socket.isClosed() && socket.getOutputStream() != null){
                                     ObjectOutputStream out = objectOutputs.get(connections.indexOf(socket));
                                     updateClient(out, game.getPlayers().get(connections.indexOf(socket)));
