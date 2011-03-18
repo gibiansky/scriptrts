@@ -188,7 +188,7 @@ public class Main extends JPanel {
         game.init();
         if(serverIP == null){
             server = new GameServer();
-            client = new GameClient();
+            client = null;
             server.start(game);
         } else {
             server = null;
@@ -328,6 +328,7 @@ public class Main extends JPanel {
         /* Create parser */
         CmdLineParser parser = new CmdLineParser();
         CmdLineParser.Option debugOpt = parser.addBooleanOption('d', "debug");
+        CmdLineParser.Option fogOfWarOpt = parser.addBooleanOption('w', "fog-of-war");
         CmdLineParser.Option fullscreenOpt = parser.addBooleanOption('f', "fullscreen");
         CmdLineParser.Option fpsLogOpt = parser.addBooleanOption('l', "logfps");
         CmdLineParser.Option noMapDebugOpt = parser.addBooleanOption("nomapdebug");
@@ -384,6 +385,7 @@ public class Main extends JPanel {
         fpsLogging = (Boolean) parser.getOptionValue(fpsLogOpt,  Boolean.FALSE);
         Script.DISABLE = (Boolean) parser.getOptionValue(noScriptOpt,  Boolean.FALSE);
         MapPainter.NO_MASKING = (Boolean) parser.getOptionValue(noMaskOpt,  Boolean.FALSE);
+        MapPainter.USE_FOG_OF_WAR = (Boolean) parser.getOptionValue(fogOfWarOpt, Boolean.FALSE);
 
         boolean noMap = (Boolean) parser.getOptionValue(noMapDebugOpt,  Boolean.FALSE);
         boolean noUnit = (Boolean) parser.getOptionValue(noUnitDebugOpt,  Boolean.FALSE);
@@ -580,7 +582,7 @@ public class Main extends JPanel {
             catch (Exception e) {}
         }
         /* Initialize scripting engine */
-        if(!Script.initialized()) {
+        if(!Script.initialized() && !Script.DISABLE) {
             Script.initialize();
             Script.exec("import sys");
             Script.exec("sys.path.append('./src/python')");

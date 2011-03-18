@@ -83,6 +83,15 @@ public class UnitManager {
     }
 
     /**
+     * Get the unit with a given ID
+     * @param id unit id
+     * @return unit with the specified ID
+     */
+    public SimpleUnit unitWithID(int id){
+        return allUnits.get(id);
+    }
+
+    /**
      * Get all new units
      * @return a list of new units
      */

@@ -123,6 +123,7 @@ public class Game extends HeadlessGame {
 
         /* Create the player */
         player = new Player("Player-One", Color.MAGENTA);
+        addPlayer(player);
 
         /* Create painters */
         int tileX = 128;

@@ -169,6 +169,7 @@ public class SimpleUnit implements Serializable {
         visibilityRadius = 2;
     }
 
+
     /**
      * Create a new unit that takes up one space
      * @param p player to whom this unit owes allegiance
@@ -180,6 +181,13 @@ public class SimpleUnit implements Serializable {
      */
     public SimpleUnit(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, PathHandler pathHandler) {
         this(p, sprites, artImg, speed, x, y, direction, true, pathHandler);
+    }
+
+    /**
+     * Create a blank unit
+     */
+    public SimpleUnit(){
+        this(null, null, null, 0, 0, 0, null, null);
     }
 
     /**
@@ -282,6 +290,18 @@ public class SimpleUnit implements Serializable {
         animCounter = 0;
     }
 
+    public void setParameters(Player p, int ux, int uy, SpriteState ustate, int uID, int uspd, Direction udir,
+            Direction uPrevDir){
+        player = p;
+        x = ux;
+        y = uy;
+        state = ustate;
+        id = uID;
+        speed = uspd;
+        direction = udir;
+        previousDirection = uPrevDir;
+        animCounter = 0;
+    }
     /**
      * Checks whether this unit can pass over another unit.
      * @param u the unit passing over
@@ -315,9 +335,9 @@ public class SimpleUnit implements Serializable {
         destination = p;
 
         if(path != null){
-            direction = null;
-            clearPath();
+        	direction = null;
         }
+
         if(!pathHandler.isEmpty()){
             Pathfinder pathfinder = pathHandler.remove();
             pathfinder.setUnit(this);
@@ -412,7 +432,8 @@ public class SimpleUnit implements Serializable {
         if(direction == null && path != null && path.peek() != null)
             direction = path.poll();
 
-        Main.getGameClient().sendPathChangedNotification(this, path);
+        if(Main.getGameClient() != null)
+            Main.getGameClient().sendPathChangedNotification(this, path);
     }
 
     /**
@@ -421,7 +442,8 @@ public class SimpleUnit implements Serializable {
     public void clearPath(){
         path.clear();
 
-        Main.getGameClient().sendPathChangedNotification(this, path);
+        if(Main.getGameClient() != null)
+            Main.getGameClient().sendPathChangedNotification(this, path);
     }
 
     /**
@@ -434,7 +456,8 @@ public class SimpleUnit implements Serializable {
         else
             path.add(d);
 
-        Main.getGameClient().sendPathAppendedNotification(this, d);
+        if(Main.getGameClient() != null)
+            Main.getGameClient().sendPathAppendedNotification(this, d);
     }
 
     /**

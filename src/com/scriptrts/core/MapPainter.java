@@ -23,6 +23,10 @@ public class MapPainter {
     public static boolean DEBUG = false;
 
     /**
+     * Whether or not to use fog of war. Initialized to false;
+     */
+    public static boolean USE_FOG_OF_WAR = false;
+    /**
      * Whether to disable masking (for speed purposes). Initialized to false.
      */
     public static boolean NO_MASKING = false;
@@ -580,7 +584,7 @@ public class MapPainter {
                             partVis = true;
 
                 /* If the tile is visible to a unit, paint it normally */
-                if(partVis)
+                if(partVis || !USE_FOG_OF_WAR)
                     graphics.drawImage(image, x - tileX / 2, y, tileX, tileY, null);
                 /* If the tile is not visible to units, paint it black */
                 else

@@ -4,6 +4,7 @@ package com.scriptrts.net;
  */
 public enum ServerResponse {
     OperationSuccess,
+    NewPlayer,
     NameTaken,
     ColorTaken,
     UnitUpdate;
