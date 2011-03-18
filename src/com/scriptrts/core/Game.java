@@ -15,6 +15,7 @@ import com.scriptrts.control.MoveOrder;
 import com.scriptrts.control.Order;
 import com.scriptrts.control.Selection;
 import com.scriptrts.control.SelectionStorage;
+import com.scriptrts.control.StopOrder;
 import com.scriptrts.game.Direction;
 import com.scriptrts.game.SimpleUnit;
 import com.scriptrts.game.Player;
@@ -152,6 +153,7 @@ public class Game extends HeadlessGame {
         manager.registerKeyCode(KeyEvent.VK_DOWN);
         manager.registerKeyCode(KeyEvent.VK_S);
         manager.registerKeyCode(KeyEvent.VK_W);
+        manager.registerKeyCode(KeyEvent.VK_M);
         manager.registerKeyCode(KeyEvent.VK_D);
         manager.registerKeyCode(KeyEvent.VK_1);
         manager.registerKeyCode(KeyEvent.VK_2);
@@ -205,7 +207,7 @@ public class Game extends HeadlessGame {
                 manager.clearKeyCodeFlag(KeyEvent.VK_BACK_QUOTE);
             }
 
-            if(manager.getKeyCodeFlag(KeyEvent.VK_D) || manager.getKeyCodeFlag(KeyEvent.VK_S)){
+            if(manager.getKeyCodeFlag(KeyEvent.VK_D) || manager.getKeyCodeFlag(KeyEvent.VK_M)){
                 placingUnit = !placingUnit;
                 int uSpeed;
                 if(manager.getKeyCodeFlag(KeyEvent.VK_D))
@@ -213,7 +215,7 @@ public class Game extends HeadlessGame {
                 else
                     uSpeed = 5;
 
-                manager.clearKeyCodeFlag(KeyEvent.VK_S);
+                manager.clearKeyCodeFlag(KeyEvent.VK_M);
                 manager.clearKeyCodeFlag(KeyEvent.VK_D);
 
                 Point point = manager.getMouseLocation();
@@ -298,7 +300,9 @@ public class Game extends HeadlessGame {
                 }
                 else{
                     SimpleUnit unit = unitPainter.getUnitAtPoint(point, viewport);
+                    System.out.println(point);
                     if(unit != null) {
+                        
                         /* If already selected and pressing control, deselect */
                         if(manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
                             Selection newCurrent = Selection.current().clone();
@@ -350,6 +354,19 @@ public class Game extends HeadlessGame {
             		SimpleUnit unit = Selection.current().getList().get(size - 1);
             		viewport.setLocation(unitPainter.getUnitCoords(unit, viewport));
             	}
+            }
+            
+            if(manager.getKeyCodeFlag(KeyEvent.VK_S)){
+                manager.clearKeyCodeFlag(KeyEvent.VK_S);
+                if(!Selection.current().getList().isEmpty()){
+                    // I don't think stop should be queueable, if you disagree, uncomment below.
+                    /*if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
+                        for(SimpleUnit unit : Selection.current().getList())
+                            unit.getOrderHandler().queueOrder(new StopOrder(unit));
+                    else*/
+                        for(SimpleUnit unit : Selection.current().getList())
+                            unit.getOrderHandler().order(new StopOrder(unit));
+                }
             }
 
             /* Clicking (to set unit destination) */
