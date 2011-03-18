@@ -37,8 +37,8 @@ public class GameServer {
     /**
      * Store object input and output streams for each player 
      */
-    private Vector<ObjectInputStream> objectInputs = new Vector<ObjectInputStream>();
-    private Vector<ObjectOutputStream> objectOutputs = new Vector<ObjectOutputStream>();
+    private Vector<DataInputStream> objectInputs = new Vector<DataInputStream>();
+    private Vector<DataOutputStream> objectOutputs = new Vector<DataOutputStream>();
 
     /**
      * Running game
@@ -64,9 +64,12 @@ public class GameServer {
             public void run(){
                 try{
                     /* Creates a server socket that lurks about our port waiting for connections */
-                    ServerSocketChannel serverChannel = ServerSocketChannel.open();
-                    serverChannel.configureBlocking(false);
-                    serverChannel.socket().bind(new InetSocketAddress(GameServer.PORT));
+                    /*
+                       ServerSocketChannel serverChannel = ServerSocketChannel.open();
+                       serverChannel.configureBlocking(false);
+                       serverChannel.socket().bind(new InetSocketAddress(GameServer.PORT));
+                       */
+                    ServerSocket serverSocket = new ServerSocket(GameServer.PORT);
 
                     /* Start a new thread to deal with connections */
                     new Thread(new Runnable(){
@@ -92,23 +95,19 @@ public class GameServer {
 
                     /* Keep accepting connections until we're full */
                     while(connections.size() < GameServer.MAX_CONNECTIONS && game != null){
-                        SocketChannel connectionChannel = serverChannel.accept();
+                        Socket connection = serverSocket.accept();
 
-                        if(connectionChannel != null){
-                            Socket connection = connectionChannel.socket();
+                        /* Store object input and output streams */
+                        synchronized(connections){
+                            connections.add(connection);
+                            objectOutputs.add(new DataOutputStream(connection.getOutputStream()));
+                            objectInputs.add(new DataInputStream(connection.getInputStream()));
 
-                            /* Store object input and output streams */
-                            synchronized(connections){
-                                connections.add(connection);
-                                objectOutputs.add(new ObjectOutputStream(connection.getOutputStream()));
-                                objectInputs.add(new ObjectInputStream(connection.getInputStream()));
-
-                                /* Add the player */
-                                addPlayerConnection(connection);
-                                System.out.println("Done initializing player.");
-                            }
-
+                            /* Add the player */
+                            addPlayerConnection(connection);
+                            System.out.println("Done initializing player.");
                         }
+
 
                         try {
                             Thread.sleep(300);
@@ -140,10 +139,8 @@ public class GameServer {
                 Socket toRemove = null;
                 for(Socket socket : connections){
                     try {
-                        ObjectInputStream objIn = objectInputs.get(connections.indexOf(socket));
-                        System.out.println("Reading request.");
-                        ServerRequest request = (ServerRequest) objIn.readObject();
-                        System.out.println("Request " + request);
+                        DataInputStream objIn = objectInputs.get(connections.indexOf(socket));
+                        ServerRequest request = GameProtocol.readRequest(objIn);
                         switch(request){
                             case PlayerNameChange:
                                 changeNameRequest(socket, objIn);
@@ -153,6 +150,9 @@ public class GameServer {
                                 break;
                             case PathAppended:
                                 pathAppendedRequest(socket, objIn);
+                                break;
+                            case PathCleared:
+                                pathClearedRequest(socket, objIn);
                                 break;
                             case NewUnit:
                                 newUnitRequest(socket, objIn);
@@ -193,7 +193,7 @@ public class GameServer {
                         for(Socket socket : connections){
                             try {
                                 if(!socket.isClosed() && socket.getOutputStream() != null){
-                                    ObjectOutputStream out = objectOutputs.get(connections.indexOf(socket));
+                                    DataOutputStream out = objectOutputs.get(connections.indexOf(socket));
                                     updateClient(out, game.getPlayers().get(connections.indexOf(socket)));
                                 }
                             } catch (IOException e){
@@ -226,23 +226,19 @@ public class GameServer {
      * @param output output stream connecting server to client
      * @param player player receiving the update
      */
-    private void updateClient(ObjectOutputStream output, Player player) throws IOException, ClassNotFoundException {
+    private void updateClient(DataOutputStream output, Player player) throws IOException, ClassNotFoundException {
         List<SimpleUnit> updated = game.getUnitManager().updatedUnits();
         List<SimpleUnit> created = game.getUnitManager().newUnits();
         if(updated.size() > 0 || created.size() > 0) {
-            System.out.println("Writing server response.");
-            output.writeObject(ServerResponse.UnitUpdate);
-            System.out.println("Written.");
+            GameProtocol.sendResponse(output, ServerResponse.UnitUpdate);
 
             output.writeInt(created.size());
             for(SimpleUnit unit : created)
-                output.writeObject(unit);
+                GameProtocol.sendUnit(output, unit);
 
             output.writeInt(updated.size());
             for(SimpleUnit unit : updated)
-                output.writeObject(unit);
-
-            output.reset();
+                GameProtocol.sendUnit(output, unit);
         }
     }
 
@@ -252,12 +248,18 @@ public class GameServer {
      */
     private void addPlayerConnection(Socket socket) throws IOException, ClassNotFoundException {
         /* Get player's desired name and color */
-        ObjectInputStream objIn = objectInputs.get(connections.indexOf(socket));
-        String desiredName = (String) objIn.readObject();
-        Color desiredColor = (Color) objIn.readObject();
+        DataInputStream objIn = objectInputs.get(connections.indexOf(socket));
+        System.out.println("PLAYER = " + objIn.available());
+        int desiredID = objIn.readInt();
+        System.out.println("PLAYER = " + objIn.available());
+        String desiredName = GameProtocol.readString(objIn);
+        System.out.println("PLAYER = " + objIn.available());
+        Color desiredColor = GameProtocol.readColor(objIn);
+        System.out.println("PLAYER = " + objIn.available());
 
         String name = desiredName;
         Color color = desiredColor;
+        int id = desiredID;
 
         /* Check if desired name is taken */
         if(nameTaken(name)){
@@ -278,29 +280,44 @@ public class GameServer {
                 }
         }
 
-        Player player = new Player(name, color);
+        /* Check if desired ID is taken */
+        if(idTaken(id)){
+            /* Add a number to the name to make it unique, keep adding until we have a unique ID */
+            while(idTaken(id ++));
+        }
+
+        Player player = new Player(name, color, id);
         game.addPlayer(player);
 
         /* Send back the player color and name */
-        ObjectOutputStream objOut = objectOutputs.get(connections.indexOf(socket));
+        DataOutputStream objOut = objectOutputs.get(connections.indexOf(socket));
         System.out.println("Allowing " + player + " to join.");
-        objOut.writeObject(name);
-        objOut.writeObject(color);
+        objOut.writeInt(id);
+        GameProtocol.sendString(objOut, name);
+        GameProtocol.sendColor(objOut, color);
 
         /* Send back map */
-        objOut.writeObject(game.getCurrentMap());
+        GameProtocol.sendMap(objOut, game.getCurrentMap());
+
+        /* Send back players */
+        for(Player p : Main.getGame().getPlayers()){
+            System.out.println("Writing players " + p);
+            GameProtocol.sendResponse(objOut, ServerResponse.NewPlayer);
+            objOut.writeInt(p.getID());
+            GameProtocol.sendString(objOut, p.getName());
+            GameProtocol.sendColor(objOut, p.getColor());
+        }
 
         /* Send back all units as a unit update */
-        objOut.writeObject(ServerResponse.UnitUpdate);
+        GameProtocol.sendResponse(objOut, ServerResponse.UnitUpdate);
 
         Collection<SimpleUnit> all = game.getUnitManager().allUnits();
         objOut.writeInt(all.size());
         for(SimpleUnit unit : all)
-            objOut.writeObject(unit);
+            GameProtocol.sendUnit(objOut, unit);
 
         objOut.writeInt(0);
         objOut.flush();
-        objOut.reset();
     }
 
     /**
@@ -326,8 +343,8 @@ public class GameServer {
     /**
      * Respond to a request to change a player's name
      */
-    public void changeNameRequest(Socket socket, ObjectInputStream in) throws IOException, ClassNotFoundException {
-        String newName = (String) in.readObject();
+    public void changeNameRequest(Socket socket, DataInputStream in) throws IOException, ClassNotFoundException {
+        String newName = GameProtocol.readString(in);
         Player player = game.getPlayers().get(connections.indexOf(socket));
 
         /* Check if desired name is taken */
@@ -338,16 +355,16 @@ public class GameServer {
         }
 
         if(success)
-            objectOutputs.get(connections.indexOf(socket)).writeObject(ServerResponse.OperationSuccess);
+            GameProtocol.sendResponse(objectOutputs.get(connections.indexOf(socket)), ServerResponse.OperationSuccess);
         else
-            objectOutputs.get(connections.indexOf(socket)).writeObject(ServerResponse.NameTaken);
+            GameProtocol.sendResponse(objectOutputs.get(connections.indexOf(socket)), ServerResponse.NameTaken);
     }
 
     /**
      * Respond to a request to change a player's color
      */
-    public void changeColorRequest(Socket socket, ObjectInputStream in) throws IOException, ClassNotFoundException {
-        Color newColor = (Color) in.readObject();
+    public void changeColorRequest(Socket socket, DataInputStream in) throws IOException, ClassNotFoundException {
+        Color newColor = GameProtocol.readColor(in);
         Player player = game.getPlayers().get(connections.indexOf(socket));
 
         /* Check if desired name is taken */
@@ -358,9 +375,9 @@ public class GameServer {
         }
 
         if(success)
-            objectOutputs.get(connections.indexOf(socket)).writeObject(ServerResponse.OperationSuccess);
+            GameProtocol.sendResponse(objectOutputs.get(connections.indexOf(socket)), ServerResponse.OperationSuccess);
         else
-            objectOutputs.get(connections.indexOf(socket)).writeObject(ServerResponse.ColorTaken);
+            GameProtocol.sendResponse(objectOutputs.get(connections.indexOf(socket)), ServerResponse.ColorTaken);
     }
 
     /**
@@ -368,18 +385,20 @@ public class GameServer {
      * @param socket Socket to get data from
      * @param in input stream to read from
      */
-    public void pathAppendedRequest(Socket socket, ObjectInputStream in) throws IOException, ClassNotFoundException {
-        Integer id = (Integer) in.readObject();
-        Direction dir = (Direction) in.readObject();
-        pathAppendedRequest(id, dir);
-    }
+    public void pathAppendedRequest(Socket socket, DataInputStream in) throws IOException, ClassNotFoundException {
+        int unitID = in.readInt();
+        int dirs = in.readInt();
+        SimpleUnit unit = Main.getGame().getUnitManager().unitWithID(unitID);
 
-    /**
-     * Respond to a appended path request
-     * @param id unique unit id
-     * @param d direction appended to path
-     */
-    public void pathAppendedRequest(Integer id, Direction d){
+        System.out.println("Here: " + unitID + " " + dirs + " " + unit);
+        for(int i = 0; i < dirs; i++){
+            System.out.println("read read read " + i);
+            Direction d = GameProtocol.readDirection(in);
+            System.out.println("path appended server " + unit + " " + d);
+
+            if(unit != null)
+                unit.addToPath(d);
+        }
     }
 
     /**
@@ -387,27 +406,23 @@ public class GameServer {
      * @param socket Socket to get data from
      * @param in input stream to read from
      */
-    public void pathChangedRequest(Socket socket, ObjectInputStream in) throws IOException, ClassNotFoundException {
-        Integer id = (Integer) in.readObject();
-        Queue<Direction> dir = (Queue<Direction>) in.readObject();
-        pathChangedRequest(id, dir);
+    public void pathClearedRequest(Socket socket, DataInputStream in) throws IOException, ClassNotFoundException {
+        int unitID = in.readInt();
+        SimpleUnit unit = Main.getGame().getUnitManager().unitWithID(unitID);
+        System.out.println("path cleared server " + unitID);
+        if(unit != null)
+            unit.clearPath();
     }
-    /**
-     * Respond to a path changed request
-     * @param id unique unit id
-     * @param queue new path
-     */
-    public void pathChangedRequest(Integer id, Queue<Direction> ds){
 
-    }
 
     /**
      * Respond to a new unit request
      * @param socket Socket to get data from
      * @param in input stream to read from
      */
-    private void newUnitRequest(Socket socket, ObjectInputStream in) throws IOException, ClassNotFoundException {
-        SimpleUnit newUnit = (SimpleUnit) in.readObject();
+    private void newUnitRequest(Socket socket, DataInputStream in) throws IOException, ClassNotFoundException {
+        SimpleUnit newUnit = GameProtocol.readUnit(in);
+        System.out.println(Main.getGame().getPlayers());
 
         try {
             /* Retrieve spaceship sprites */
@@ -417,7 +432,7 @@ public class GameServer {
                 String unitDir = "resource/unit/spaceship/";
                 String unitFilename = "Ship" + d.name() + ".png";
                 BufferedImage img = ResourceManager.loadBandedImage(
-                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, Main.getGame().getPlayer().getColor());
+                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, newUnit.getAllegiance().getColor());
                 sprites[d.ordinal()]  = new Sprite(img, 0.3, 87, 25);
             }
 
@@ -425,9 +440,9 @@ public class GameServer {
                 String unitDir = "resource/unit/spaceship/";
                 String unitFilename = "Ship" + d.name() + ".png";
                 BufferedImage normalImg = ResourceManager.loadBandedImage(
-                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, Main.getGame().getPlayer().getColor());
+                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, newUnit.getAllegiance().getColor());
                 BufferedImage attackImg = ResourceManager.loadBandedImage(
-                        unitDir + "attack/" + unitFilename, unitDir + "allegiance/" + unitFilename, Main.getGame().getPlayer().getColor());
+                        unitDir + "attack/" + unitFilename, unitDir + "allegiance/" + unitFilename, newUnit.getAllegiance().getColor());
                 int bX = 87, bY = 25;
                 if(d == Direction.Northwest)
                     bY += 43;
@@ -450,6 +465,7 @@ public class GameServer {
             SimpleUnit unit = spaceship;
             Main.getGame().getUnitGrid().placeUnit(unit, unit.getX(), unit.getY());
             Main.getGame().getUnitManager().addUnit(unit);
+            System.out.println("New Unit ID: " + unit.getID());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -466,6 +482,19 @@ public class GameServer {
                 return true;
         return false;
     }
+
+    /**
+     * Check if a given id is taken.
+     * @param id id to check
+     * @return true if the id is taken
+     */
+    private boolean idTaken(int id){
+        for(Player p : game.getPlayers())
+            if(p.getID() == id)
+                return true;
+        return false;
+    }
+
 
     /**
      * Check if a given color is taken.
@@ -486,9 +515,9 @@ public class GameServer {
         game = null;
 
         synchronized(connections){
-            for(ObjectInputStream in : objectInputs)
+            for(DataInputStream in : objectInputs)
                 in.close();
-            for(ObjectOutputStream out : objectOutputs)
+            for(DataOutputStream out : objectOutputs)
                 out.close();
             for(Socket sock : connections)
                 sock.close();

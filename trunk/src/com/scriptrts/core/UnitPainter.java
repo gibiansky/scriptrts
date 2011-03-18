@@ -213,6 +213,8 @@ public class UnitPainter {
             }
 		}
 
+
+        /* Shows green lines around unit tiles */
         if(UnitPainter.DEBUG && false){
             graphics.setColor(Color.green);
             for(int a = 0; a < UnitGrid.SPACES_PER_TILE; a++)
@@ -228,8 +230,6 @@ public class UnitPainter {
 
                     graphics.drawPolygon(new Polygon(xpts, ypts, 4));
                 }
-
-
         }
 	}
 

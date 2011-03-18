@@ -28,12 +28,12 @@ public class GameClient {
     /**
      * Input from server
      */
-    private ObjectInputStream input;
+    private DataInputStream input;
 
     /**
      * Output to server
      */
-    private ObjectOutputStream output;
+    private DataOutputStream output;
 
     /**
      * Objects to send
@@ -50,16 +50,22 @@ public class GameClient {
                 synchronized(this){
                     connection = new Socket(ip, GameServer.PORT); 
 
-                    output = new ObjectOutputStream(connection.getOutputStream());
-                    input = new ObjectInputStream(connection.getInputStream());
+                    output = new DataOutputStream(connection.getOutputStream());
+                    input = new DataInputStream(connection.getInputStream());
 
                     /* Request name and color */
-                    output.writeObject("Player One");
-                    output.writeObject(java.awt.Color.RED);
+                    output.writeInt(Main.getGame().getPlayer().getID());
+                    GameProtocol.sendString(output, Main.getGame().getPlayer().getName());
+                    GameProtocol.sendColor(output, Main.getGame().getPlayer().getColor());
 
-                    String name = (String) input.readObject();
-                    Color color = (Color) input.readObject();
-                    Map map = (Map) input.readObject();
+                    int id = input.readInt();
+                    String name = GameProtocol.readString(input);
+                    Color color = GameProtocol.readColor(input);
+                    Main.getGame().getPlayer().setName(name);
+                    Main.getGame().getPlayer().setColor(color);
+                    Main.getGame().getPlayer().setID(id);
+
+                    Map map = GameProtocol.readMap(input);
                     Main.getGame().setCurrentMap(map);
                     System.out.println("Done initializing game client.");
                 }
@@ -99,6 +105,16 @@ public class GameClient {
         this("127.0.0.1");
     }
 
+    /**
+     * Tell the client to send a server an object
+     * @param objects what to send
+     */
+    private void sendRequest(Object... objects){
+        synchronized(toSend){
+            for(Object o : objects)
+                toSend.offer(o);
+        }
+    }
 
     /**
      * Tell the client to send a server a request
@@ -132,7 +148,8 @@ public class GameClient {
      * @param d direction added to path
      */
     public void sendPathAppendedNotification(SimpleUnit unit, Direction d){
-        sendRequest(ServerRequest.PathAppended, new Integer(unit.getID()), d);
+        sendRequest(ServerRequest.PathAppended, new Integer(unit.getID()), new Integer(1), d);
+        System.out.println("path appended " + unit.getID() + " " +  1 + " " + d);
     }
 
     /**
@@ -141,7 +158,16 @@ public class GameClient {
      * @param newPath the new path of the unit
      */
     public void sendPathChangedNotification(SimpleUnit unit, Queue<Direction> newPath){
-        sendRequest(ServerRequest.PathChanged, new Integer(unit.getID()), newPath);
+        sendRequest(ServerRequest.PathCleared, new Integer(unit.getID()));
+
+        System.out.println("path cleared " + unit.getID());
+
+        sendRequest(ServerRequest.PathAppended, new Integer(unit.getID()), new Integer(newPath.size()));
+        System.out.println("path appended " + unit.getID() + " "  + newPath.size());
+        for(Direction d : newPath){
+            System.out.println("Dir " + d);
+            sendRequest(d);
+        }
     }
 
     /**
@@ -159,9 +185,21 @@ public class GameClient {
     private void flushRequests() throws IOException {
         while(toSend.peek() != null){
             Object o = toSend.poll();
-            output.writeObject(o);
+            if(o instanceof ServerRequest)
+                GameProtocol.sendRequest(output, (ServerRequest) o);
+            if(o instanceof Map)
+                GameProtocol.sendMap(output, (Map) o);
+            if(o instanceof String)
+                GameProtocol.sendString(output, (String) o);
+            if(o instanceof Color)
+                GameProtocol.sendColor(output, (Color) o);
+            if(o instanceof SimpleUnit)
+                GameProtocol.sendUnit(output, (SimpleUnit) o);
+            if(o instanceof Integer)
+                output.writeInt(((Integer) o).intValue());
+            if(o instanceof Direction)
+                GameProtocol.sendDirection(output, (Direction) o);
         }
-        output.writeObject(ServerRequest.Fake);
     }
 
     /**
@@ -176,15 +214,11 @@ public class GameClient {
             }
 
             synchronized(this){
-                System.out.println("Reading.");
-                ServerResponse serverResponse = (ServerResponse) input.readObject();
-                System.out.println("Read.");
+                ServerResponse serverResponse = GameProtocol.readResponse(input);
                 if(serverResponse == ServerResponse.UnitUpdate){
-                    System.out.println("Reading as UnitUpdate");
                     int sizeNew = input.readInt();
-                    System.out.println("NEW " + sizeNew);
                     for(int i = 0; i < sizeNew; i++) {
-                        SimpleUnit newUnit = (SimpleUnit) input.readObject();
+                        SimpleUnit newUnit = GameProtocol.readUnit(input);
 
                         try {
                             /* Retrieve spaceship sprites */
@@ -194,7 +228,7 @@ public class GameClient {
                                 String unitDir = "resource/unit/spaceship/";
                                 String unitFilename = "Ship" + d.name() + ".png";
                                 BufferedImage img = ResourceManager.loadBandedImage(
-                                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, Main.getGame().getPlayer().getColor());
+                                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, newUnit.getAllegiance().getColor());
                                 sprites[d.ordinal()]  = new Sprite(img, 0.3, 87, 25);
                             }
 
@@ -202,9 +236,9 @@ public class GameClient {
                                 String unitDir = "resource/unit/spaceship/";
                                 String unitFilename = "Ship" + d.name() + ".png";
                                 BufferedImage normalImg = ResourceManager.loadBandedImage(
-                                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, Main.getGame().getPlayer().getColor());
+                                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, newUnit.getAllegiance().getColor());
                                 BufferedImage attackImg = ResourceManager.loadBandedImage(
-                                        unitDir + "attack/" + unitFilename, unitDir + "allegiance/" + unitFilename, Main.getGame().getPlayer().getColor());
+                                        unitDir + "attack/" + unitFilename, unitDir + "allegiance/" + unitFilename, newUnit.getAllegiance().getColor());
                                 int bX = 87, bY = 25;
                                 if(d == Direction.Northwest)
                                     bY += 43;
@@ -233,13 +267,20 @@ public class GameClient {
                     }
 
                     int sizeUpdated = input.readInt();
-                    System.out.println("UPDATE " + sizeUpdated);
                     for(int i = 0; i < sizeUpdated; i++) {
-                        SimpleUnit updatedUnit = (SimpleUnit) input.readObject();
+                        SimpleUnit updatedUnit = GameProtocol.readUnit(input);
                         Main.getGame().getUnitManager().synchronizeUnit(updatedUnit);
                     }
 
-                    System.out.println("Done reading unitupdate");
+                }
+                if(serverResponse == ServerResponse.NewPlayer){
+                    int id = input.readInt();
+                    String name = GameProtocol.readString(input);
+                    Color color = GameProtocol.readColor(input);
+                    Player p = new Player(name, color, id);
+                    System.out.println("Received Player " + p);
+                    if(!Main.getGame().getPlayers().contains(p))
+                        Main.getGame().getPlayers().add(p);
                 }
             }
         }

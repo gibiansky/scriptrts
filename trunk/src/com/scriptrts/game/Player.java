@@ -12,6 +12,11 @@ public class Player implements Serializable {
     };
 
     /**
+     * Player's unique ID
+     */
+    private int id;
+
+    /**
      * Player's unique name
      */
     private String name;
@@ -27,11 +32,17 @@ public class Player implements Serializable {
      */
     private byte[][] visibilityGrid;
     
-    public Player(String name, Color color) {
+    public Player(String name, Color color, int id){
         this.name = name;
         this.color = color;
+        this.id = id;
+
         int n = Main.getGame().getCurrentMap().getN() * UnitGrid.SPACES_PER_TILE;
         visibilityGrid = new byte[n][n];
+    }
+    
+    public Player(String name, Color color) {
+        this(name, color, (int)(Math.random() * 100000));
     }
 
     public byte[][] getVisibilityGrid() {
@@ -52,6 +63,14 @@ public class Player implements Serializable {
     public Color getColor(){
         return color;
     }
+
+    /**
+     * Get player id
+     * @return player id
+     */
+    public int getID(){
+        return id;
+    }
  
     /**
      * Set player name
@@ -65,6 +84,14 @@ public class Player implements Serializable {
     public void setColor(Color c){
         color = c;
     }   
+
+    /**
+     * Set player id
+     */
+    public void setID(int i){
+        id = i;
+    }   
+
     /**
      * Test for equality between players using name
      * @param p player to test equality against
@@ -78,7 +105,7 @@ public class Player implements Serializable {
      * Print a player in string form
      */
     public String toString(){
-        return "Player " + name + " (" + color + ")";
+        return "Player " + name + " (" + color + ") ID " + getID();
 
     }
 }
