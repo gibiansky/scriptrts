@@ -26,6 +26,10 @@ public class OrderHandler {
             unit.setDestination(((MoveOrder) order).getPoint());
         if(order instanceof FollowOrder)
             unit.setDestination(((FollowOrder) order).getPoint());
+        if(order instanceof StopOrder){
+            orders.clear();
+            unit.setDestination(unit.getLocation());
+        }
     }
     
     /**
@@ -39,6 +43,8 @@ public class OrderHandler {
                 this.handleOrder(orders.peek());
             } else if(orders.peek() instanceof FollowOrder)
                 handleOrder(orders.peek());
+        if(orders.peek() instanceof StopOrder)
+            handleOrder(orders.peek());
             
     }
     

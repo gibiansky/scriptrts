@@ -568,6 +568,14 @@ public class SimpleUnit implements Serializable {
     public void setY(int y) {
         this.y = y;
     }
+    
+    /**
+     * Get the location of the unit
+     * @return Point p -- the location of this unit
+     */
+    public Point getLocation(){
+        return new Point(x, y);
+    }
 
     /**
      * Get all the x coordinates of the current shape

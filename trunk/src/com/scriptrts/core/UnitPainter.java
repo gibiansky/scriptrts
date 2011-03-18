@@ -370,7 +370,7 @@ public class UnitPainter {
     public SimpleUnit getUnitAtPoint(Point point, Viewport viewport){
         /* Treat a point as a very small rectangle of height and width 1 pixel */
         Point deltaPoint = new Point(point);
-        point.translate(1, 1);
+        point.translate(20, 20);
 
         /* Return the foremost unit */
         SimpleUnit[] unitsAtPoint = getUnitsInRect(point, deltaPoint, viewport);
