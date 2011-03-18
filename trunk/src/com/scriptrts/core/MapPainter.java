@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import com.scriptrts.util.ResourceManager;
+import com.scriptrts.game.UnitGrid;
 
 /**
  * Painter which displays map terrain tiles on the screen.
@@ -94,15 +95,15 @@ public class MapPainter {
      * Flags that dictate the order that the masks are stored in the mask arrays 
      */
     private static final int MASK_TOP = 0, MASK_BOTTOM = 1, MASK_LEFT = 2, MASK_RIGHT = 3,
-                             MASK_TOP_LEFT = 4, MASK_TOP_RIGHT = 5, MASK_BOTTOM_LEFT = 6, MASK_BOTTOM_RIGHT = 7;
+            MASK_TOP_LEFT = 4, MASK_TOP_RIGHT = 5, MASK_BOTTOM_LEFT = 6, MASK_BOTTOM_RIGHT = 7;
 
     /**
      * An array which we can loop over to iterate over all mask types
      */
     private static final int[] MASKS = 
-        {
-            MASK_TOP, MASK_BOTTOM, MASK_LEFT, MASK_RIGHT, MASK_TOP_LEFT, MASK_TOP_RIGHT, MASK_BOTTOM_LEFT, MASK_BOTTOM_RIGHT
-        };
+    {
+        MASK_TOP, MASK_BOTTOM, MASK_LEFT, MASK_RIGHT, MASK_TOP_LEFT, MASK_TOP_RIGHT, MASK_BOTTOM_LEFT, MASK_BOTTOM_RIGHT
+    };
 
     /**
      * An array of black and white layer mask images that are applied to textures to create the necessary masks 
@@ -504,29 +505,29 @@ public class MapPainter {
      * @param viewport viewport that is being used to view map
      * @return (i, j) map coordinates of tile that was clicked on
      */
-    
+
     public Point getTileAtPoint(Point point, Viewport viewport){   	
-    	int mapHeight = tileY * Main.getGame().getCurrentMap().getN();
-    	
-    	/* Avoid modifying the input point, in case they will be used later by the caller */
-    	point = new Point(point);
-    	/* Point in map coordinates */
-    	point.translate(viewport.getX(), viewport.getY());
-    	
-    	/* Solve the linear transformation */
-    	double term1 = (double) (point.x) / (double) (tileX / 2);
-    	double term2 = (double) (point.y - mapHeight / 2) / (double) (tileY / 2);
-    	
-    	int mapX = (int) ((term1 + term2) / 2);
-    	int mapY = (int) ((term1 - term2) / 2);
-    	
-    	/* If tile is not on map, return null */
-    	if(mapX < 0 || mapX > Main.getGame().getCurrentMap().getN() || mapY < 0 || mapY > Main.getGame().getCurrentMap().getN())
-    		return null;
-    	
-    	Point mapTile = new Point(mapX, mapY);
-    	
-    	return mapTile;
+        int mapHeight = tileY * Main.getGame().getCurrentMap().getN();
+
+        /* Avoid modifying the input point, in case they will be used later by the caller */
+        point = new Point(point);
+        /* Point in map coordinates */
+        point.translate(viewport.getX(), viewport.getY());
+
+        /* Solve the linear transformation */
+        double term1 = (double) (point.x) / (double) (tileX / 2);
+        double term2 = (double) (point.y - mapHeight / 2) / (double) (tileY / 2);
+
+        int mapX = (int) ((term1 + term2) / 2);
+        int mapY = (int) ((term1 - term2) / 2);
+
+        /* If tile is not on map, return null */
+        if(mapX < 0 || mapX > Main.getGame().getCurrentMap().getN() || mapY < 0 || mapY > Main.getGame().getCurrentMap().getN())
+            return null;
+
+        Point mapTile = new Point(mapX, mapY);
+
+        return mapTile;
     }
 
     /**
@@ -567,8 +568,23 @@ public class MapPainter {
 
                 /* Draw the tile */
                 Image image = scaledImages[terrain[i][j]];
-                graphics.drawImage(image, x - tileX / 2, y, tileX, tileY, null);
+                
+                byte[][] vis = Main.getGame().getPlayer().getVisibilityGrid();
 
+                /* Figure out if any part of the tile is visible,
+                 * and if it is, make the whole map tile visible */
+                boolean partVis = false;
+                for(int k = 0; k < UnitGrid.SPACES_PER_TILE; k++)
+                    for(int l = 0; l < UnitGrid.SPACES_PER_TILE; l++)
+                        if(vis[i * UnitGrid.SPACES_PER_TILE + k][j * UnitGrid.SPACES_PER_TILE + l] == 2)
+                            partVis = true;
+
+                /* If the tile is visible to a unit, paint it normally */
+                if(partVis)
+                    graphics.drawImage(image, x - tileX / 2, y, tileX, tileY, null);
+                /* If the tile is not visible to units, paint it black */
+                else
+                    graphics.drawImage(blackImage, x - tileX / 2, y, tileX, tileY, null);
 
                 /* Don't mask above a certain zoom level */
                 if(!NO_MASKING)
