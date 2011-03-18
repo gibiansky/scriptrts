@@ -41,7 +41,6 @@ public class UnitManager {
      */
     private List<SimpleUnit> newUnits = new ArrayList<SimpleUnit>(100);
 
-
     /**
      * Create a new unit manager
      * @param g game instance for which units are being managed
@@ -124,6 +123,20 @@ public class UnitManager {
         UnitGrid grid = game.getUnitGrid();
         int n = game.getCurrentMap().getN() * UnitGrid.SPACES_PER_TILE;
 
+        /* Check if any movement is occurring this update */
+        boolean needsReset = false;
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < n; j++) {
+                if(grid.getUnit(i, j) != null && grid.getUnit(i, j).getX() == i && grid.getUnit(i, j).getY() == j)  
+                    if(grid.getUnit(i, j).getSpeed() != 0 && grid.getUnit(i, j).getDirection() != null)  
+                        needsReset = true;
+            }
+        }
+
+        /* If movement is occurring, reset the visibility grid */
+        if(needsReset)
+            resetVisibilityGrid();
+
         /* Loop over all unit positions, update where there are units */
         for(int i = 0; i < n; i++){
             for(int j = 0; j < n; j++){
@@ -144,25 +157,48 @@ public class UnitManager {
 
         SimpleUnit unit = grid.getUnit(i, j);
 
+        boolean needsVisibilityUpdate = false;
+
         /* Unit speed is in subtiles per second */
         int uSpeed = unit.getSpeed();
-        double subtilesMovedPerFrame = (double)(uSpeed) /* subtiles per second */ / fps /* times seconds */;
+        if(unit.getSpeed() != 0 && unit.getDirection() != null) {
+            double subtilesMovedPerFrame = (double)(uSpeed) /* subtiles per second */ / fps /* times seconds */;
 
-        int tilesMoved = unit.incrementAnimationCounter(subtilesMovedPerFrame);
+            int tilesMoved = unit.incrementAnimationCounter(subtilesMovedPerFrame);
 
-        /* Move it however many tiles it wants to be moved if this is the server;
-         * the client will change positions when the server sends updated data. */
-        if(Main.getGameServer() != null){
-            while(tilesMoved > 0){
-                boolean moveSucceeded = grid.moveUnitOneTile(unit);
-                tilesMoved--;
+            needsVisibilityUpdate = tilesMoved > 0;
 
-                setUnitUpdated(unit);
+            /* Move it however many tiles it wants to be moved if this is the server;
+             * the client will change positions when the server sends updated data. */
+            if(Main.getGameServer() != null){
+                while(tilesMoved > 0){
+                    boolean moveSucceeded = grid.moveUnitOneTile(unit);
+                    tilesMoved--;
+
+                    setUnitUpdated(unit);
+                }
             }
         }
+
+        /* Retrieve the visibility grid */
+        byte[][] vGrid = Main.getGame().getPlayer().getVisibilityGrid();
+
+        /* If the unit moved, set its new position to visible */
+        if(needsVisibilityUpdate)  
+            vGrid[unit.getX()][unit.getY()] = 2; 
 
         unit.progressSpriteAnimation();
         unit.getOrderHandler().update();
     }
 
+    /**
+     * Resets the visibility grid for the player before each update
+     */
+    private void resetVisibilityGrid() {
+        byte[][] grid = Main.getGame().getPlayer().getVisibilityGrid();
+        for(int i = 0; i < grid.length; i++)
+            for(int j = 0; j < grid[i].length; j++)
+                if(grid[i][j] == 2)
+                    grid[i][j] = 1;
+    }
 }

@@ -3,6 +3,8 @@ package com.scriptrts.game;
 import java.awt.Color;
 import java.io.Serializable;
 
+import com.scriptrts.core.Main;
+
 public class Player implements Serializable {
     /* Available default colors */
     public static Color[] COLORS = {
@@ -18,10 +20,22 @@ public class Player implements Serializable {
      * Player's unique color
      */
     private Color color;
+
+    /**
+     * Stores visibility data about each map tile. 0 means unexplored,
+     * 1 means no recent data, 2 means visible to some unit
+     */
+    private byte[][] visibilityGrid;
     
     public Player(String name, Color color) {
         this.name = name;
         this.color = color;
+        int n = Main.getGame().getCurrentMap().getN() * UnitGrid.SPACES_PER_TILE;
+        visibilityGrid = new byte[n][n];
+    }
+
+    public byte[][] getVisibilityGrid() {
+        return visibilityGrid;
     }
 
     /**
