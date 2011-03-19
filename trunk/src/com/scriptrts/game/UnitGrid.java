@@ -1,226 +1,137 @@
 package com.scriptrts.game;
 
 import java.awt.Point;
+import java.util.Queue;
+import java.util.LinkedList;
 import com.scriptrts.core.Minimap;
 
 /**
  * Stores the locations of all the units on the map.
  */
 public class UnitGrid {
-	/** 
-	 * How many of the smallest unit can fit along one side of each map tile
-	 */
+    /** 
+     * How many of the smallest unit can fit along one side of each map tile
+     */
     public final static int SPACES_PER_TILE = 3;
 
     /**
      * Size of the map.
      */
-	private int n;
+    private int n;
 
     /**
      * Array of units representing the map.
      */
-	private SimpleUnit[][] unitGrid;
-	
+    private SimpleUnit[][] grid;
+
+    /**
+     * Array holding reservations: if null, this tile is unreserved; if non-null, the tile
+     * is reserved for the unit which is in the tile location.
+     */
+    private SimpleUnit[][] reserved;
+
     /**
      * Create a new unit grid.
      * @param n size of the map.
      */
-	public UnitGrid(int n) {
-		this.n = n * SPACES_PER_TILE;
-		unitGrid = new SimpleUnit[this.n][this.n];
-	}
+    public UnitGrid(int n) {
+        this.n = n * SPACES_PER_TILE;
+        grid = new SimpleUnit[this.n][this.n];
+        reserved = new SimpleUnit[this.n][this.n];
+    }
 
     /**
      * Attempt to move the unit onto its destination tile. 
      * @return true if movement successful, false if movement was stalled
      */
-    public boolean moveUnitOneTile(SimpleUnit unit){
-        Direction d = unit.getDirection();
-        if(d == null) {
-            Direction nextDirection = unit.peekNextDirection();
-            if(canMove(unit, nextDirection))
-                unit.updateDirection();
-            else
-                unit.clearPath();
-            return false;
-        }
+    public void moveUnitOneTile(SimpleUnit unit){
+        /* Get the direction the unit is currently moving in, the direction in which 
+         * it should move after this method is finished, and the direction it will turn
+         * in after the next move is finished
+         */
+        Direction current = unit.getDirection();
+        Direction next = unit.getNextDirection();
+        Direction subsequent = unit.getSubsequentDirection();
 
-        int delX = 0, delY = 0;
-        switch(d){
-            case North:
-                delY = 1; 
-                break;
-            case Northeast:
-                delX = delY = 1; 
-                break;
-            case East:
-                delX = 1; 
-                break;
-            case Southeast:
-                delX = 1;
-                delY = -1; 
-                break;
-            case South:
-                delY = -1;
-                break;
-            case Southwest:
-                delY = -1;
-                delX = -1;
-                break;
-            case West:
-                delX = -1; 
-                break;
-            case Northwest:
-            default:
-                delX = -1;
-                delY = 1;
-                break;
-        }
+        /* Get the offsets for each of the directions retrieved above */
+        Point currentOffset = getDirectionOffset(current);
+        Point nextOffset = getDirectionOffset(next);
+        Point subsequentOffset = getDirectionOffset(subsequent);
 
-        /* Remove the unit from the map and place it's new center */
-        removeUnit(unit);
-        unit.setX(unit.getX() + delX);
-        unit.setY(unit.getY() + delY);
-
-        /* Check if the place where it's going is taken */
-        Direction nextDirection = unit.peekNextDirection();
-        if(canMove(unit, nextDirection)){
-            /* Change the orientation of the unit */
+        /* If the unit is stationary and isn't going to start moving */
+        if(current == null && next == null){
+            /* Just update the direction so that on the next call, this unit might start moving */
             unit.updateDirection();
-
-            /* Put a reservation on the tiles which the unit will occupy later */
-            reserveNextUnitLocation(unit, unit.getDirection(), unit.peekNextDirection());
-        }
-        else {
-            unit.setDirection(null);
-            unit.clearPath();
-            unit.setState(SpriteState.Attack);
-        }
-
-        /* Place the unit, in its new orientation, on the map */
-        placeUnit(unit, unit.getX(), unit.getY());
-
-        return true;
-    }
-
-    /**
-     * Figure out whether the unit can move in the specified direction. This direction has to be along the unit's path.
-     * @return true if the unit can move there, false otherwise;
-     */
-    private boolean canMove(SimpleUnit unit, Direction nextDirection){
-        if(nextDirection == null)
-            return true;
-
-        /* Calculate location of next tile */
-        int delX = 0, delY = 0;
-        switch(nextDirection){
-            case North:
-                delY = 1; 
-                break;
-            case Northeast:
-                delX = delY = 1; 
-                break;
-            case East:
-                delX = 1; 
-                break;
-            case Southeast:
-                delX = 1;
-                delY = -1; 
-                break;
-            case South:
-                delY = -1;
-                break;
-            case Southwest:
-                delY = -1;
-                delX = -1;
-                break;
-            case West:
-                delX = -1; 
-                break;
-            case Northwest:
-            default:
-                delX = -1;
-                delY = 1;
-                break;
-        }
-
-        Point[] newShape = unit.getShape(nextDirection);
-        for(Point p : newShape)
-            if(spaceTakenFor(unit.getX() + delX + p.x, unit.getY() + delY + p.y, unit))
-                    return false;
-
-        return true;
-    }
-
-    /**
-     * Reserve a unit location for a given unit. This prevents units from attempting to move into that location.
-     * @param unit the unit for which to reserve area
-     * @param moving which direction the unit is moving in right now
-     * @param turnAfterMove which direction the unit will move in after it finishes the current move
-     */
-    private void reserveNextUnitLocation(SimpleUnit unit, Direction moving, Direction turnAfterMove){
-        if(moving == null)
             return;
-
-        /* Calculate location of next tile */
-        int delX = 0, delY = 0;
-        switch(moving){
-            case North:
-                delY = 1; 
-                break;
-            case Northeast:
-                delX = delY = 1; 
-                break;
-            case East:
-                delX = 1; 
-                break;
-            case Southeast:
-                delX = 1;
-                delY = -1; 
-                break;
-            case South:
-                delY = -1;
-                break;
-            case Southwest:
-                delY = -1;
-                delX = -1;
-                break;
-            case West:
-                delX = -1; 
-                break;
-            case Northwest:
-            default:
-                delX = -1;
-                delY = 1;
-                break;
         }
 
-        /* Reserve the location to which the unit will move */
-        if(moving != null){
-            /* Reserve locations */
-            Point[] points = unit.getShape(moving);
-            for(Point p : points)
-                reserveLoc(unit, unit.getX() + p.x + delX, unit.getY() + p.y + delY);
+        /* If the unit is moving, move it */
+        if(current != null){
+            removeUnit(unit);
+            unit.setX(unit.getX() + currentOffset.x);
+            unit.setY(unit.getY() + currentOffset.y);
+            placeUnit(unit);
         }
 
-        /* Reserve the location to which the unit will turn after moving */
-        if(turnAfterMove != null){
-            /* Reserve locations */
-            Point[] points = unit.getShape(turnAfterMove);
-            for(Point p : points)
-                reserveLoc(unit, unit.getX() + p.x + delX, unit.getY() + p.y + delY);
-        }
+        /* If the unit wants to move */
+        if(next != null) {
+            /* Check if the unit can:
+             *     turn in the direction it wants to move in AND
+             *     move in the direction it wants to move in (after turning)
+             */
+            if(canPlaceUnit(unit, unit.getX(), unit.getY(), next) && canPlaceUnit(unit, unit.getX() + nextOffset.x, unit.getY() + nextOffset.y, next)){
+                placeReservation(unit, unit.getX(), unit.getY(), next);
+
+                /* Re-orient the unit in its new facing direction */
+                removeUnit(unit);
+                unit.updateDirection();
+                placeUnit(unit);
+            }
+            else
+                stopUnit(unit);
+        } else
+            unit.updateDirection();
     }
 
     /**
-     * Reserve a specific spot in the unit grid.
-     * @param unit the unit for which to reserve the spot
-     * @param i x coordinate of spot
-     * @param j y coordinate of spot
+     * Find the offset in the given direction on the unit grid
+     * @param d direction in which to move
+     * @return point with x, y offsets
      */
-    private void reserveLoc(SimpleUnit unit, int i, int j){
-        unitGrid[i][j] = new ReserveUnit(unit);
+    private Point getDirectionOffset(Direction d){
+        int delX = 0, delY = 0;
+        if(d != null)
+            switch(d){
+                case North:
+                    delY = 1; 
+                    break;
+                case Northeast:
+                    delX = delY = 1; 
+                    break;
+                case East:
+                    delX = 1; 
+                    break;
+                case Southeast:
+                    delX = 1;
+                    delY = -1; 
+                    break;
+                case South:
+                    delY = -1;
+                    break;
+                case Southwest:
+                    delY = -1;
+                    delX = -1;
+                    break;
+                case West:
+                    delX = -1; 
+                    break;
+                case Northwest:
+                default:
+                    delX = -1;
+                    delY = 1;
+                    break;
+            }
+        return new Point(delX, delY);
     }
 
     /**
@@ -230,41 +141,27 @@ public class UnitGrid {
      * @return unit at specified coordinates
      */
     public SimpleUnit getUnit(int i, int j){
-        if(unitGrid[i][j] instanceof ReserveUnit)
-            return null;
-
-        return unitGrid[i][j];
+        return grid[i][j];
     }
 
     /**
      * Check whether the given unit can move to the specified spot.
      * @param i x coordinate of spot
      * @param j y coordinate of spot
-     * @param unit the unit for which to check
+     * @param unit the unit for which to check. If this is null, then it checks whether this spot is taken for any unit.
      */
     public boolean spaceTakenFor(int i, int j, SimpleUnit unit){
-        SimpleUnit u = unitGrid[i][j];
-        if(u == null)
-            return false;
-        if(u == unit)
-            return false;
-        if(u instanceof ReserveUnit && ((ReserveUnit) u).getOriginal() == unit)
-            return false;
+        /* If the unit for which we're checking is null, then just check if this space is taken at all */
+        if(unit == null)
+            return reserved[i][j] != null;
 
-        return true;
-    }
-
-    /**
-     * Set a location in the unit grid to a given unit.
-     * @param unit the unit 
-     * @param i x coordinate of spot
-     * @param j y coordinate of spot
-     */
-    private void setUnit(SimpleUnit unit, int i, int j){
-        if(!(unit instanceof ReserveUnit))
-            unitGrid[i][j] = unit;
-
-        Minimap.updateMinimap();
+        boolean empty = (reserved[i][j] == null);
+        if(empty)
+            return false;
+        else if(reserved[i][j] == unit)
+            return false;
+        else
+            return true;
     }
 
     /**
@@ -274,22 +171,21 @@ public class UnitGrid {
      * @param j y coordinate of spot
      */
     public void placeUnit(SimpleUnit unit, int i, int j){
-        Point[] points = unit.getCurrentShape();
         unit.setX(i);
         unit.setY(j);
+        placeUnit(unit);
+    }
+
+
+    /**
+     * Place a unit in its position
+     * @param unit the unit 
+     */
+    public void placeUnit(SimpleUnit unit){
+        Point[] points = unit.getCurrentShape();
 
         for(Point p : points)
             setUnit(unit, unit.getX() + p.x, unit.getY() + p.y);
-    }
-
-    /**
-     * Check if this spot is reserved.
-     * @param i x coordinate of spot
-     * @param j y coordinate of spot
-     * @return whether this spot is reserved
-     */
-    public boolean reserved(int i, int j){
-        return unitGrid[i][j] instanceof ReserveUnit;
     }
 
     /**
@@ -301,87 +197,145 @@ public class UnitGrid {
         for(Point p : points)
             setUnit(null, unit.getX() + p.x, unit.getY() + p.y);
     }
-    
+
     /**
      * Get the neighbors of a point
-	 * @return the neighbors of a given point
-	 */
-	public Point[] getNeighbors(int x, int y){
-		Point[] neighbors;
-		int count = 0;
-		if(!this.contains(x,y))
-			return null;
-		if(x == 0 || x == n - 1)
-			if(y == 0 || y == n - 1)
-				neighbors = new Point[3];
-			else
-				neighbors = new Point[5];
-		else if(y == 0 || y == n - 1)
-			neighbors = new Point[5];
-		else
-			neighbors = new Point[8];
-		for(int i = x - 1; i <= x + 1; i++)
-			for(int j = y - 1; j <= y + 1; j++){
-				if(this.contains(i,j) && !(x == i && y == j)){
-					neighbors[count] = new Point(i,j);
-					count++;
-				}
-			}
-		return neighbors;
-	}
-    
-	/**
-     * Check whether the unit grid contains a given point
-	 * @return if the unit grid contains a given point
-	 */
-	
-	public boolean contains(int x, int y){
-		if(0 <= x && x <= n-1 && 0 <= y && y <= n-1)
-			return true;
-		return false;
-	}
-    
+     * @return the neighbors of a given point
+     */
+    public Point[] getNeighbors(int x, int y){
+        Point[] neighbors;
+        int count = 0;
+        if(!this.contains(x,y))
+            return null;
+        if(x == 0 || x == n - 1)
+            if(y == 0 || y == n - 1)
+                neighbors = new Point[3];
+            else
+                neighbors = new Point[5];
+        else if(y == 0 || y == n - 1)
+            neighbors = new Point[5];
+        else
+            neighbors = new Point[8];
+        for(int i = x - 1; i <= x + 1; i++)
+            for(int j = y - 1; j <= y + 1; j++){
+                if(this.contains(i,j) && !(x == i && y == j)){
+                    neighbors[count] = new Point(i,j);
+                    count++;
+                }
+            }
+        return neighbors;
+    }
+
     /**
      * Get the map tile corresponding to the unit tile
      */
     public int[] getMapTile(int x, int y){
-    	int[] mapTile = {x / SPACES_PER_TILE, y / SPACES_PER_TILE};
-    	return mapTile;
-    }
-}
-
-/**
- * "Fake" unit used by the UnitGrid to reserve spots in the grid.
- */
-class ReserveUnit extends SimpleUnit {
-    /**
-     * Which unit this spot is reserved for.
-     */
-    private SimpleUnit reserve;
-
-    /**
-     * Create a new reserve unit.
-     * @param  reserveFor which unit to reserve the spot for.
-     */
-    public ReserveUnit(SimpleUnit reserveFor){
-        super(reserveFor.getAllegiance(), null, null, 0, 0, 0, null, null);
-        reserve = reserveFor;
+        int[] mapTile = {x / SPACES_PER_TILE, y / SPACES_PER_TILE};
+        return mapTile;
     }
 
     /**
-     * Check whether the specified unit can pass over this reserve unit.
-     * @param u unit which wants to pass over this unit
-     * @return whether the unit can pass the reserved spot
+     * Tell the unit grid that the path of this unit has changed.
+     * @param unit unit for which path has changed
+     * @param previousPath previous path this unit had
      */
-    public boolean isPassable(SimpleUnit u){
-        return reserve.isPassable(u);
+    public void unitPathChanged(SimpleUnit unit, Queue<Direction> newPath){
+        /* Clear all reservations */
+        for(int i = 0; i < reserved.length; i++)
+            for(int j = 0; j < reserved[i].length; j++)
+                if(reserved[i][j] == unit){
+                    reserved[i][j] = null;
+                    grid[i][j] = null;
+                }
+
+        /* Reserve where the unit is */
+        placeUnit(unit);
+    }
+
+
+    /**
+     * Set a location in the unit grid to a given unit.
+     * @param unit the unit 
+     * @param i x coordinate of spot
+     * @param j y coordinate of spot
+     */
+    private void setUnit(SimpleUnit unit, int i, int j){
+        grid[i][j] = unit;
+        Minimap.updateMinimap();
+
+        /* Reserve or unreserve this location (depending on whether unit == null) */
+        reserved[i][j] = unit;
     }
 
     /**
-     * Get which unit this is reserving for.
-     * @return the unit which is going to this destination
+     * Whether a point is contained in the unit grid
+     * @param x x coordinate of point
+     * @param y y coordinate of point
+     * @return whether the point is on the unit grid
      */
-    public SimpleUnit getOriginal(){
-        return reserve;
+    private boolean contains(int x, int y){
+        return (x >= 0 && x < n && y >= 0 && y < n);
+    }
+
+    /**
+     * Check whether we can place a unit in a location.
+     * @param unit unit to place
+     * @param x x coordinate of location
+     * @param y y coordinate of location
+     * @param orientation orientation of the unit
+     * @return whether we can place the unit there without interfering with other units
+     */
+    private boolean canPlaceUnit(SimpleUnit unit, int x, int y, Direction orientation){
+        Point[] points = unit.getShape(orientation);
+
+        for(Point p : points){
+            if(spaceTakenFor(x + p.x, y + p.y, unit)){
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Reserve the future location of this unit.
+     * @param unit unit for which to make reservation
+     * @param x x coordinate of current unit location
+     * @param y y coordinate of current unit location
+     * @param direction direction in which unit will move (and orientation of unit)
+     */
+    private void placeReservation(SimpleUnit unit, int x, int y, Direction direction){
+        Point[] points = unit.getShape(direction);
+        Point offset = getDirectionOffset(direction);
+
+        for(Point p : points){
+            int resX = x + p.x + offset.x;
+            int resY = y + p.y + offset.y;
+            if(reserved[resX][resY] == null)
+                reserved[resX][resY] = unit;
+        }
+    }
+
+    private boolean canPlaceReservation(SimpleUnit unit, int x, int y, Direction direction){
+        Point[] points = unit.getShape(direction);
+        Point offset = getDirectionOffset(direction);
+
+        for(Point p : points){
+            int resX = x + p.x + offset.x;
+            int resY = y + p.y + offset.y;
+            if(reserved[resX][resY] != null && reserved[resX][resY] != unit)
+                return false;
+        }
+        return true;
+    }
+
+    /**
+     * Stop the unit and reroute it if necessary.
+     * @param unit unit to stop
+     */
+    private void stopUnit(SimpleUnit unit){
+        unit.setDirection(null);
+        unit.clearPath();
+        unit.setState(SpriteState.Attack);
     }
 }

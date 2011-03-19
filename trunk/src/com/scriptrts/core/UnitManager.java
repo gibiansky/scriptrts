@@ -170,6 +170,8 @@ public class UnitManager {
 
         /* Unit speed is in subtiles per second */
         int uSpeed = unit.getSpeed();
+
+        /* For a moving unit, move it */
         if(unit.getSpeed() != 0 && unit.getDirection() != null) {
             double subtilesMovedPerFrame = (double)(uSpeed) /* subtiles per second */ / fps /* times seconds */;
 
@@ -181,12 +183,17 @@ public class UnitManager {
              * the client will change positions when the server sends updated data. */
             if(Main.getGameServer() != null){
                 while(tilesMoved > 0){
-                    boolean moveSucceeded = grid.moveUnitOneTile(unit);
+                    grid.moveUnitOneTile(unit);
                     tilesMoved--;
 
                     setUnitUpdated(unit);
                 }
             }
+        }
+
+        /* For a unit which could move, but is standing still, update it every time in case it wants an update */
+        else if(unit.getSpeed() > 0 && unit.getDirection() == null){
+            grid.moveUnitOneTile(unit);
         }
 
         /* Retrieve the visibility grid */

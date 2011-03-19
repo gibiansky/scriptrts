@@ -420,7 +420,7 @@ public class SimpleUnit implements Serializable {
      * @return the path this unit will take, as a queue
      */
     public Queue<Direction> getPath(){
-        return (Queue<Direction>) Collections.unmodifiableCollection(path);
+        return path;
     }
 
     /**
@@ -429,21 +429,19 @@ public class SimpleUnit implements Serializable {
      */
     public void setPath(Queue<Direction> path){
         this.path =  path;
-        if(direction == null && path != null && path.peek() != null)
-            direction = path.poll();
-
         if(Main.getGameClient() != null)
             Main.getGameClient().sendPathChangedNotification(this, path);
+
+        /* Notify the unit grid that the path has changed */
+        Main.getGame().getUnitGrid().unitPathChanged(this, path);
+
     }
 
     /**
      * Clear the unit path
      */
     public void clearPath(){
-        path.clear();
-
-        if(Main.getGameClient() != null)
-            Main.getGameClient().sendPathChangedNotification(this, path);
+        setPath(new LinkedList<Direction>());
     }
 
     /**
@@ -451,9 +449,6 @@ public class SimpleUnit implements Serializable {
      * @param d the additional direction to move in
      */
     public void addToPath(Direction d){
-        if(direction == null)
-            direction = d;
-        else
             path.add(d);
 
         if(Main.getGameClient() != null)
@@ -615,6 +610,26 @@ public class SimpleUnit implements Serializable {
      */
     public Direction getDirection() {
         return direction;
+    }
+
+    /**
+     * Get the direction this unit is moving in next
+     * @return the direction
+     */
+    public Direction getNextDirection() {
+        return path.peek();
+    }
+
+    /**
+     * Get the direction this unit is moving in next after it finishes the current movement
+     * @return the direction
+     */
+    public Direction getSubsequentDirection() {
+        LinkedList<Direction> pth = (LinkedList<Direction>) path;
+        if(pth.size() < 2)
+            return null;
+        else
+            return pth.get(1);
     }
 
     /**
