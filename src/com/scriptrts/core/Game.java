@@ -300,7 +300,6 @@ public class Game extends HeadlessGame {
                 }
                 else{
                     SimpleUnit unit = unitPainter.getUnitAtPoint(point, viewport);
-                    System.out.println(point);
                     if(unit != null) {
                         
                         /* If already selected and pressing control, deselect */

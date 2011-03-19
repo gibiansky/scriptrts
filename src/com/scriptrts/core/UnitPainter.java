@@ -297,19 +297,19 @@ public class UnitPainter {
                 graphics.fillPolygon(poly);
                 graphics.setColor(Color.green);
                 graphics.drawPolygon(poly);
+                
+                /* Draw the health bar */
+                graphics.setColor(Color.GREEN);
+                /* The width of the unit's current health */
+                int greenWidth = sprite.getWidth() * unit.getHealth() / unit.getMaxHealth();
+                graphics.fillRect(xLoc - sprite.getWidth() / 2, yLoc - sprite.getHeight() + 25, greenWidth, 5);
+                /* Draw the missing portion of the unit's health */
+                graphics.setColor(Color.RED);
+                graphics.fillRect(xLoc - sprite.getWidth() / 2 + greenWidth, yLoc - sprite.getHeight() + 25, sprite.getWidth() - greenWidth, 5);
             }
         }
 
 		sprite.draw(graphics, unit, xLoc, yLoc);
-
-        /* Draw the health bar */
-        graphics.setColor(Color.GREEN);
-        /* The width of the unit's current health */
-        int greenWidth = sprite.getWidth() * unit.getHealth() / unit.getMaxHealth();
-        graphics.fillRect(xLoc - sprite.getWidth() / 2, yLoc - sprite.getHeight() + 25, greenWidth, 5);
-        /* Draw the missing portion of the unit's health */
-        graphics.setColor(Color.RED);
-        graphics.fillRect(xLoc - sprite.getWidth() / 2 + greenWidth, yLoc - sprite.getHeight() + 25, sprite.getWidth() - greenWidth, 5);
 	}
 
     /**
