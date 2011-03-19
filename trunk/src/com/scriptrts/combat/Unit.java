@@ -139,8 +139,10 @@ public class Unit {
         damage -= defending.armor();
 
         /* Add up all anti-attribute bonuses */
+        float bonuses = 1;
         for(Attribute attribute : defending.attributes())
-            damage += attackType().attackBonus(attribute);
+            bonuses *= attackType().attackBonus(attribute);
+        damage = Math.round(damage * bonuses);
 
         /* Minimum of 1 damage */
         if(damage <= 0)

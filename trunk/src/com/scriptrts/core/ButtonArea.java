@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import java.util.ArrayList;
 
 import com.scriptrts.game.SimpleUnit;
+import com.scriptrts.util.*;
 import com.scriptrts.control.Selection;
 
 /**
@@ -25,12 +26,12 @@ public class ButtonArea extends JPanel {
     /**
      * Width of the area
      */
-    private int width = 200;
+    private int width = 210;
 
     /**
      * Height of the area
      */
-    private int height = 200;
+    private int height = 210;
 
     /**
      * List of buttons to draw
@@ -43,6 +44,11 @@ public class ButtonArea extends JPanel {
     private BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
     /**
+     * Background image
+     */
+    private BufferedImage outlineImage;
+
+    /**
      * Whether the buttons need repainting
      */
     private static boolean changedButtons = true;
@@ -52,7 +58,6 @@ public class ButtonArea extends JPanel {
      */
     public ButtonArea(){
         super(true);
-        setBackground(Color.yellow);
 
         addMouseListener(new MouseAdapter(){
             public void mouseClicked(MouseEvent mouse){
@@ -65,6 +70,11 @@ public class ButtonArea extends JPanel {
             }
         });
 
+        try {
+            outlineImage = ResourceManager.loadImage("resource/ButtonAreaOutline.png");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -97,6 +107,7 @@ public class ButtonArea extends JPanel {
 
         image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = (Graphics2D) image.getGraphics();
+        graphics.drawImage(outlineImage, 0, 0, null);
         
         /* Button size */
         int size = 40;
