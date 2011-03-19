@@ -249,13 +249,9 @@ public class GameServer {
     private void addPlayerConnection(Socket socket) throws IOException, ClassNotFoundException {
         /* Get player's desired name and color */
         DataInputStream objIn = objectInputs.get(connections.indexOf(socket));
-        System.out.println("PLAYER = " + objIn.available());
         int desiredID = objIn.readInt();
-        System.out.println("PLAYER = " + objIn.available());
         String desiredName = GameProtocol.readString(objIn);
-        System.out.println("PLAYER = " + objIn.available());
         Color desiredColor = GameProtocol.readColor(objIn);
-        System.out.println("PLAYER = " + objIn.available());
 
         String name = desiredName;
         Color color = desiredColor;

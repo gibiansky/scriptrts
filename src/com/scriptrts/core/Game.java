@@ -95,15 +95,15 @@ public class Game extends HeadlessGame {
      * How many frames the map has been scrolling for
      */
     int framesScrolled = 0;
-    
+
     /**
      * Current increment in map scrolling
      */
     int increment = SCROLLING_DISTANCE;
-    
+
     int movedX;
     int movedY;
-    
+
     /**
      * Create the game.
      * @param n size of the map (length along one edge)
@@ -195,14 +195,14 @@ public class Game extends HeadlessGame {
                             Selection.replaceCurrent(new Selection());
                         else
                             Selection.replaceCurrent(SelectionStorage.retrieve(x));
-                        
+
                     }
                     manager.clearKeyCodeFlag(digits[x]);
                 }
             }
 
             if(manager.getKeyCodeFlag(KeyEvent.VK_BACK_QUOTE) && !SelectionStorage.retrieve(10).isEmpty() && !Selection.current().equals(SelectionStorage.retrieve(10)) ) {
-            	Selection s = SelectionStorage.retrieve(10);
+                Selection s = SelectionStorage.retrieve(10);
                 Selection.replaceCurrent(s);
                 manager.clearKeyCodeFlag(KeyEvent.VK_BACK_QUOTE);
             }
@@ -213,7 +213,7 @@ public class Game extends HeadlessGame {
                 if(manager.getKeyCodeFlag(KeyEvent.VK_D))
                     uSpeed = 0;
                 else
-                    uSpeed = 5;
+                    uSpeed = 9;
 
                 manager.clearKeyCodeFlag(KeyEvent.VK_M);
                 manager.clearKeyCodeFlag(KeyEvent.VK_D);
@@ -346,13 +346,13 @@ public class Game extends HeadlessGame {
 
 
             mousePreviouslyPressed = manager.getLeftMouseDown();
-            
+
             if(manager.getKeyCodeFlag(KeyEvent.VK_C)){
-            	if(!Selection.current().getList().isEmpty()){
-            		int size = Selection.current().getList().size();
-            		SimpleUnit unit = Selection.current().getList().get(size - 1);
-            		viewport.setLocation(unitPainter.getUnitCoords(unit, viewport));
-            	}
+                if(!Selection.current().getList().isEmpty()){
+                    int size = Selection.current().getList().size();
+                    SimpleUnit unit = Selection.current().getList().get(size - 1);
+                    viewport.setLocation(unitPainter.getUnitCoords(unit, viewport));
+                }
             }
             
             if(manager.getKeyCodeFlag(KeyEvent.VK_S)){
@@ -375,59 +375,54 @@ public class Game extends HeadlessGame {
                 /* If there is no unit at destination, move there */
                 //TODO: make it do something different if there is a unit there
                 if(unitPainter.getGrid().getUnit(unitTile.x, unitTile.y) == null){
-                	for(SimpleUnit unit : Selection.current().getList()){
-                		if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
-                			unit.getOrderHandler().queueOrder(new MoveOrder(unitTile, unit));
-                		else
-                			unit.getOrderHandler().order(new MoveOrder(unitTile, unit));
-                	}
+                    for(SimpleUnit unit : Selection.current().getList()){
+                        if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
+                            unit.getOrderHandler().queueOrder(new MoveOrder(unitTile, unit));
+                        else
+                            unit.getOrderHandler().order(new MoveOrder(unitTile, unit));
+                    }
                 } else {
                     for(SimpleUnit unit : Selection.current().getList()){
                         if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
                             unit.getOrderHandler().queueOrder(new FollowOrder(unit,
-                                    unitPainter.getGrid().getUnit(unitTile.x, unitTile.y)));
+                                        unitPainter.getGrid().getUnit(unitTile.x, unitTile.y)));
                         else
                             unit.getOrderHandler().order(new FollowOrder(unit, 
-                                    unitPainter.getGrid().getUnit(unitTile.x, unitTile.y)));
+                                        unitPainter.getGrid().getUnit(unitTile.x, unitTile.y)));
                     }
                 }
-                    
+
             }
-            
+
             /* Scrolling */
-               boolean scrolling = false;
-            
+            boolean scrolling = false;
 
-            	
-            	int viewportPrevX = viewport.getX();
-                int viewportPrevY = viewport.getY();
-                
-                if (manager.getKeyCodeFlag(KeyEvent.VK_RIGHT)) {
-                    viewport.translate(increment, 0);
-                    scrolling = true;
-                }
-                if (manager.getKeyCodeFlag(KeyEvent.VK_LEFT)) {
-                    viewport.translate(-increment, 0);
-                    scrolling = true;
-                }
-                if (manager.getKeyCodeFlag(KeyEvent.VK_UP)) {
-                    viewport.translate(0, -increment);
-                    scrolling = true;
-                }
-                if (manager.getKeyCodeFlag(KeyEvent.VK_DOWN)) {
-                    viewport.translate(0, increment);
-                    scrolling = true;
-                }
-                
-                
+            int viewportPrevX = viewport.getX();
+            int viewportPrevY = viewport.getY();
 
-            
+            if (manager.getKeyCodeFlag(KeyEvent.VK_RIGHT)) {
+                viewport.translate(increment, 0);
+                scrolling = true;
+            }
+            if (manager.getKeyCodeFlag(KeyEvent.VK_LEFT)) {
+                viewport.translate(-increment, 0);
+                scrolling = true;
+            }
+            if (manager.getKeyCodeFlag(KeyEvent.VK_UP)) {
+                viewport.translate(0, -increment);
+                scrolling = true;
+            }
+            if (manager.getKeyCodeFlag(KeyEvent.VK_DOWN)) {
+                viewport.translate(0, increment);
+                scrolling = true;
+            }
+
             /* Mouse scrolling. Disabled for windowed mode. */
             if (Main.FULLSCREEN
                     && manager.getMouseLocation().x > viewport.getWidth() - 30) {
                 viewport.translate(increment, 0);
                 scrolling = true;
-            }
+                    }
             if (Main.FULLSCREEN && manager.getMouseLocation().x < 30) {
                 viewport.translate(-increment, 0);
                 scrolling = true;
@@ -440,24 +435,24 @@ public class Game extends HeadlessGame {
                     && manager.getMouseLocation().y > viewport.getHeight() - 30) {
                 viewport.translate(0, increment);
                 scrolling = true;
-            }
-            
+                    }
+
             if(scrolling){
                 framesScrolled++;
                 if(topLeftSelection != null)
                     topLeftSelection.translate(viewportPrevX - viewport.getX(), viewportPrevY - viewport.getY());
             }
-            
+
             if(framesScrolled > 2 * Main.getFPS())
                 increment = SCROLLING_DISTANCE * 4;
             else if(framesScrolled >  Main.getFPS())
                 increment = SCROLLING_DISTANCE * 2;
-            
+
             if(!scrolling){
                 framesScrolled = 0;
                 increment = SCROLLING_DISTANCE;
             }
-            
+
             /* Update path handler */
             //TODO probably not the right place for this, but it works
             pathHandler.update();
@@ -492,8 +487,8 @@ public class Game extends HeadlessGame {
 
         /* Paint the destination of all current selected units, if they share one */
         if(Selection.current().getList().size() != 0){
-           
-            
+
+
             /* Check if units share the same order queue */
             boolean shareQueue = true;
             LinkedList<Order> queue = null;
@@ -506,7 +501,7 @@ public class Game extends HeadlessGame {
                         break;
                     }
             }
-            
+
             boolean shareDestination = false;
             Point destination = null;
             if(queue == null){
@@ -581,7 +576,7 @@ public class Game extends HeadlessGame {
     private void drawTemporaryUnits(Graphics2D graphics, Viewport viewport){
         unitPainter.paintTemporaryUnit(graphics, viewport, tempUnit, tempUnitX, tempUnitY);
     }
-    
+
     /**
      * Draw the destination queue.
      */

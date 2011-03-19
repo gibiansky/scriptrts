@@ -231,6 +231,29 @@ public class UnitPainter {
                     graphics.drawPolygon(new Polygon(xpts, ypts, 4));
                 }
         }
+
+        /* Paint taken up squares as blue */
+        if(UnitPainter.DEBUG){
+            for(int a = 0; a < UnitGrid.SPACES_PER_TILE; a++)
+                for(int b = 0; b < UnitGrid.SPACES_PER_TILE; b++) {
+                    if(Main.getGame().getUnitGrid().spaceTakenFor(i * 3 + a, j * 3 + b, null)){
+                        Point backCorner = getUnitTileBackLocation(a, b);
+                        backCorner.translate(x - tileX/2, y);
+                        int[] xpts = {
+                            backCorner.x, backCorner.x + tileX / 6, backCorner.x, backCorner.x - tileX / 6
+                        };
+                        int[] ypts = {
+                            backCorner.y, backCorner.y + tileY / 6, backCorner.y + tileY / 3, backCorner.y + tileY / 6
+                        };
+
+                        Polygon poly = new Polygon(xpts, ypts, 4);
+                        graphics.setColor(new Color(0, 0, 255, 120));
+                        graphics.fillPolygon(poly);
+                        graphics.setColor(Color.blue);
+                        graphics.drawPolygon(poly);
+                    }
+                }
+        }
 	}
 
     /**
