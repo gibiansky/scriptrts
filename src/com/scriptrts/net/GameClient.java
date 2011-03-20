@@ -1,20 +1,25 @@
 package com.scriptrts.net;
 
-import java.io.*;
 import java.awt.Color;
-import java.net.Socket;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.awt.image.BufferedImage;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
 import com.scriptrts.core.Main;
-import com.scriptrts.util.ResourceManager;
 import com.scriptrts.core.Map;
-import com.scriptrts.game.Player;
-import com.scriptrts.game.*;
+import com.scriptrts.core.ui.AnimatedSprite;
+import com.scriptrts.core.ui.Sprite;
 import com.scriptrts.game.Direction;
-import com.scriptrts.game.SimpleUnit;
+import com.scriptrts.game.MapObject;
+import com.scriptrts.game.Player;
+import com.scriptrts.game.Unit;
+import com.scriptrts.game.Entity.EntityType;
+import com.scriptrts.util.ResourceManager;
 
 /**
  * Game client for networked games
@@ -147,7 +152,7 @@ public class GameClient {
      * @param unit unit that has had a path change
      * @param d direction added to path
      */
-    public void sendPathAppendedNotification(SimpleUnit unit, Direction d){
+    public void sendPathAppendedNotification(Unit unit, Direction d){
         sendRequest(ServerRequest.PathAppended, new Integer(unit.getID()), new Integer(1), d);
         System.out.println("path appended " + unit.getID() + " " +  1 + " " + d);
     }
@@ -157,7 +162,7 @@ public class GameClient {
      * @param unit unit that has had a path change
      * @param newPath the new path of the unit
      */
-    public void sendPathChangedNotification(SimpleUnit unit, Queue<Direction> newPath){
+    public void sendPathChangedNotification(Unit unit, Queue<Direction> newPath){
         sendRequest(ServerRequest.PathCleared, new Integer(unit.getID()));
 
         System.out.println("path cleared " + unit.getID());
@@ -174,7 +179,7 @@ public class GameClient {
      * Tell the server that a new unit has been added
      * @param unit added unit
      */
-    public void sendNewUnitNotification(SimpleUnit unit){
+    public void sendNewUnitNotification(MapObject unit){
         System.out.println("Found new unit with ID " + unit.getID());
         sendRequest(ServerRequest.NewUnit, unit);
     }
@@ -193,8 +198,8 @@ public class GameClient {
                 GameProtocol.sendString(output, (String) o);
             if(o instanceof Color)
                 GameProtocol.sendColor(output, (Color) o);
-            if(o instanceof SimpleUnit)
-                GameProtocol.sendUnit(output, (SimpleUnit) o);
+            if(o instanceof MapObject)
+                GameProtocol.sendUnit(output, (Unit) o);
             if(o instanceof Integer)
                 output.writeInt(((Integer) o).intValue());
             if(o instanceof Direction)
@@ -218,7 +223,7 @@ public class GameClient {
                 if(serverResponse == ServerResponse.UnitUpdate){
                     int sizeNew = input.readInt();
                     for(int i = 0; i < sizeNew; i++) {
-                        SimpleUnit newUnit = GameProtocol.readUnit(input);
+                        Unit newUnit = GameProtocol.readUnit(input);
 
                         try {
                             /* Retrieve spaceship sprites */
@@ -256,10 +261,10 @@ public class GameClient {
                                         });
                             }
 
-                            SimpleUnit spaceship = new SimpleUnit(null, sprites, art, 0, 0, 0, null, true, Main.getGame().getPathHandler());
+                            Unit spaceship = new Unit(null, sprites, art, 0, 0, 0, null, true, Main.getGame().getPathHandler());
                             spaceship.setParameters(newUnit);
-                            SimpleUnit unit = spaceship;
-                            Main.getGame().getUnitGrid().placeUnit(unit, unit.getX(), unit.getY());
+                            Unit unit = spaceship;
+                            Main.getGame().getUnitGrid().placeMapObject(unit.getMapObject(), unit.getX(), unit.getY());
                             Main.getGame().getUnitManager().addUnit(unit);
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -268,7 +273,7 @@ public class GameClient {
 
                     int sizeUpdated = input.readInt();
                     for(int i = 0; i < sizeUpdated; i++) {
-                        SimpleUnit updatedUnit = GameProtocol.readUnit(input);
+                        Unit updatedUnit = GameProtocol.readUnit(input);
                         Main.getGame().getUnitManager().synchronizeUnit(updatedUnit);
                     }
 

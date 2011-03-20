@@ -1,12 +1,18 @@
 package com.scriptrts.net;
 
+import java.awt.Color;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.awt.Color;
 
-import com.scriptrts.game.*;
-import com.scriptrts.core.*;
+import com.scriptrts.core.Main;
+import com.scriptrts.core.Map;
+import com.scriptrts.core.TerrainType;
+import com.scriptrts.game.Direction;
+import com.scriptrts.game.MapObject;
+import com.scriptrts.game.Player;
+import com.scriptrts.game.SpriteState;
+import com.scriptrts.game.Unit;
 
 
 /**
@@ -79,11 +85,11 @@ public class GameProtocol {
      * @param out output stream to which to write
      * @param unit unit whose state to send
      */
-    public static void sendUnit(DataOutputStream out, SimpleUnit unit) throws IOException {
+    public static void sendUnit(DataOutputStream out, Unit unit) throws IOException {
         Player p = unit.getAllegiance();
         int x = unit.getX();
         int y = unit.getY();
-        int state = unit.getState().ordinal();
+        int state = unit.getMapObject().getState().ordinal();
         int id = unit.getID();
         int speed = unit.getSpeed();
 
@@ -168,7 +174,7 @@ public class GameProtocol {
      * @param in input stream from which to read
      * @return unit with sent state
      */
-    public static SimpleUnit readUnit(DataInputStream in) throws IOException {
+    public static Unit readUnit(DataInputStream in) throws IOException {
         int playerID = in.readInt();
         Player p = null;
         for(Player player : Main.getGame().getPlayers())
@@ -184,7 +190,7 @@ public class GameProtocol {
         Direction direction = readDirection(in);
         Direction previousDirection = readDirection(in);
 
-        SimpleUnit u = new SimpleUnit();
+        Unit u = new Unit();
         u.setParameters(p, x, y, SpriteState.values()[stateOrd], id, speed, direction, previousDirection);
         return u;
     }
