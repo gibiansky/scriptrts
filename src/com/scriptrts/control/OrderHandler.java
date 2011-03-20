@@ -3,15 +3,14 @@ package com.scriptrts.control;
 import java.util.LinkedList;
 import java.util.Queue;
 
-
-import com.scriptrts.game.SimpleUnit;
+import com.scriptrts.game.Unit;
 
 public class OrderHandler {
     Queue<Order> orders;
-    SimpleUnit unit;
+    Unit unit;
     Order lastOrder;
     
-    public OrderHandler(SimpleUnit unit){
+    public OrderHandler(Unit unit){
         this.unit = unit;
         orders = new LinkedList<Order>();
         lastOrder = null;
@@ -77,7 +76,7 @@ public class OrderHandler {
         return orders;
     }
 
-    public SimpleUnit getUnit() {
+    public Unit getUnit() {
         return unit;
     }
 }

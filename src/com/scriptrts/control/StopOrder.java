@@ -2,11 +2,11 @@ package com.scriptrts.control;
 
 import java.awt.Point;
 
-import com.scriptrts.game.SimpleUnit;
+import com.scriptrts.game.Unit;
 
 public class StopOrder extends Order {
 
-    public StopOrder(SimpleUnit unit){
+    public StopOrder(Unit unit){
         this.unit = unit;
     }
     

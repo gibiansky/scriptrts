@@ -1,9 +1,11 @@
 package com.scriptrts.control;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-import com.scriptrts.game.*;
-import com.scriptrts.core.SelectionArea;
+import com.scriptrts.core.ui.SelectionArea;
+import com.scriptrts.game.MapObject;
 
 /**
  * A selection of units and other map entities
@@ -13,7 +15,7 @@ public class Selection {
     /**
      * Inner container used to store the units
      */
-    private ArrayList<SimpleUnit> objects = new ArrayList<SimpleUnit>();
+    private ArrayList<MapObject> objects = new ArrayList<MapObject>();
 
     /**
      * Current selection (units currently selected by the player)
@@ -70,7 +72,7 @@ public class Selection {
      * Add a unit to a selection 
      * @param unit the unit to add
      */
-    public void add(SimpleUnit unit){
+    public void add(MapObject unit){
         /* Don't add duplicate objects to a selection */
         if(!objects.contains(unit))
             objects.add(unit);
@@ -83,8 +85,8 @@ public class Selection {
      * Add a collection of units to a selection
      * @param units a java Collection of units to add
      */
-    public void add(Collection<SimpleUnit> units){
-        for(SimpleUnit u : units)
+    public void add(Collection<MapObject> units){
+        for(MapObject u : units)
             add(u);
     }
 
@@ -92,7 +94,7 @@ public class Selection {
      * Remove a unit from a selection
      * @param units the unit to remove
      */
-    public void remove(SimpleUnit unit){
+    public void remove(MapObject unit){
         objects.remove(unit);
 
         if(this == Selection.current())
@@ -113,7 +115,7 @@ public class Selection {
      * Get the selection as a list of units. Modifying this list will modify the selection.
      * @return mutable list of units
      */
-    public List<SimpleUnit> getList(){
+    public List<MapObject> getList(){
         return objects;
     }
 
@@ -122,11 +124,11 @@ public class Selection {
      * @param unit the unit to check
      * @return true if the unit is in the selection, false otherwise
      */
-    public boolean contains(SimpleUnit unit){
+    public boolean contains(MapObject unit){
         return objects.contains(unit);
     }
     
-    public ArrayList<SimpleUnit> getObjects() {
+    public ArrayList<MapObject> getObjects() {
 		return objects;
 	}
 	
@@ -138,7 +140,7 @@ public class Selection {
 	}
 	
 	public boolean equals(Selection s){
-		for(SimpleUnit x: s.objects){
+		for(MapObject x: s.objects){
 			if(!this.contains(x))
 				return false;
 		}
