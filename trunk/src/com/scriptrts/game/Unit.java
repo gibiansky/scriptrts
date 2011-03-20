@@ -1,20 +1,322 @@
 package com.scriptrts.game;
 
-import java.util.List;
+import java.awt.Point;
+import java.awt.image.BufferedImage;
+import java.util.LinkedList;
+import java.util.Queue;
+
+import com.scriptrts.control.OrderHandler;
+import com.scriptrts.core.Main;
+import com.scriptrts.core.PathHandler;
+import com.scriptrts.core.Pathfinder;
+import com.scriptrts.core.ui.Sprite;
+
 
 /**
  * Unit object for unit types
  */
-public class Unit {
+public class Unit extends Construct{
+    
     /**
-     * Counter used to initialize IDs of new units 
+     * The unit's movement speed
      */
-    private static int idCounter = 0;
+    private int speed;
+    
+    /**
+     * The direction in which the unit used to be moving. This is used to determine which direction the
+     * unit is facing, even when the direction of movement is null (because unit is stationary).
+     */
+    private Direction previousDirection;
 
     /**
-     * ID of this unit (unique)
+     * The direction in which the unit is moving.
      */
-    private int id;
+    private Direction direction;
+
+    /** 
+     * The path the unit is taking, defined by a list of directions to follow.
+     */
+    private Queue<Direction> path = new LinkedList<Direction>();
+    
+
+
+    /**
+     * Where this unit is going, in unit tile coordinates
+     */
+    private Point destination;
+    
+    /**
+     * Path handler used to route this unit
+     */
+    private transient PathHandler pathHandler;
+
+    /**
+     * The OrderHandler used to control this unit
+     */
+    private transient OrderHandler orderHandler;
+    
+    /**
+     * Get the unit speed of movement
+     * @return the speed
+     */
+    public int getSpeed() {
+        return speed;
+    }
+
+    /**
+     * Set the unit speed of movement
+     * @param speed the speed to set
+     */
+    public void setSpeed(int speed) {
+        this.speed = speed;
+    }
+    
+
+    
+    public Unit(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, boolean shaped, PathHandler pathHandler){
+        mapObject = new MapObject(sprites, artImg, shaped, this);
+        
+        this.player = p;
+        this.speed = speed;
+        this.x = x;
+        this.y = y;
+        this.direction = direction;
+        this.pathHandler = pathHandler;
+        
+        this.orderHandler = new OrderHandler(this);
+        
+        previousDirection = direction;
+        
+        maxHealth = 10;
+        health = (int) (Math.random() * maxHealth);
+
+        visibilityRadius = 2;
+    }
+    
+     public Unit() {
+		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+    public boolean isPassable(Construct c) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+     
+     public int getID(){
+         return mapObject.getID();
+     }
+     
+     /**
+      * Set this unit's state to another unit's
+      */
+     public void setParameters(Unit source){
+         player = source.player;
+         x = source.x;
+         y = source.y;
+         this.mapObject.setParameters(source.mapObject);
+         speed = source.speed;
+         direction = source.direction;
+         previousDirection = source.previousDirection;
+     }
+     
+     public void setParameters(Player p, int ux, int uy,  int uspd, Direction udir,
+             Direction uPrevDir){
+         player = p;
+         x = ux;
+         y = uy;
+         speed = uspd;
+         direction = udir;
+         previousDirection = uPrevDir;
+     }
+     
+     /**
+      * Find where this unit is going
+      * @return unit destination
+      */
+     public Point getDestination() {
+         return destination;
+     }
+
+     /**
+      * Set the unit destination
+      * @param p new unit destination
+      */
+     public void setDestination(Point p){
+         destination = p;
+
+         if(path != null){
+             direction = null;
+         }
+
+         if(!pathHandler.isEmpty()){
+             Pathfinder pathfinder = pathHandler.remove();
+             pathfinder.setUnit(this);
+             pathfinder.setDestination(p.x, p.y);
+             Thread runner = new Thread(pathfinder);
+             runner.setPriority(Thread.MIN_PRIORITY);
+             runner.start();
+         } else
+             pathHandler.addPath(this, p);
+     }
+
+     /**
+      * Set the unit destination
+      * @param x new unit destination x coordinate
+      * @param y new unit destination y coordinate
+      */
+
+     public void setDestination(int x, int y){
+         setDestination(new Point(x, y));
+     }
+     
+     /**
+      * Update the direction based on the path the unit wants to take.
+      */
+     public void updateDirection(){
+         if(direction != null)
+             previousDirection = direction;
+
+         /* If we have no more directions, stop. */
+         if(path == null || path.peek() == null){
+             direction = null;
+         }
+         else {
+             direction = path.poll();
+         }
+     }
+
+     /**
+      * Look at where the unit will go next without updating the direction
+      */
+     public Direction peekNextDirection(){
+         Direction next;
+
+         if(path == null || path.peek() == null)
+             next = null;
+         else 
+             next = path.peek();
+
+         return next;
+     }
+
+     /**
+      * Get the path this unit is going to take
+      * @return the path this unit will take, as a queue
+      */
+     public Queue<Direction> getPath(){
+         return path;
+     }
+
+     /**
+      * Set the path this unit is going to take
+      * @param path the new path to take
+      */
+     public void setPath(Queue<Direction> path){
+         this.path =  path;
+         if(Main.getGameClient() != null)
+             Main.getGameClient().sendPathChangedNotification(this, path);
+
+         /* Notify the unit grid that the path has changed */
+         Main.getGame().getUnitGrid().unitPathChanged(this, path);
+
+     }
+
+     /**
+      * Clear the unit path
+      */
+     public void clearPath(){
+         setPath(new LinkedList<Direction>());
+     }
+
+     /**
+      * Append to the path this unit will take
+      * @param d the additional direction to move in
+      */
+     public void addToPath(Direction d){
+             path.add(d);
+
+         if(Main.getGameClient() != null)
+             Main.getGameClient().sendPathAppendedNotification(this, d);
+     }
+
+     /**
+      * Append to the path this unit will take
+      * @param additionalPath the additional path to append to the end of the current path
+      */
+     public void addToPath(Queue<Direction> additionalPath){
+         while(additionalPath != null && additionalPath.peek() != null)
+             addToPath(additionalPath.poll());
+     }
+     
+     /**
+      * Get the direction this unit is moving in
+      * @return the direction
+      */
+     public Direction getDirection() {
+         return direction;
+     }
+
+     /**
+      * Get the direction this unit is moving in next
+      * @return the direction
+      */
+     public Direction getNextDirection() {
+         return path.peek();
+     }
+
+     /**
+      * Get the direction this unit is moving in next after it finishes the current movement
+      * @return the direction
+      */
+     public Direction getSubsequentDirection() {
+         LinkedList<Direction> pth = (LinkedList<Direction>) path;
+         if(pth.size() < 2)
+             return null;
+         else
+             return pth.get(1);
+     }
+     
+     /**
+      * Get the direction in which this unit is facing
+      * @return direction this unit is facing in
+      */
+     public Direction getFacingDirection(){
+         if(direction != null)
+             return direction;
+         else
+             return previousDirection;
+     }
+
+     /**
+      * Set the direction this unit is moving in
+      * @param direction the direction to set
+      */
+     public void setDirection(Direction direction) {
+         this.direction = direction;
+     }
+     
+     public void setOrderhandler(OrderHandler orderhandler) {
+         this.orderHandler = orderhandler;
+     }
+
+     public OrderHandler getOrderHandler() {
+         return orderHandler;
+     }
+
+	public void setParameters(Player p, int ux, int uy, SpriteState spriteState,
+			int id, int uspd, Direction udir, Direction uPrevDir) {
+		player = p;
+        x = ux;
+        y = uy;
+        speed = uspd;
+        direction = udir;
+        previousDirection = uPrevDir;
+        
+        getMapObject().setParameters(spriteState, id);
+		
+	}
+
 
     /**
      * The unit type name
@@ -41,7 +343,7 @@ public class Unit {
      * @return true if the unit is the same instance
      */
     public boolean equals(Unit u){
-        return u.id == id;
+        return u.getMapObject().getID() == getMapObject().getID();
     }
 
     /**
@@ -52,21 +354,6 @@ public class Unit {
         return name;
     }
 
-    /**
-     * Get the current number of hitpoints
-     * @return current hitpoints
-     */
-    public int hitpoints(){
-        return hitpoints;
-    }
-
-    /**
-     * Check whether this unit is alive
-     * @return true if hitpoints are above 0
-     */
-    public boolean alive(){
-        return (hitpoints > 0);
-    }
 
     /**
      * Get the armor bonus
@@ -83,6 +370,8 @@ public class Unit {
     public int attack(){
         return attack;
     }
+
+   
 
 
 }

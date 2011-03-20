@@ -3,6 +3,6 @@ public abstract class Building extends Construct {
     
 
     public boolean isPassable(Construct c){
-        return this.allegiance.equals(c.allegiance);
+        return c instanceof Unit && this.player.equals(c.player);
     }
 }

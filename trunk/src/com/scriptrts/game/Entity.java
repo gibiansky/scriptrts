@@ -2,16 +2,43 @@ package com.scriptrts.game;
 
 import java.awt.Point;
 
+import com.scriptrts.core.ui.Sprite;
+
 public abstract class Entity {
-    // Location of top left corner
-    private int x;
-    private int y;
-    // Location point
-    private Point point;
-    // Size
-    private int height;
-    private int width;
+    /**
+     * The sprites used to display this unit.
+     */
+    private transient Sprite[] sprites;
     
+    /**
+     * The MapObject that represents this entity.
+     */
+    protected MapObject mapObject;
+    
+    /**
+     * Get the sprites used by this image
+     * @return array of sprites this unit may use
+     */
+    public Sprite[] getSprites(){
+        return sprites;
+    }
+    
+    /**
+     * Set the sprites
+     * @param sprites the sprites to set to this entity
+     */
+    public void setSprites(Sprite[] sprites){
+        this.sprites = sprites;
+    }
+    
+    public MapObject getMapObject() {
+        return mapObject;
+    }
+    
+    // Location of top left corner
+    protected int x;
+    protected int y;
+
     public int getX() {
         return x;
     }
@@ -27,23 +54,18 @@ public abstract class Entity {
     public void setY(int y) {
         this.y = y;
     }
+    
 
-    public int getHeight() {
-        return height;
+    
+    /**
+     * Get the location of the entity
+     * @return Point p -- the location of this unit
+     */
+    public Point getLocation(){
+        return new Point(x, y);
     }
 
-    public void setHeight(int height) {
-        this.height = height;
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
+   
     /**
      * Determines whether this is passable or transparent to c.
      * Specific implementation depends on Construct type.
@@ -52,12 +74,14 @@ public abstract class Entity {
      */
     public abstract boolean isPassable(Construct c);
 
-    public void setPoint(Point point) {
-        this.point = point;
+    public void setLocation(Point point) {
+        this.x = point.x;
+        this.y = point.y;
     }
-
-    public Point getPoint() {
-        return point;
+ 
+    public enum EntityType{
+        UNIT,
+        BUILDING;
     }
    
 }

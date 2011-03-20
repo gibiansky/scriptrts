@@ -1,7 +1,8 @@
 package com.scriptrts.game;
 
 import java.awt.Point;
-import com.scriptrts.core.*;
+
+import com.scriptrts.core.ui.MapPainter;
 
 /**
  * Possible directions of movement on the unit grid

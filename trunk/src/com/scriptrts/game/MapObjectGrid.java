@@ -2,13 +2,13 @@ package com.scriptrts.game;
 
 import java.awt.Point;
 import java.util.Queue;
-import java.util.LinkedList;
-import com.scriptrts.core.Minimap;
+
+import com.scriptrts.core.ui.Minimap;
 
 /**
  * Stores the locations of all the units on the map.
  */
-public class UnitGrid {
+public class MapObjectGrid {
     /** 
      * How many of the smallest unit can fit along one side of each map tile
      */
@@ -22,29 +22,29 @@ public class UnitGrid {
     /**
      * Array of units representing the map.
      */
-    private SimpleUnit[][] grid;
+    private MapObject[][] grid;
 
     /**
      * Array holding reservations: if null, this tile is unreserved; if non-null, the tile
      * is reserved for the unit which is in the tile location.
      */
-    private SimpleUnit[][] reserved;
+    private MapObject[][] reserved;
 
     /**
      * Create a new unit grid.
      * @param n size of the map.
      */
-    public UnitGrid(int n) {
+    public MapObjectGrid(int n) {
         this.n = n * SPACES_PER_TILE;
-        grid = new SimpleUnit[this.n][this.n];
-        reserved = new SimpleUnit[this.n][this.n];
+        grid = new MapObject[this.n][this.n];
+        reserved = new MapObject[this.n][this.n];
     }
 
     /**
      * Attempt to move the unit onto its destination tile. 
      * @return true if movement successful, false if movement was stalled
      */
-    public void moveUnitOneTile(SimpleUnit unit){
+    public void moveUnitOneTile(Unit unit){
         /* Get the direction the unit is currently moving in, the direction in which 
          * it should move after this method is finished, and the direction it will turn
          * in after the next move is finished
@@ -67,10 +67,10 @@ public class UnitGrid {
 
         /* If the unit is moving, move it */
         if(current != null){
-            removeUnit(unit);
+            removeMapObject(unit.getMapObject());
             unit.setX(unit.getX() + currentOffset.x);
             unit.setY(unit.getY() + currentOffset.y);
-            placeUnit(unit);
+            placeMapObject(unit.getMapObject());
         }
 
         /* If the unit wants to move */
@@ -79,13 +79,13 @@ public class UnitGrid {
              *     turn in the direction it wants to move in AND
              *     move in the direction it wants to move in (after turning)
              */
-            if(canPlaceUnit(unit, unit.getX(), unit.getY(), next) && canPlaceUnit(unit, unit.getX() + nextOffset.x, unit.getY() + nextOffset.y, next)){
-                placeReservation(unit, unit.getX(), unit.getY(), next);
+            if(canPlaceMapObject(unit.getMapObject(), unit.getX(), unit.getY(), next) && canPlaceMapObject(unit.getMapObject(), unit.getX() + nextOffset.x, unit.getY() + nextOffset.y, next)){
+                placeReservation(unit.getMapObject(), unit.getX(), unit.getY(), next);
 
                 /* Re-orient the unit in its new facing direction */
-                removeUnit(unit);
+                removeMapObject(unit.getMapObject());
                 unit.updateDirection();
-                placeUnit(unit);
+                placeMapObject(unit.getMapObject());
             }
             else
                 stopUnit(unit);
@@ -140,25 +140,35 @@ public class UnitGrid {
      * @param j y coordinate
      * @return unit at specified coordinates
      */
-    public SimpleUnit getUnit(int i, int j){
-        return grid[i][j];
+    public Unit getUnit(int i, int j){
+        return grid[i][j] != null ? (grid[i][j].getEntity() instanceof Unit ? ((Unit)grid[i][j].getEntity()) : null) : null;
+    }
+    
+    /**
+     * Return the entity at the given coordinates.
+     * @param i x coordinate
+     * @param j y coordinate
+     * @return unit at specified coordinates
+     */
+    public Entity getEntity(int i, int j){
+        return grid[i][j] != null ? grid[i][j].getEntity() : null;
     }
 
     /**
      * Check whether the given unit can move to the specified spot.
      * @param i x coordinate of spot
      * @param j y coordinate of spot
-     * @param unit the unit for which to check. If this is null, then it checks whether this spot is taken for any unit.
+     * @param obj the unit for which to check. If this is null, then it checks whether this spot is taken for any unit.
      */
-    public boolean spaceTakenFor(int i, int j, SimpleUnit unit){
+    public boolean spaceTakenFor(int i, int j, MapObject obj){
         /* If the unit for which we're checking is null, then just check if this space is taken at all */
-        if(unit == null)
+        if(obj == null)
             return reserved[i][j] != null;
 
         boolean empty = (reserved[i][j] == null);
         if(empty)
             return false;
-        else if(reserved[i][j] == unit)
+        else if(reserved[i][j] == obj)
             return false;
         else
             return true;
@@ -170,32 +180,32 @@ public class UnitGrid {
      * @param i x coordinate of spot
      * @param j y coordinate of spot
      */
-    public void placeUnit(SimpleUnit unit, int i, int j){
-        unit.setX(i);
-        unit.setY(j);
-        placeUnit(unit);
+    public void placeMapObject(MapObject obj, int i, int j){
+        obj.getEntity().setX(i);
+        obj.getEntity().setY(j);
+        placeMapObject(obj);
     }
 
 
     /**
      * Place a unit in its position
-     * @param unit the unit 
+     * @param obj the unit 
      */
-    public void placeUnit(SimpleUnit unit){
-        Point[] points = unit.getCurrentShape();
+    public void placeMapObject(MapObject obj){
+        Point[] points = obj.getCurrentShape();
 
         for(Point p : points)
-            setUnit(unit, unit.getX() + p.x, unit.getY() + p.y);
+            setUnit(obj, obj.getEntity().getX() + p.x, obj.getEntity().getY() + p.y);
     }
 
     /**
      * Remove a unit from a location. This removes the entire unit, not just the center.
      * @param unit the unit 
      */
-    public void removeUnit(SimpleUnit unit){
-        Point[] points = unit.getCurrentShape();
+    public void removeMapObject(MapObject obj){
+        Point[] points = obj.getCurrentShape();
         for(Point p : points)
-            setUnit(null, unit.getX() + p.x, unit.getY() + p.y);
+            setUnit(null, obj.getEntity().getX() + p.x, obj.getEntity().getY() + p.y);
     }
 
     /**
@@ -239,17 +249,17 @@ public class UnitGrid {
      * @param unit unit for which path has changed
      * @param previousPath previous path this unit had
      */
-    public void unitPathChanged(SimpleUnit unit, Queue<Direction> newPath){
+    public void unitPathChanged(Unit unit, Queue<Direction> newPath){
         /* Clear all reservations */
         for(int i = 0; i < reserved.length; i++)
             for(int j = 0; j < reserved[i].length; j++)
-                if(reserved[i][j] == unit){
+                if(reserved[i][j] != null && reserved[i][j].getEntity() == unit){
                     reserved[i][j] = null;
                     grid[i][j] = null;
                 }
 
         /* Reserve where the unit is */
-        placeUnit(unit);
+        placeMapObject(unit.getMapObject());
     }
 
 
@@ -259,7 +269,7 @@ public class UnitGrid {
      * @param i x coordinate of spot
      * @param j y coordinate of spot
      */
-    private void setUnit(SimpleUnit unit, int i, int j){
+    private void setUnit(MapObject unit, int i, int j){
         grid[i][j] = unit;
         Minimap.updateMinimap();
 
@@ -279,17 +289,17 @@ public class UnitGrid {
 
     /**
      * Check whether we can place a unit in a location.
-     * @param unit unit to place
+     * @param obj unit to place
      * @param x x coordinate of location
      * @param y y coordinate of location
      * @param orientation orientation of the unit
      * @return whether we can place the unit there without interfering with other units
      */
-    private boolean canPlaceUnit(SimpleUnit unit, int x, int y, Direction orientation){
-        Point[] points = unit.getShape(orientation);
+    private boolean canPlaceMapObject(MapObject obj, int x, int y, Direction orientation){
+        Point[] points = obj.getShape(orientation);
 
         for(Point p : points){
-            if(spaceTakenFor(x + p.x, y + p.y, unit)){
+            if(spaceTakenFor(x + p.x, y + p.y, obj)){
                 return false;
             }
         }
@@ -304,7 +314,7 @@ public class UnitGrid {
      * @param y y coordinate of current unit location
      * @param direction direction in which unit will move (and orientation of unit)
      */
-    private void placeReservation(SimpleUnit unit, int x, int y, Direction direction){
+    private void placeReservation(MapObject unit, int x, int y, Direction direction){
         Point[] points = unit.getShape(direction);
         Point offset = getDirectionOffset(direction);
 
@@ -316,7 +326,7 @@ public class UnitGrid {
         }
     }
 
-    private boolean canPlaceReservation(SimpleUnit unit, int x, int y, Direction direction){
+    private boolean canPlaceReservation(MapObject unit, int x, int y, Direction direction){
         Point[] points = unit.getShape(direction);
         Point offset = getDirectionOffset(direction);
 
@@ -331,11 +341,11 @@ public class UnitGrid {
 
     /**
      * Stop the unit and reroute it if necessary.
-     * @param unit unit to stop
+     * @param obj unit to stop
      */
-    private void stopUnit(SimpleUnit unit){
+    private void stopUnit(Unit unit){
         unit.setDirection(null);
         unit.clearPath();
-        unit.setState(SpriteState.Attack);
+        unit.getMapObject().setState(SpriteState.Attack);
     }
 }

@@ -37,7 +37,7 @@ public class Player implements Serializable {
         this.color = color;
         this.id = id;
 
-        int n = Main.getGame().getCurrentMap().getN() * UnitGrid.SPACES_PER_TILE;
+        int n = Main.getGame().getCurrentMap().getN() * MapObjectGrid.SPACES_PER_TILE;
         visibilityGrid = new byte[n][n];
     }
     
