@@ -2,13 +2,12 @@ package com.scriptrts.control;
 
 import java.awt.Point;
 
-import com.scriptrts.game.Entity;
-import com.scriptrts.game.SimpleUnit;
+import com.scriptrts.game.Unit;
 
 public class MoveOrder extends Order implements Comparable<MoveOrder> {
    
     
-    public MoveOrder(Point point, SimpleUnit unit){
+    public MoveOrder(Point point, Unit unit){
         this.point = point;
         this.unit = unit;
     }
