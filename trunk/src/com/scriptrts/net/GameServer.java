@@ -1,18 +1,27 @@
 package com.scriptrts.net;
 
-import java.util.*;
 import java.awt.Color;
-import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
-import java.net.*;
 import java.awt.image.BufferedImage;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.Collection;
+import java.util.List;
+import java.util.Vector;
 
-import com.scriptrts.game.*;
-import com.scriptrts.util.ResourceManager;
-import com.scriptrts.game.SimpleUnit;
-import com.scriptrts.core.HeadlessGame;
 import com.scriptrts.core.Main;
+import com.scriptrts.core.ui.AnimatedSprite;
+import com.scriptrts.core.ui.Sprite;
+import com.scriptrts.game.Direction;
+import com.scriptrts.game.HeadlessGame;
+import com.scriptrts.game.MapObject;
+import com.scriptrts.game.Player;
+import com.scriptrts.game.Unit;
+import com.scriptrts.game.Entity.EntityType;
+import com.scriptrts.util.ResourceManager;
 
 /**
  * Game server used to communicate between game clients in a networked game
@@ -227,17 +236,17 @@ public class GameServer {
      * @param player player receiving the update
      */
     private void updateClient(DataOutputStream output, Player player) throws IOException, ClassNotFoundException {
-        List<SimpleUnit> updated = game.getUnitManager().updatedUnits();
-        List<SimpleUnit> created = game.getUnitManager().newUnits();
+        List<Unit> updated = game.getUnitManager().updatedUnits();
+        List<Unit> created = game.getUnitManager().newUnits();
         if(updated.size() > 0 || created.size() > 0) {
             GameProtocol.sendResponse(output, ServerResponse.UnitUpdate);
 
             output.writeInt(created.size());
-            for(SimpleUnit unit : created)
+            for(Unit unit : created)
                 GameProtocol.sendUnit(output, unit);
 
             output.writeInt(updated.size());
-            for(SimpleUnit unit : updated)
+            for(Unit unit : updated)
                 GameProtocol.sendUnit(output, unit);
         }
     }
@@ -307,9 +316,9 @@ public class GameServer {
         /* Send back all units as a unit update */
         GameProtocol.sendResponse(objOut, ServerResponse.UnitUpdate);
 
-        Collection<SimpleUnit> all = game.getUnitManager().allUnits();
+        Collection<Unit> all = game.getUnitManager().allUnits();
         objOut.writeInt(all.size());
-        for(SimpleUnit unit : all)
+        for(Unit unit : all)
             GameProtocol.sendUnit(objOut, unit);
 
         objOut.writeInt(0);
@@ -384,7 +393,7 @@ public class GameServer {
     public void pathAppendedRequest(Socket socket, DataInputStream in) throws IOException, ClassNotFoundException {
         int unitID = in.readInt();
         int dirs = in.readInt();
-        SimpleUnit unit = Main.getGame().getUnitManager().unitWithID(unitID);
+        Unit unit = Main.getGame().getUnitManager().unitWithID(unitID);
 
         System.out.println("Here: " + unitID + " " + dirs + " " + unit);
         for(int i = 0; i < dirs; i++){
@@ -404,7 +413,7 @@ public class GameServer {
      */
     public void pathClearedRequest(Socket socket, DataInputStream in) throws IOException, ClassNotFoundException {
         int unitID = in.readInt();
-        SimpleUnit unit = Main.getGame().getUnitManager().unitWithID(unitID);
+        Unit unit = Main.getGame().getUnitManager().unitWithID(unitID);
         System.out.println("path cleared server " + unitID);
         if(unit != null)
             unit.clearPath();
@@ -417,7 +426,7 @@ public class GameServer {
      * @param in input stream to read from
      */
     private void newUnitRequest(Socket socket, DataInputStream in) throws IOException, ClassNotFoundException {
-        SimpleUnit newUnit = GameProtocol.readUnit(in);
+        Unit newUnit = GameProtocol.readUnit(in);
         System.out.println(Main.getGame().getPlayers());
 
         try {
@@ -456,10 +465,10 @@ public class GameServer {
                         });
             }
 
-            SimpleUnit spaceship = new SimpleUnit(null, sprites, art, 0, 0, 0, null, true, Main.getGame().getPathHandler());
+            Unit spaceship = new Unit(null, sprites, art, 0, 0, 0, null, true, Main.getGame().getPathHandler());
             spaceship.setParameters(newUnit);
-            SimpleUnit unit = spaceship;
-            Main.getGame().getUnitGrid().placeUnit(unit, unit.getX(), unit.getY());
+            Unit unit = spaceship;
+            Main.getGame().getUnitGrid().placeMapObject(unit.getMapObject(), unit.getX(), unit.getY());
             Main.getGame().getUnitManager().addUnit(unit);
             System.out.println("New Unit ID: " + unit.getID());
         } catch (Exception e) {
