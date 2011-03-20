@@ -141,7 +141,10 @@ public class MapObjectGrid {
      * @return unit at specified coordinates
      */
     public Unit getUnit(int i, int j){
-        return grid[i][j] != null ? (grid[i][j].getEntity() instanceof Unit ? ((Unit)grid[i][j].getEntity()) : null) : null;
+        if(grid[i][j] == null)
+           return null;
+        else
+           return (grid[i][j].getEntity() instanceof Unit ? ((Unit) grid[i][j].getEntity()) : null);
     }
     
     /**
@@ -324,19 +327,6 @@ public class MapObjectGrid {
             if(reserved[resX][resY] == null)
                 reserved[resX][resY] = unit;
         }
-    }
-
-    private boolean canPlaceReservation(MapObject unit, int x, int y, Direction direction){
-        Point[] points = unit.getShape(direction);
-        Point offset = getDirectionOffset(direction);
-
-        for(Point p : points){
-            int resX = x + p.x + offset.x;
-            int resY = y + p.y + offset.y;
-            if(reserved[resX][resY] != null && reserved[resX][resY] != unit)
-                return false;
-        }
-        return true;
     }
 
     /**

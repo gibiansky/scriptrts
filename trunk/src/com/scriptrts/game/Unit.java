@@ -15,7 +15,7 @@ import com.scriptrts.core.ui.Sprite;
 /**
  * Unit object for unit types
  */
-public class Unit extends Construct{
+public class Unit extends Construct {
     
     /**
      * The unit's movement speed
@@ -38,6 +38,26 @@ public class Unit extends Construct{
      */
     private Queue<Direction> path = new LinkedList<Direction>();
     
+    /**
+     * The unit type name
+     */
+    private String name;
+
+    /**
+     * Number of hitpoints unit type starts with
+     */
+    private int hitpoints;
+
+    /**
+     * The armor bonus of this unit
+     */
+    private int armor;
+
+    /**
+     * The base attack of this unit
+     */
+    private int attack;
+
 
 
     /**
@@ -55,7 +75,38 @@ public class Unit extends Construct{
      */
     private transient OrderHandler orderHandler;
     
+
     /**
+     * Create a new unit
+     */
+    public Unit(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, boolean shaped, PathHandler pathHandler){
+        mapObject = new MapObject(sprites, artImg, shaped, this);
+        
+        this.player = p;
+        this.speed = speed;
+        this.x = x;
+        this.y = y;
+        this.direction = null;
+        this.pathHandler = pathHandler;
+        
+        this.orderHandler = new OrderHandler(this);
+        
+        previousDirection = direction;
+        
+        maxHealth = 10;
+        health = (int) (Math.random() * maxHealth);
+
+        visibilityRadius = 2;
+    }
+
+    /**
+     * Create an empty, uninitialized unit
+     */
+    public Unit(){
+        this(null, null, null, 0, 0, 0, null, false, null);
+    }
+
+     /**
      * Get the unit speed of movement
      * @return the speed
      */
@@ -70,36 +121,9 @@ public class Unit extends Construct{
     public void setSpeed(int speed) {
         this.speed = speed;
     }
-    
-
-    
-    public Unit(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, boolean shaped, PathHandler pathHandler){
-        mapObject = new MapObject(sprites, artImg, shaped, this);
-        
-        this.player = p;
-        this.speed = speed;
-        this.x = x;
-        this.y = y;
-        this.direction = direction;
-        this.pathHandler = pathHandler;
-        
-        this.orderHandler = new OrderHandler(this);
-        
-        previousDirection = direction;
-        
-        maxHealth = 10;
-        health = (int) (Math.random() * maxHealth);
-
-        visibilityRadius = 2;
-    }
-    
-     public Unit() {
-		// TODO Auto-generated constructor stub
-	}
-
+       
 	@Override
     public boolean isPassable(Construct c) {
-        // TODO Auto-generated method stub
         return false;
     }
      
@@ -120,16 +144,29 @@ public class Unit extends Construct{
          previousDirection = source.previousDirection;
      }
      
-     public void setParameters(Player p, int ux, int uy,  int uspd, Direction udir,
-             Direction uPrevDir){
-         player = p;
-         x = ux;
-         y = uy;
-         speed = uspd;
-         direction = udir;
-         previousDirection = uPrevDir;
-     }
-     
+
+      /**
+      * Set unit state
+      * @param p allegiance player
+      * @param ux unit x location
+      * @param uy unit y location
+      * @param spriteState sprite state of the unit
+      * @param id unit id
+      * @param uspd unit speed
+      * @param udir unit direction
+      * @param uPrevDir previous unit direction
+      */
+	public void setParameters(Player p, int ux, int uy, SpriteState spriteState, int id, int uspd, Direction udir, Direction uPrevDir) {
+		player = p;
+        x = ux;
+        y = uy;
+        speed = uspd;
+        direction = udir;
+        previousDirection = uPrevDir;
+        
+        getMapObject().setParameters(spriteState, id);
+	}
+
      /**
       * Find where this unit is going
       * @return unit destination
@@ -304,40 +341,6 @@ public class Unit extends Construct{
          return orderHandler;
      }
 
-	public void setParameters(Player p, int ux, int uy, SpriteState spriteState,
-			int id, int uspd, Direction udir, Direction uPrevDir) {
-		player = p;
-        x = ux;
-        y = uy;
-        speed = uspd;
-        direction = udir;
-        previousDirection = uPrevDir;
-        
-        getMapObject().setParameters(spriteState, id);
-		
-	}
-
-
-    /**
-     * The unit type name
-     */
-    private String name;
-
-    /**
-     * Number of hitpoints unit type starts with
-     */
-    private int hitpoints;
-
-    /**
-     * The armor bonus of this unit
-     */
-    private int armor;
-
-    /**
-     * The base attack of this unit
-     */
-    private int attack;
-
     /**
      * Check if the units are equal
      * @return true if the unit is the same instance
@@ -370,8 +373,4 @@ public class Unit extends Construct{
     public int attack(){
         return attack;
     }
-
-   
-
-
 }

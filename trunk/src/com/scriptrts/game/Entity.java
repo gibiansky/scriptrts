@@ -11,6 +11,15 @@ public abstract class Entity {
     private transient Sprite[] sprites;
     
     /**
+     * X coordinate of entity on the map
+     */
+    protected int x;
+
+    /**
+     * Y coordinate of entity on the map 
+     */
+    protected int y;
+    /**
      * The MapObject that represents this entity.
      */
     protected MapObject mapObject;
@@ -31,40 +40,65 @@ public abstract class Entity {
         this.sprites = sprites;
     }
     
+    /**
+     * Get map object used to draw this entity on the map
+     * @return entity map object
+     */
     public MapObject getMapObject() {
         return mapObject;
     }
     
-    // Location of top left corner
-    protected int x;
-    protected int y;
 
+    /**
+     * Get x location
+     * @return x coordinate
+     */
     public int getX() {
         return x;
     }
 
+    /**
+     * Set x location
+     * @param x new x coordinate
+     */
     public void setX(int x) {
         this.x = x;
     }
 
+    /**
+     * Get y location
+     * @return y coordinate
+     */
     public int getY() {
         return y;
     }
 
+    /**
+     * Set y location
+     * @param y new y coordinate
+     */
     public void setY(int y) {
         this.y = y;
     }
     
-
     
     /**
      * Get the location of the entity
-     * @return Point p -- the location of this unit
+     * @return the Point location of this unit
      */
     public Point getLocation(){
         return new Point(x, y);
     }
 
+    /**
+     * Set the entity location
+     * @param point new location on the map
+     */
+    public void setLocation(Point point) {
+        setX(point.x);
+        setY(point.y);
+    }
+ 
    
     /**
      * Determines whether this is passable or transparent to c.
@@ -74,12 +108,7 @@ public abstract class Entity {
      */
     public abstract boolean isPassable(Construct c);
 
-    public void setLocation(Point point) {
-        this.x = point.x;
-        this.y = point.y;
-    }
- 
-    public enum EntityType{
+    public enum EntityType {
         UNIT,
         BUILDING;
     }

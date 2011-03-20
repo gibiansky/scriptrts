@@ -296,7 +296,7 @@ public class Game extends HeadlessGame {
                     unitManager.addUnit((Unit)tempObj.getEntity());
 
                     if(Main.getGameClient() != null)
-                        Main.getGameClient().sendNewUnitNotification(tempObj);
+                        Main.getGameClient().sendNewUnitNotification((Unit) tempObj.getEntity());
 
                     placingUnit = false;
                 }

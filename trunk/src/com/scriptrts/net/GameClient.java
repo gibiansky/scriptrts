@@ -179,7 +179,7 @@ public class GameClient {
      * Tell the server that a new unit has been added
      * @param unit added unit
      */
-    public void sendNewUnitNotification(MapObject unit){
+    public void sendNewUnitNotification(Unit unit){
         System.out.println("Found new unit with ID " + unit.getID());
         sendRequest(ServerRequest.NewUnit, unit);
     }
@@ -198,7 +198,7 @@ public class GameClient {
                 GameProtocol.sendString(output, (String) o);
             if(o instanceof Color)
                 GameProtocol.sendColor(output, (Color) o);
-            if(o instanceof MapObject)
+            if(o instanceof Unit)
                 GameProtocol.sendUnit(output, (Unit) o);
             if(o instanceof Integer)
                 output.writeInt(((Integer) o).intValue());
