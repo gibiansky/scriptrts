@@ -8,14 +8,14 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import com.scriptrts.game.Direction;
-import com.scriptrts.game.SimpleUnit;
-import com.scriptrts.game.UnitGrid;
+import com.scriptrts.game.MapObjectGrid;
+import com.scriptrts.game.Unit;
 
 public class Pathfinder extends Thread{
 	/**
 	 * Unit to find path for
 	 */
-	private SimpleUnit unit;
+	private Unit unit;
 	
 	/**
 	 * Current map instance
@@ -30,7 +30,7 @@ public class Pathfinder extends Thread{
 	/**
 	 * Unit grid (for collisions later?) - unused
 	 */
-	private UnitGrid unitGrid;
+	private MapObjectGrid unitGrid;
 	
 	/**
 	 * Stores terrain costs
@@ -82,11 +82,11 @@ public class Pathfinder extends Thread{
 	 * @param m current map instance
 	 * @param g unit grid
 	 */
-	public Pathfinder(Map m, UnitGrid g){
+	public Pathfinder(Map m, MapObjectGrid g){
 		map = m;
 		terrainMap = map.getTileArray();
 		unitGrid = g;
-		n = map.getN() * UnitGrid.SPACES_PER_TILE;
+		n = map.getN() * MapObjectGrid.SPACES_PER_TILE;
 		heap = new Node[n * n];
 		nodeList = new HashMap<Point, Node>();
 		path = new ArrayList<Point>();
@@ -100,7 +100,7 @@ public class Pathfinder extends Thread{
 	 * @param m current map instance
 	 * @param g unit grid
 	 */
-	public Pathfinder(SimpleUnit u, Map m, UnitGrid g){
+	public Pathfinder(Unit u, Map m, MapObjectGrid g){
 		this(m, g);
 		unit = u;
 	}
@@ -134,7 +134,7 @@ public class Pathfinder extends Thread{
 	/**
 	 * Set the unit to route
 	 */
-	public void setUnit(SimpleUnit unit){
+	public void setUnit(Unit unit){
 		this.unit = unit;
 	}
 	
@@ -156,7 +156,7 @@ public class Pathfinder extends Thread{
 	/**
 	 * Calculates the route between two points
 	 */
-	public void findRoute(SimpleUnit u, int endX, int endY){
+	public void findRoute(Unit u, int endX, int endY){
 		
 		Node start = new Node(u.getX(), u.getY());
 		Point end = new Point(endX, endY);

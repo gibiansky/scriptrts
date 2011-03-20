@@ -10,12 +10,12 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.image.BufferedImage;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Timer;
@@ -24,12 +24,18 @@ import java.util.TimerTask;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import com.scriptrts.control.Selection;
-import com.scriptrts.util.ResourceManager;
-import com.scriptrts.control.SelectionStorage;
-import com.scriptrts.script.Script;
-import com.scriptrts.net.GameServer;
+import com.scriptrts.core.ui.Console;
+import com.scriptrts.core.ui.GameMenu;
+import com.scriptrts.core.ui.ImageButton;
+import com.scriptrts.core.ui.MapPainter;
+import com.scriptrts.core.ui.OverlayPane;
+import com.scriptrts.core.ui.TopBar;
+import com.scriptrts.core.ui.EntityPainter;
+import com.scriptrts.game.Game;
 import com.scriptrts.net.GameClient;
+import com.scriptrts.net.GameServer;
+import com.scriptrts.script.Script;
+import com.scriptrts.util.ResourceManager;
 
 /**
  * Main game class which starts the application, parses command line arguments, and initializes the game loop.
@@ -391,13 +397,13 @@ public class Main extends JPanel {
         boolean noUnit = (Boolean) parser.getOptionValue(noUnitDebugOpt,  Boolean.FALSE);
 
         MapPainter.DEBUG = DEBUG;
-        UnitPainter.DEBUG = DEBUG;
+        EntityPainter.DEBUG = DEBUG;
 
         /* Allow user to turn off parts of the debug */
         if(noMap)
             MapPainter.DEBUG = false;
         if(noUnit)
-            UnitPainter.DEBUG = false;
+            EntityPainter.DEBUG = false;
     }
 
     /**
