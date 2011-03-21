@@ -17,6 +17,11 @@ public class UnitType {
     protected int id;
 
     /**
+     * What type of unit this is
+     */
+    protected UnitClass unitClass = UnitClass.Standard;
+
+    /**
      * The unit type name
      */
     protected String name;
@@ -52,6 +57,21 @@ public class UnitType {
      */
     public boolean equals(UnitType u){
         return u.id == id;
+    }
+
+    /**
+     * Check if this unit is a building
+     * @return true if this unit is a building
+     */
+    public boolean isBuilding(){
+        return unitClass == UnitClass.Building;
+    }
+    /**
+     * Check if this unit is a part of the terrain
+     * @return true if this unit is a part of the terrain
+     */
+    public boolean isTerrain(){
+        return unitClass == UnitClass.Terrain;
     }
 
     /**
