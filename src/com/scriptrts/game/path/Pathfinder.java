@@ -1,4 +1,4 @@
-package com.scriptrts.core;
+package com.scriptrts.game.path;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -8,14 +8,17 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import com.scriptrts.game.Direction;
-import com.scriptrts.game.MapObjectGrid;
-import com.scriptrts.game.Unit;
+import com.scriptrts.game.GameObject;
+import com.scriptrts.game.Map;
+import com.scriptrts.game.MapGrid;
+import com.scriptrts.game.TerrainType;
+
 
 public class Pathfinder extends Thread{
 	/**
 	 * Unit to find path for
 	 */
-	private Unit unit;
+	private GameObject unit;
 	
 	/**
 	 * Current map instance
@@ -30,7 +33,7 @@ public class Pathfinder extends Thread{
 	/**
 	 * Unit grid (for collisions later?) - unused
 	 */
-	private MapObjectGrid unitGrid;
+	private MapGrid unitGrid;
 	
 	/**
 	 * Stores terrain costs
@@ -82,11 +85,11 @@ public class Pathfinder extends Thread{
 	 * @param m current map instance
 	 * @param g unit grid
 	 */
-	public Pathfinder(Map m, MapObjectGrid g){
+	public Pathfinder(Map m, MapGrid g){
 		map = m;
 		terrainMap = map.getTileArray();
 		unitGrid = g;
-		n = map.getN() * MapObjectGrid.SPACES_PER_TILE;
+		n = map.getN() * MapGrid.SPACES_PER_TILE;
 		heap = new Node[n * n];
 		nodeList = new HashMap<Point, Node>();
 		path = new ArrayList<Point>();
@@ -100,7 +103,7 @@ public class Pathfinder extends Thread{
 	 * @param m current map instance
 	 * @param g unit grid
 	 */
-	public Pathfinder(Unit u, Map m, MapObjectGrid g){
+	public Pathfinder(GameObject u, Map m, MapGrid g){
 		this(m, g);
 		unit = u;
 	}
@@ -134,7 +137,7 @@ public class Pathfinder extends Thread{
 	/**
 	 * Set the unit to route
 	 */
-	public void setUnit(Unit unit){
+	public void setUnit(GameObject unit){
 		this.unit = unit;
 	}
 	
@@ -156,9 +159,9 @@ public class Pathfinder extends Thread{
 	/**
 	 * Calculates the route between two points
 	 */
-	public void findRoute(Unit u, int endX, int endY){
+	public void findRoute(GameObject u, int endX, int endY){
 		
-		Node start = new Node(u.getX(), u.getY());
+		Node start = new Node(u.getUnit().getX(), u.getUnit().getY());
 		Point end = new Point(endX, endY);
 		
 		if(start.getPoint().equals(end))

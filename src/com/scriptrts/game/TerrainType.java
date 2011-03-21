@@ -1,4 +1,4 @@
-package com.scriptrts.core;
+package com.scriptrts.game;
 
 import java.awt.Color;
 

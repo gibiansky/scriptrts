@@ -2,12 +2,12 @@ package com.scriptrts.control;
 
 import java.awt.Point;
 
-import com.scriptrts.game.Unit;
+import com.scriptrts.game.GameObject;
 
 public class MoveOrder extends Order implements Comparable<MoveOrder> {
    
     
-    public MoveOrder(Point point, Unit unit){
+    public MoveOrder(Point point, GameObject unit){
         this.point = point;
         this.unit = unit;
     }
@@ -31,7 +31,7 @@ public class MoveOrder extends Order implements Comparable<MoveOrder> {
      */
     @Override
     public boolean isComplete() {
-        return unit.getX() == point.getX() && unit.getY() == point.getY();
+        return unit.getUnit().getX() == point.getX() && unit.getUnit().getY() == point.getY();
     }
 
     /**

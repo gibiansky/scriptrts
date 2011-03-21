@@ -1,4 +1,4 @@
-package com.scriptrts.core;
+package com.scriptrts.game.path;
 
 import java.awt.Point;
 

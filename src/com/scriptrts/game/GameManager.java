@@ -1,19 +1,17 @@
-package com.scriptrts.core;
+package com.scriptrts.game;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-import com.scriptrts.game.HeadlessGame;
-import com.scriptrts.game.MapObjectGrid;
-import com.scriptrts.game.Unit;
+import com.scriptrts.core.Main;
 
 
 /**
  * Manages and update units and their positions and statistics
  */
-public class UnitManager {
+public class GameManager {
     /**
      * Current running game instance
      */
@@ -22,23 +20,23 @@ public class UnitManager {
     /**
      * Hashed list of all units, hashed by ID
      */
-    private HashMap<Integer, Unit> allUnits = new HashMap<Integer, Unit>();
+    private HashMap<Integer, GameObject> allUnits = new HashMap<Integer, GameObject>();
 
     /**
      * All updated units
      */
-    private List<Unit> updatedUnits = new ArrayList<Unit>(100);
+    private List<GameObject> updatedUnits = new ArrayList<GameObject>(100);
 
     /**
      * All new units
      */
-    private List<Unit> newUnits = new ArrayList<Unit>(100);
+    private List<GameObject> newUnits = new ArrayList<GameObject>(100);
 
     /**
      * Create a new unit manager
      * @param g game instance for which units are being managed
      */
-    public UnitManager(HeadlessGame g){
+    public GameManager(HeadlessGame g){
         super();
         this.game = g;
     }
@@ -47,7 +45,7 @@ public class UnitManager {
      * Add a unit to the manager
      * @param u unit to add
      */
-    public void addUnit(Unit u){
+    public void addUnit(GameObject u){
         allUnits.put(u.getID(), u);
         newUnits.add(u);
     }
@@ -55,7 +53,7 @@ public class UnitManager {
     /**
      * Mark a unit as updated
      */
-    private void setUnitUpdated(Unit unit){
+    private void setUnitUpdated(GameObject unit){
         updatedUnits.add(unit);
     }
 
@@ -63,7 +61,7 @@ public class UnitManager {
      * Get all updated units
      * @return a list of updated units
      */
-    public List<Unit> updatedUnits(){
+    public List<GameObject> updatedUnits(){
         return updatedUnits;
     }
 
@@ -71,7 +69,7 @@ public class UnitManager {
      * Get all units
      * @return a collection of all units
      */
-    public Collection<Unit> allUnits(){
+    public Collection<GameObject> allUnits(){
         return allUnits.values();
     }
 
@@ -80,7 +78,7 @@ public class UnitManager {
      * @param id unit id
      * @return unit with the specified ID
      */
-    public Unit unitWithID(int id){
+    public GameObject unitWithId(int id){
         return allUnits.get(id);
     }
 
@@ -88,25 +86,27 @@ public class UnitManager {
      * Get all new units
      * @return a list of new units
      */
-    public List<Unit> newUnits(){
+    public List<GameObject> newUnits(){
         return newUnits;
     }
 
     /**
      * Update a single unit with info from the given unit object
      */
-    public void synchronizeUnit(Unit unit){
-        MapObjectGrid grid = game.getUnitGrid();
+    public void synchronizeUnit(GameObject unit){
+        MapGrid grid = game.getGameGrid();
 
         /* Get the unit that was on the map, remove it so we can make updates */
-        Unit prevUnit = allUnits.get(unit.getID());
-        grid.removeMapObject(prevUnit.getMapObject());
+        GameObject prevUnit = allUnits.get(unit.getID());
+        grid.removeUnit(prevUnit);
 
         /* Synchronize the unit with the server's version (including position) */
         prevUnit.setParameters(unit);
 
         /* Re-add the now-synchronized unit (at the possibly updated position) */
-        grid.placeMapObject(prevUnit.getMapObject(), prevUnit.getX(), prevUnit.getY());
+        grid.placeUnit(prevUnit, prevUnit.getUnit().getX(), prevUnit.getUnit().getY());
+
+        System.out.println("Updated Direction: " + unit.getDirection());
     }
 
     /**
@@ -122,15 +122,15 @@ public class UnitManager {
      * Updates unit positions and animations
      */
     public void update(){
-        MapObjectGrid grid = game.getUnitGrid();
-        int n = game.getCurrentMap().getN() * MapObjectGrid.SPACES_PER_TILE;
+        MapGrid grid = game.getGameGrid();
+        int n = game.getCurrentMap().getN() * MapGrid.SPACES_PER_TILE;
 
         /* Check if any movement is occurring this update */
         boolean needsReset = false;
         for(int i = 0; i < n; i++) {
             for(int j = 0; j < n; j++) {
-                if(grid.getUnit(i, j) != null && grid.getUnit(i, j).getX() == i && grid.getUnit(i, j).getY() == j)  
-                    if(grid.getUnit(i, j).getSpeed() != 0 && grid.getUnit(i, j).getDirection() != null)  
+                if(grid.getUnit(i, j) != null && grid.getUnit(i, j).getUnit().getX() == i && grid.getUnit(i, j).getUnit().getY() == j)  
+                    if(grid.getUnit(i, j).getUnit().getSpeed() != 0 && grid.getUnit(i, j).getDirection() != null)  
                         needsReset = true;
             }
         }
@@ -142,7 +142,7 @@ public class UnitManager {
         /* Loop over all unit positions, update where there are units */
         for(int i = 0; i < n; i++){
             for(int j = 0; j < n; j++){
-                if(grid.getUnit(i, j) != null && grid.getUnit(i, j).getX() == i && grid.getUnit(i, j).getY() == j)
+                if(grid.getUnit(i, j) != null && grid.getUnit(i, j).getUnit().getX() == i && grid.getUnit(i, j).getUnit().getY() == j)
                     updateUnit(i, j, grid);
             }
         }
@@ -153,22 +153,22 @@ public class UnitManager {
      * @param i x coordinate in unit grid
      * @param j y coordinate in unit grid
      */
-    private void updateUnit(int i, int j, MapObjectGrid grid){
+    private void updateUnit(int i, int j, MapGrid grid){
         /* Get fps */
         int fps = Main.getFPS();
 
-        Unit unit = grid.getUnit(i, j);
+        GameObject unit = grid.getUnit(i, j);
 
         boolean needsVisibilityUpdate = false;
 
         /* Unit speed is in subtiles per second */
-        int uSpeed = unit.getSpeed();
+        int uSpeed = unit.getUnit().getSpeed();
 
         /* For a moving unit, move it */
-        if(unit.getSpeed() != 0 && unit.getDirection() != null) {
+        if(unit.getUnit().getSpeed() != 0 && unit.getDirection() != null) {
             double subtilesMovedPerFrame = (double)(uSpeed) /* subtiles per second */ / fps /* times seconds */;
 
-            int tilesMoved = unit.getMapObject().incrementAnimationCounter(subtilesMovedPerFrame);
+            int tilesMoved = unit.incrementAnimationCounter(subtilesMovedPerFrame);
 
             needsVisibilityUpdate = tilesMoved > 0;
 
@@ -185,7 +185,7 @@ public class UnitManager {
         }
 
         /* For a unit which could move, but is standing still, update it every time in case it wants an update */
-        else if(unit.getSpeed() > 0 && unit.getDirection() == null){
+        else if(unit.getUnit().getSpeed() > 0 && unit.getDirection() == null){
             grid.moveUnitOneTile(unit);
         }
 
@@ -194,10 +194,10 @@ public class UnitManager {
 
         /* If the unit moved, set its new position to visible */
         if(needsVisibilityUpdate)  
-            vGrid[unit.getX()][unit.getY()] = 2; 
+            vGrid[unit.getUnit().getX()][unit.getUnit().getY()] = 2; 
 
-        unit.getMapObject().progressSpriteAnimation();
-        unit.getOrderHandler().update();
+        unit.progressSpriteAnimation();
+        unit.getUnit().getOrderHandler().update();
     }
 
     /**

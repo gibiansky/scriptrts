@@ -6,13 +6,12 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import com.scriptrts.core.Main;
-import com.scriptrts.core.Map;
-import com.scriptrts.core.TerrainType;
 import com.scriptrts.game.Direction;
-import com.scriptrts.game.MapObject;
+import com.scriptrts.game.GameObject;
+import com.scriptrts.game.Map;
 import com.scriptrts.game.Player;
 import com.scriptrts.game.SpriteState;
-import com.scriptrts.game.Unit;
+import com.scriptrts.game.TerrainType;
 
 
 /**
@@ -85,13 +84,13 @@ public class GameProtocol {
      * @param out output stream to which to write
      * @param unit unit whose state to send
      */
-    public static void sendUnit(DataOutputStream out, Unit unit) throws IOException {
-        Player p = unit.getAllegiance();
-        int x = unit.getX();
-        int y = unit.getY();
-        int state = unit.getMapObject().getState().ordinal();
+    public static void sendUnit(DataOutputStream out, GameObject unit) throws IOException {
+        Player p = unit.getUnit().getAllegiance();
+        int x = unit.getUnit().getX();
+        int y = unit.getUnit().getY();
+        int state = unit.getState().ordinal();
         int id = unit.getID();
-        int speed = unit.getSpeed();
+        int speed = unit.getUnit().getSpeed();
 
         out.writeInt(p.getID());
         out.writeInt(x);
@@ -174,7 +173,7 @@ public class GameProtocol {
      * @param in input stream from which to read
      * @return unit with sent state
      */
-    public static Unit readUnit(DataInputStream in) throws IOException {
+    public static GameObject readUnit(DataInputStream in) throws IOException {
         int playerID = in.readInt();
         Player p = null;
         for(Player player : Main.getGame().getPlayers())
@@ -190,7 +189,7 @@ public class GameProtocol {
         Direction direction = readDirection(in);
         Direction previousDirection = readDirection(in);
 
-        Unit u = new Unit();
+        GameObject u = new GameObject();
         u.setParameters(p, x, y, SpriteState.values()[stateOrd], id, speed, direction, previousDirection);
         return u;
     }

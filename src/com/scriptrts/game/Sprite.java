@@ -1,10 +1,10 @@
-package com.scriptrts.core.ui;
+package com.scriptrts.game;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
-import com.scriptrts.game.MapObject;
+import com.scriptrts.core.ui.UnitPainter;
 
 /**
  * Sprite, used by units to draw themselves on the game map
@@ -47,13 +47,13 @@ public class Sprite {
      * @param tileBackX the back corner x coordinate of the unit tile on which this is being drawn
      * @param tileBackY the back corner y coordinate of the unit tile on which this is being drawn
      */
-    public void draw(Graphics2D graphics, MapObject unit, int tileBackX, int tileBackY){
+    public void draw(Graphics2D graphics, GameObject unit, int tileBackX, int tileBackY){
         int bX = (int) (spriteBackX * scale);
         int bY = (int) (spriteBackY * scale);
 
         graphics.drawImage(image, tileBackX - bX, tileBackY - bY, getWidth(), getHeight(), null);
 
-        if(EntityPainter.DEBUG){
+        if(UnitPainter.DEBUG){
             graphics.setColor(java.awt.Color.green);
             graphics.fillRect(tileBackX, tileBackY, 5, 5);
         }

@@ -3,14 +3,15 @@ package com.scriptrts.control;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import com.scriptrts.game.Unit;
+
+import com.scriptrts.game.GameObject;
 
 public class OrderHandler {
     Queue<Order> orders;
-    Unit unit;
+    GameObject unit;
     Order lastOrder;
     
-    public OrderHandler(Unit unit){
+    public OrderHandler(GameObject unit){
         this.unit = unit;
         orders = new LinkedList<Order>();
         lastOrder = null;
@@ -22,12 +23,12 @@ public class OrderHandler {
      */
     public void handleOrder(Order order){
         if(order instanceof MoveOrder)
-            unit.setDestination(((MoveOrder) order).getPoint());
+            unit.getUnit().setDestination(((MoveOrder) order).getPoint());
         if(order instanceof FollowOrder)
-            unit.setDestination(((FollowOrder) order).getPoint());
+            unit.getUnit().setDestination(((FollowOrder) order).getPoint());
         if(order instanceof StopOrder){
             orders.clear();
-            unit.setDestination(unit.getLocation());
+            unit.getUnit().setDestination(unit.getUnit().getLocation());
         }
     }
     
@@ -76,7 +77,7 @@ public class OrderHandler {
         return orders;
     }
 
-    public Unit getUnit() {
+    public GameObject getUnit() {
         return unit;
     }
 }

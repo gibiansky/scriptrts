@@ -5,16 +5,14 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Polygon;
-import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
 
 import com.scriptrts.core.Main;
-import com.scriptrts.core.Map;
-import com.scriptrts.core.TerrainType;
-import com.scriptrts.core.Viewport;
-import com.scriptrts.game.MapObjectGrid;
+import com.scriptrts.game.Map;
+import com.scriptrts.game.MapGrid;
+import com.scriptrts.game.TerrainType;
 import com.scriptrts.util.ResourceManager;
 
 /**
@@ -434,54 +432,6 @@ public class MapPainter {
         return new Point(x - tileX / 2, y);
     }
 
-    /**
-     * Creates a background thread to rescale all the images
-     */
-    private synchronized void scaleImagesInBackground(){
-        /* Set all images to be full size until we rescale */
-        for(int i = 0; i < images.length; i++)
-            scaledImages[i] = images[i];
-
-        for(int i = 0; i < terrainMasks.length; i++)
-            for(int j = 0; j < terrainMasks[0].length; j++)
-                scaledTerrainMasks[i][j] = terrainMasks[i][j];
-
-        for(int j = 0; j < terrainMasks[0].length; j++)
-            scaledBlackMasks[j] = blackMasks[j];
-
-        /* Resize in background */
-        Thread scaler = new Thread(){
-            public void run(){
-                for(int i = 0; i < images.length; i++)
-                    scaledImages[i] = resizeImage(images[i], tileX, tileY);
-
-                for(int i = 0; i < terrainMasks.length; i++)
-                    for(int j = 0; j < terrainMasks[0].length; j++)
-                        scaledTerrainMasks[i][j] = resizeImage(terrainMasks[i][j], tileX, tileY);
-
-                for(int j = 0; j < terrainMasks[0].length; j++)
-                    scaledBlackMasks[j] = resizeImage(blackMasks[j], tileX, tileY);
-            }
-        };
-        scaler.setPriority(Thread.MIN_PRIORITY);
-        scaler.start();
-    }
-
-    /**
-     * Resizes an image to be of desired size
-     * @param img image to scale
-     * @param width new desired width
-     * @param height new desired height
-     * @return a scaled image
-     */
-    private BufferedImage resizeImage(Image img, int width, int height){
-        BufferedImage scaledImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = (Graphics2D) scaledImage.getGraphics();
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g.drawImage(img, 0, 0, width, height, null);
-        g.dispose();
-        return scaledImage;
-    }
 
     /**
      * Get the width of the tiles
@@ -565,7 +515,6 @@ public class MapPainter {
         int north   = mapBoundsPaintArray[3];
 
         /* Only draw what we need to */
-        int n = Main.getGame().getCurrentMap().getN();
         for(int i = west; i < east; i++) {
             for(int j = south; j < north; j++) {
                 /*
@@ -582,9 +531,9 @@ public class MapPainter {
                 /* Figure out if any part of the tile is visible,
                  * and if it is, make the whole map tile visible */
                 boolean partVis = false;
-                for(int k = 0; k < MapObjectGrid.SPACES_PER_TILE; k++)
-                    for(int l = 0; l < MapObjectGrid.SPACES_PER_TILE; l++)
-                        if(vis[i * MapObjectGrid.SPACES_PER_TILE + k][j * MapObjectGrid.SPACES_PER_TILE + l] == 2)
+                for(int k = 0; k < MapGrid.SPACES_PER_TILE; k++)
+                    for(int l = 0; l < MapGrid.SPACES_PER_TILE; l++)
+                        if(vis[i * MapGrid.SPACES_PER_TILE + k][j * MapGrid.SPACES_PER_TILE + l] == 2)
                             partVis = true;
 
                 /* If the tile is visible to a unit, paint it normally */

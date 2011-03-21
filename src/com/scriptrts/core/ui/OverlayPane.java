@@ -9,7 +9,6 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
 
-import com.scriptrts.core.Viewport;
 import com.scriptrts.util.ResourceManager;
 
 /** 
@@ -25,11 +24,6 @@ public class OverlayPane extends JPanel {
      * Height of the overlay
      */
     private int height = 200;
-
-    /**
-     * Viewport used to display the game
-     */
-    private Viewport viewport;
 
     /**
      * The generic background.
@@ -69,7 +63,6 @@ public class OverlayPane extends JPanel {
         super(true);
         setLayout(null);
 
-        this.viewport = viewport;
         this.width = viewport.getWidth();
 
         /* Load images */
@@ -135,7 +128,6 @@ public class OverlayPane extends JPanel {
         graphics.fillRect(0, 0, width, height);
 
         int imgWidth = barBackgroundLeft.getWidth() - 3;
-        int imgHeight = barBackgroundLeft.getHeight() - 2;
         graphics.drawImage(barBackgroundLeft, 0, 0, null);
 
         for(int i = imgWidth; i <= width; i += imgWidth){

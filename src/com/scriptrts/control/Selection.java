@@ -1,11 +1,9 @@
 package com.scriptrts.control;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
+import com.scriptrts.game.*;
 import com.scriptrts.core.ui.SelectionArea;
-import com.scriptrts.game.MapObject;
 
 /**
  * A selection of units and other map entities
@@ -15,7 +13,7 @@ public class Selection {
     /**
      * Inner container used to store the units
      */
-    private ArrayList<MapObject> objects = new ArrayList<MapObject>();
+    private ArrayList<GameObject> objects = new ArrayList<GameObject>();
 
     /**
      * Current selection (units currently selected by the player)
@@ -72,7 +70,7 @@ public class Selection {
      * Add a unit to a selection 
      * @param unit the unit to add
      */
-    public void add(MapObject unit){
+    public void add(GameObject unit){
         /* Don't add duplicate objects to a selection */
         if(!objects.contains(unit))
             objects.add(unit);
@@ -85,8 +83,8 @@ public class Selection {
      * Add a collection of units to a selection
      * @param units a java Collection of units to add
      */
-    public void add(Collection<MapObject> units){
-        for(MapObject u : units)
+    public void add(Collection<GameObject> units){
+        for(GameObject u : units)
             add(u);
     }
 
@@ -94,7 +92,7 @@ public class Selection {
      * Remove a unit from a selection
      * @param units the unit to remove
      */
-    public void remove(MapObject unit){
+    public void remove(GameObject unit){
         objects.remove(unit);
 
         if(this == Selection.current())
@@ -115,7 +113,7 @@ public class Selection {
      * Get the selection as a list of units. Modifying this list will modify the selection.
      * @return mutable list of units
      */
-    public List<MapObject> getList(){
+    public List<GameObject> getList(){
         return objects;
     }
 
@@ -124,11 +122,11 @@ public class Selection {
      * @param unit the unit to check
      * @return true if the unit is in the selection, false otherwise
      */
-    public boolean contains(MapObject unit){
+    public boolean contains(GameObject unit){
         return objects.contains(unit);
     }
     
-    public ArrayList<MapObject> getObjects() {
+    public ArrayList<GameObject> getObjects() {
 		return objects;
 	}
 	
@@ -140,7 +138,7 @@ public class Selection {
 	}
 	
 	public boolean equals(Selection s){
-		for(MapObject x: s.objects){
+		for(GameObject x: s.objects){
 			if(!this.contains(x))
 				return false;
 		}

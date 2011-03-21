@@ -1,11 +1,10 @@
 package com.scriptrts.game;
 
 import java.awt.Color;
-import java.io.Serializable;
 
 import com.scriptrts.core.Main;
 
-public class Player implements Serializable {
+public class Player {
     /* Available default colors */
     public static Color[] COLORS = {
         Color.RED, Color.BLUE, Color.YELLOW, Color.MAGENTA, Color.BLACK, Color.GRAY, Color.GREEN, Color.ORANGE
@@ -37,7 +36,7 @@ public class Player implements Serializable {
         this.color = color;
         this.id = id;
 
-        int n = Main.getGame().getCurrentMap().getN() * MapObjectGrid.SPACES_PER_TILE;
+        int n = Main.getGame().getCurrentMap().getN() * MapGrid.SPACES_PER_TILE;
         visibilityGrid = new byte[n][n];
     }
     

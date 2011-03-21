@@ -3,9 +3,7 @@ package com.scriptrts.game;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.scriptrts.core.Map;
-import com.scriptrts.core.PathHandler;
-import com.scriptrts.core.UnitManager;
+import com.scriptrts.game.path.PathHandler;
 
 /**
  * Headless game run by the servers and extended by the graphical game
@@ -30,12 +28,12 @@ public class HeadlessGame {
     /**
      * Grid for units to be on
      */
-    protected MapObjectGrid grid;
+    protected MapGrid grid;
 
     /**
      * Unit manager to move and update units
      */
-    protected UnitManager unitManager;
+    protected GameManager unitManager;
 
     /**
      * All players currently connected
@@ -61,10 +59,10 @@ public class HeadlessGame {
         map.generateMap(.64);
 
         /* Create the grid for units */
-        grid = new MapObjectGrid(n);
+        grid = new MapGrid(n);
         
         /* Create the unit manager */
-        unitManager = new UnitManager(this);
+        unitManager = new GameManager(this);
 
         /* Create path handler */
         pathHandler = new PathHandler(map, grid);
@@ -114,7 +112,7 @@ public class HeadlessGame {
      * Get the unit grid.
      * @return current unit grid
      */
-    public MapObjectGrid getUnitGrid(){
+    public MapGrid getGameGrid(){
         return grid;
     }
 
@@ -122,7 +120,7 @@ public class HeadlessGame {
      * Get the unit manager
      * @return current unit manager
      */
-    public UnitManager getUnitManager(){
+    public GameManager getGameManager(){
         return unitManager;
     }
 }

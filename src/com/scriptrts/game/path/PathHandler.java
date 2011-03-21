@@ -1,11 +1,13 @@
-package com.scriptrts.core;
+package com.scriptrts.game.path;
 
 import java.awt.Point;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import com.scriptrts.game.MapObjectGrid;
-import com.scriptrts.game.Unit;
+import com.scriptrts.game.GameObject;
+import com.scriptrts.game.Map;
+import com.scriptrts.game.MapGrid;
+
 
 public class PathHandler{
 	
@@ -22,12 +24,12 @@ public class PathHandler{
 	/**
 	 * Current unit grid instance
 	 */
-	private MapObjectGrid unitGrid;
+	private MapGrid unitGrid;
 	
 	/**
 	 * Overflow of units to route, if there are more units to route than pathfinders available
 	 */
-	private Queue<Unit> unitsToRoute;
+	private Queue<GameObject> unitsToRoute;
 	
 	/**
 	 * Overflow of corresponding destinations
@@ -39,11 +41,11 @@ public class PathHandler{
 	 * @param map current map instance
 	 * @param unitGrid current unit grid instance
 	 */
-	public PathHandler(Map map, MapObjectGrid unitGrid){
+	public PathHandler(Map map, MapGrid unitGrid){
 		pathfinders = new LinkedList<Pathfinder>();
 		this.map = map;
 		this.unitGrid = unitGrid;
-		unitsToRoute = new LinkedList<Unit>();
+		unitsToRoute = new LinkedList<GameObject>();
 		destinations = new LinkedList<Point>();
 	}
 	
@@ -88,7 +90,7 @@ public class PathHandler{
 	 * @param unit unit to route path for
 	 * @param end destination for unit
 	 */
-	public void addPath(Unit unit, Point end){
+	public void addPath(GameObject unit, Point end){
 		unitsToRoute.add(unit);
 		destinations.add(end);
 	}
@@ -98,9 +100,9 @@ public class PathHandler{
 	 */
 	public void update(){
 		if(!this.isEmpty() && !unitsToRoute.isEmpty()){
-			Unit unit = unitsToRoute.poll();
+			GameObject unit = unitsToRoute.poll();
 			Point end = destinations.poll();
-			unit.setDestination(end);
+			unit.getUnit().setDestination(end);
 		}
 	}
 	

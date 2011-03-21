@@ -13,14 +13,12 @@ import java.util.List;
 import java.util.Vector;
 
 import com.scriptrts.core.Main;
-import com.scriptrts.core.ui.AnimatedSprite;
-import com.scriptrts.core.ui.Sprite;
+import com.scriptrts.game.AnimatedSprite;
 import com.scriptrts.game.Direction;
+import com.scriptrts.game.GameObject;
 import com.scriptrts.game.HeadlessGame;
-import com.scriptrts.game.MapObject;
 import com.scriptrts.game.Player;
-import com.scriptrts.game.Unit;
-import com.scriptrts.game.Entity.EntityType;
+import com.scriptrts.game.Sprite;
 import com.scriptrts.util.ResourceManager;
 
 /**
@@ -196,7 +194,7 @@ public class GameServer {
                 e.printStackTrace();
             }
 
-            if(game.getUnitManager() != null){
+            if(game.getGameManager() != null){
                 synchronized(connections){
                     try {
                         for(Socket socket : connections){
@@ -225,7 +223,7 @@ public class GameServer {
                     }
                 }
 
-                game.getUnitManager().clearUpdates();
+                game.getGameManager().clearUpdates();
             }
         }
     }
@@ -236,17 +234,17 @@ public class GameServer {
      * @param player player receiving the update
      */
     private void updateClient(DataOutputStream output, Player player) throws IOException, ClassNotFoundException {
-        List<Unit> updated = game.getUnitManager().updatedUnits();
-        List<Unit> created = game.getUnitManager().newUnits();
+        List<GameObject> updated = game.getGameManager().updatedUnits();
+        List<GameObject> created = game.getGameManager().newUnits();
         if(updated.size() > 0 || created.size() > 0) {
             GameProtocol.sendResponse(output, ServerResponse.UnitUpdate);
 
             output.writeInt(created.size());
-            for(Unit unit : created)
+            for(GameObject unit : created)
                 GameProtocol.sendUnit(output, unit);
 
             output.writeInt(updated.size());
-            for(Unit unit : updated)
+            for(GameObject unit : updated)
                 GameProtocol.sendUnit(output, unit);
         }
     }
@@ -306,7 +304,6 @@ public class GameServer {
 
         /* Send back players */
         for(Player p : Main.getGame().getPlayers()){
-            System.out.println("Writing players " + p);
             GameProtocol.sendResponse(objOut, ServerResponse.NewPlayer);
             objOut.writeInt(p.getID());
             GameProtocol.sendString(objOut, p.getName());
@@ -316,9 +313,9 @@ public class GameServer {
         /* Send back all units as a unit update */
         GameProtocol.sendResponse(objOut, ServerResponse.UnitUpdate);
 
-        Collection<Unit> all = game.getUnitManager().allUnits();
+        Collection<GameObject> all = game.getGameManager().allUnits();
         objOut.writeInt(all.size());
-        for(Unit unit : all)
+        for(GameObject unit : all)
             GameProtocol.sendUnit(objOut, unit);
 
         objOut.writeInt(0);
@@ -393,14 +390,10 @@ public class GameServer {
     public void pathAppendedRequest(Socket socket, DataInputStream in) throws IOException, ClassNotFoundException {
         int unitID = in.readInt();
         int dirs = in.readInt();
-        Unit unit = Main.getGame().getUnitManager().unitWithID(unitID);
+        GameObject unit = Main.getGame().getGameManager().unitWithId(unitID);
 
-        System.out.println("Here: " + unitID + " " + dirs + " " + unit);
         for(int i = 0; i < dirs; i++){
-            System.out.println("read read read " + i);
             Direction d = GameProtocol.readDirection(in);
-            System.out.println("path appended server " + unit + " " + d);
-
             if(unit != null)
                 unit.addToPath(d);
         }
@@ -413,8 +406,7 @@ public class GameServer {
      */
     public void pathClearedRequest(Socket socket, DataInputStream in) throws IOException, ClassNotFoundException {
         int unitID = in.readInt();
-        Unit unit = Main.getGame().getUnitManager().unitWithID(unitID);
-        System.out.println("path cleared server " + unitID);
+        GameObject unit = Main.getGame().getGameManager().unitWithId(unitID);
         if(unit != null)
             unit.clearPath();
     }
@@ -426,8 +418,7 @@ public class GameServer {
      * @param in input stream to read from
      */
     private void newUnitRequest(Socket socket, DataInputStream in) throws IOException, ClassNotFoundException {
-        Unit newUnit = GameProtocol.readUnit(in);
-        System.out.println(Main.getGame().getPlayers());
+        GameObject newUnit = GameProtocol.readUnit(in);
 
         try {
             /* Retrieve spaceship sprites */
@@ -437,7 +428,7 @@ public class GameServer {
                 String unitDir = "resource/unit/spaceship/";
                 String unitFilename = "Ship" + d.name() + ".png";
                 BufferedImage img = ResourceManager.loadBandedImage(
-                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, newUnit.getAllegiance().getColor());
+                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, newUnit.getUnit().getAllegiance().getColor());
                 sprites[d.ordinal()]  = new Sprite(img, 0.3, 87, 25);
             }
 
@@ -445,9 +436,9 @@ public class GameServer {
                 String unitDir = "resource/unit/spaceship/";
                 String unitFilename = "Ship" + d.name() + ".png";
                 BufferedImage normalImg = ResourceManager.loadBandedImage(
-                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, newUnit.getAllegiance().getColor());
+                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, newUnit.getUnit().getAllegiance().getColor());
                 BufferedImage attackImg = ResourceManager.loadBandedImage(
-                        unitDir + "attack/" + unitFilename, unitDir + "allegiance/" + unitFilename, newUnit.getAllegiance().getColor());
+                        unitDir + "attack/" + unitFilename, unitDir + "allegiance/" + unitFilename, newUnit.getUnit().getAllegiance().getColor());
                 int bX = 87, bY = 25;
                 if(d == Direction.Northwest)
                     bY += 43;
@@ -465,11 +456,11 @@ public class GameServer {
                         });
             }
 
-            Unit spaceship = new Unit(null, sprites, art, 0, 0, 0, null, true, Main.getGame().getPathHandler());
+            GameObject spaceship = new GameObject(null, sprites, art, 0, 0, 0, null, true, Main.getGame().getPathHandler());
             spaceship.setParameters(newUnit);
-            Unit unit = spaceship;
-            Main.getGame().getUnitGrid().placeMapObject(unit.getMapObject(), unit.getX(), unit.getY());
-            Main.getGame().getUnitManager().addUnit(unit);
+            GameObject unit = spaceship;
+            Main.getGame().getGameGrid().placeUnit(unit, unit.getUnit().getX(), unit.getUnit().getY());
+            Main.getGame().getGameManager().addUnit(unit);
             System.out.println("New Unit ID: " + unit.getID());
         } catch (Exception e) {
             e.printStackTrace();
