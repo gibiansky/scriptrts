@@ -31,15 +31,6 @@ public class TopBar extends JPanel {
      */
     private BufferedImage barBackground;
 
-    /**
-     * The generic menu bar left corner
-     */
-    private BufferedImage barBackgroundLeft;
-    
-    /**
-     * The generic menu bar right corner
-     */
-    private BufferedImage barBackgroundRight;
 
     /**
      * The individual button images (overlayed onto the generic background)
@@ -63,8 +54,6 @@ public class TopBar extends JPanel {
         /* Load images */
         try {
             barBackground = ResourceManager.loadImage("resource/MenuBackgroundCenter.png");
-            barBackgroundLeft = ResourceManager.loadImage("resource/MenuBackgroundLeft.png");
-            barBackgroundRight = ResourceManager.loadImage("resource/MenuBackgroundRight.png");
 
             BufferedImage img = ResourceManager.loadImage("resource/TotalButton.png");
             BufferedImage img2 = ResourceManager.loadImage("resource/TotalButton2.png");

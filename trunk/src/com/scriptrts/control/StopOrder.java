@@ -2,11 +2,11 @@ package com.scriptrts.control;
 
 import java.awt.Point;
 
-import com.scriptrts.game.Unit;
+import com.scriptrts.game.GameObject;
 
 public class StopOrder extends Order {
 
-    public StopOrder(Unit unit){
+    public StopOrder(GameObject unit){
         this.unit = unit;
     }
     
@@ -17,7 +17,7 @@ public class StopOrder extends Order {
 
     @Override
     public Point getPoint() {
-        return unit.getLocation();
+        return unit.getUnit().getLocation();
     }
 
     /**
@@ -25,7 +25,7 @@ public class StopOrder extends Order {
      */
     @Override
     public boolean isComplete() {
-        return unit.getOrderHandler().getOrders().size() == 0;
+        return unit.getUnit().getOrderHandler().getOrders().size() == 0;
     }
 
 }

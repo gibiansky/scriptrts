@@ -1,56 +1,56 @@
-package com.scriptrts.combat;
+package com.scriptrts.game;
 
 import java.util.List;
 
 /**
  * Unit object for unit types
  */
-public class Unit {
+public class UnitType {
     /**
      * Counter used to initialize IDs of new units 
      */
-    private static int idCounter = 0;
+    protected static int idCounter = 0;
 
     /**
      * ID of this unit (unique)
      */
-    private int id;
+    protected int id;
 
     /**
      * The unit type name
      */
-    private String name;
+    protected String name;
 
     /**
      * Number of hitpoints unit type starts with
      */
-    private int hitpoints;
+    protected int hitpoints;
 
     /**
      * The armor bonus of this unit
      */
-    private int armor;
+    protected int armor;
 
     /**
      * The base attack of this unit
      */
-    private int attack;
+    protected int attack;
 
     /**
      * The attack type of this unit
      */
-    private AttackType attackType;
+    protected AttackType attackType;
     
     /**
      * The attributes this unit has
      */
-    private List<Attribute> attributes;
+    protected List<Attribute> attributes;
 
     /**
      * Check if the units are equal
      * @return true if the unit is the same instance
      */
-    public boolean equals(Unit u){
+    public boolean equals(UnitType u){
         return u.id == id;
     }
 
@@ -139,10 +139,8 @@ public class Unit {
         damage -= defending.armor();
 
         /* Add up all anti-attribute bonuses */
-        float bonuses = 1;
         for(Attribute attribute : defending.attributes())
-            bonuses *= attackType().attackBonus(attribute);
-        damage = Math.round(damage * bonuses);
+            damage += attackType().attackBonus(attribute);
 
         /* Minimum of 1 damage */
         if(damage <= 0)

@@ -2,11 +2,11 @@ package com.scriptrts.control;
 
 import java.awt.Point;
 
-import com.scriptrts.game.Unit;
+import com.scriptrts.game.GameObject;
 
 public abstract class Order {
     protected Point point;
-    protected Unit unit;
+    protected GameObject unit;
     
     // should be entity
     public abstract boolean isComplete();
@@ -14,8 +14,4 @@ public abstract class Order {
     public abstract Point getPoint();
     
     public abstract boolean equals(Order o);
-    
-    public Unit getUnit() {
-        return unit;
-    }
 }

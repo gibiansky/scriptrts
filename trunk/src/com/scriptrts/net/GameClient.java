@@ -7,18 +7,15 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 
 import com.scriptrts.core.Main;
-import com.scriptrts.core.Map;
-import com.scriptrts.core.ui.AnimatedSprite;
-import com.scriptrts.core.ui.Sprite;
+import com.scriptrts.game.AnimatedSprite;
 import com.scriptrts.game.Direction;
-import com.scriptrts.game.MapObject;
+import com.scriptrts.game.GameObject;
+import com.scriptrts.game.Map;
 import com.scriptrts.game.Player;
-import com.scriptrts.game.Unit;
-import com.scriptrts.game.Entity.EntityType;
+import com.scriptrts.game.Sprite;
 import com.scriptrts.util.ResourceManager;
 
 /**
@@ -126,19 +123,6 @@ public class GameClient {
      * @param req type of request to send
      * @param objects list of objects to send as data
      */
-    private void sendRequest(ServerRequest req, List<Object> objects){
-        synchronized(toSend){
-            toSend.offer(req);
-            for(Object o : objects)
-                toSend.offer(o);
-        }
-    }
-
-    /**
-     * Tell the client to send a server a request
-     * @param req type of request to send
-     * @param objects list of objects to send as data
-     */
     private void sendRequest(ServerRequest req, Object... objects){
         synchronized(toSend){
             toSend.offer(req);
@@ -152,9 +136,8 @@ public class GameClient {
      * @param unit unit that has had a path change
      * @param d direction added to path
      */
-    public void sendPathAppendedNotification(Unit unit, Direction d){
+    public void sendPathAppendedNotification(GameObject unit, Direction d){
         sendRequest(ServerRequest.PathAppended, new Integer(unit.getID()), new Integer(1), d);
-        System.out.println("path appended " + unit.getID() + " " +  1 + " " + d);
     }
 
     /**
@@ -162,15 +145,12 @@ public class GameClient {
      * @param unit unit that has had a path change
      * @param newPath the new path of the unit
      */
-    public void sendPathChangedNotification(Unit unit, Queue<Direction> newPath){
+    public void sendPathChangedNotification(GameObject unit, Queue<Direction> newPath){
         sendRequest(ServerRequest.PathCleared, new Integer(unit.getID()));
 
-        System.out.println("path cleared " + unit.getID());
 
         sendRequest(ServerRequest.PathAppended, new Integer(unit.getID()), new Integer(newPath.size()));
-        System.out.println("path appended " + unit.getID() + " "  + newPath.size());
         for(Direction d : newPath){
-            System.out.println("Dir " + d);
             sendRequest(d);
         }
     }
@@ -179,7 +159,7 @@ public class GameClient {
      * Tell the server that a new unit has been added
      * @param unit added unit
      */
-    public void sendNewUnitNotification(Unit unit){
+    public void sendNewUnitNotification(GameObject unit){
         System.out.println("Found new unit with ID " + unit.getID());
         sendRequest(ServerRequest.NewUnit, unit);
     }
@@ -198,8 +178,8 @@ public class GameClient {
                 GameProtocol.sendString(output, (String) o);
             if(o instanceof Color)
                 GameProtocol.sendColor(output, (Color) o);
-            if(o instanceof Unit)
-                GameProtocol.sendUnit(output, (Unit) o);
+            if(o instanceof GameObject)
+                GameProtocol.sendUnit(output, (GameObject) o);
             if(o instanceof Integer)
                 output.writeInt(((Integer) o).intValue());
             if(o instanceof Direction)
@@ -223,7 +203,7 @@ public class GameClient {
                 if(serverResponse == ServerResponse.UnitUpdate){
                     int sizeNew = input.readInt();
                     for(int i = 0; i < sizeNew; i++) {
-                        Unit newUnit = GameProtocol.readUnit(input);
+                        GameObject newUnit = GameProtocol.readUnit(input);
 
                         try {
                             /* Retrieve spaceship sprites */
@@ -233,7 +213,7 @@ public class GameClient {
                                 String unitDir = "resource/unit/spaceship/";
                                 String unitFilename = "Ship" + d.name() + ".png";
                                 BufferedImage img = ResourceManager.loadBandedImage(
-                                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, newUnit.getAllegiance().getColor());
+                                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, newUnit.getUnit().getAllegiance().getColor());
                                 sprites[d.ordinal()]  = new Sprite(img, 0.3, 87, 25);
                             }
 
@@ -241,9 +221,9 @@ public class GameClient {
                                 String unitDir = "resource/unit/spaceship/";
                                 String unitFilename = "Ship" + d.name() + ".png";
                                 BufferedImage normalImg = ResourceManager.loadBandedImage(
-                                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, newUnit.getAllegiance().getColor());
+                                        unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, newUnit.getUnit().getAllegiance().getColor());
                                 BufferedImage attackImg = ResourceManager.loadBandedImage(
-                                        unitDir + "attack/" + unitFilename, unitDir + "allegiance/" + unitFilename, newUnit.getAllegiance().getColor());
+                                        unitDir + "attack/" + unitFilename, unitDir + "allegiance/" + unitFilename, newUnit.getUnit().getAllegiance().getColor());
                                 int bX = 87, bY = 25;
                                 if(d == Direction.Northwest)
                                     bY += 43;
@@ -261,11 +241,11 @@ public class GameClient {
                                         });
                             }
 
-                            Unit spaceship = new Unit(null, sprites, art, 0, 0, 0, null, true, Main.getGame().getPathHandler());
+                            GameObject spaceship = new GameObject(null, sprites, art, 0, 0, 0, null, true, Main.getGame().getPathHandler());
                             spaceship.setParameters(newUnit);
-                            Unit unit = spaceship;
-                            Main.getGame().getUnitGrid().placeMapObject(unit.getMapObject(), unit.getX(), unit.getY());
-                            Main.getGame().getUnitManager().addUnit(unit);
+                            GameObject unit = spaceship;
+                            Main.getGame().getGameGrid().placeUnit(unit, unit.getUnit().getX(), unit.getUnit().getY());
+                            Main.getGame().getGameManager().addUnit(unit);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -273,8 +253,8 @@ public class GameClient {
 
                     int sizeUpdated = input.readInt();
                     for(int i = 0; i < sizeUpdated; i++) {
-                        Unit updatedUnit = GameProtocol.readUnit(input);
-                        Main.getGame().getUnitManager().synchronizeUnit(updatedUnit);
+                        GameObject updatedUnit = GameProtocol.readUnit(input);
+                        Main.getGame().getGameManager().synchronizeUnit(updatedUnit);
                     }
 
                 }

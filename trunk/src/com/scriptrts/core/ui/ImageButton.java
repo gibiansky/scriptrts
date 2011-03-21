@@ -9,7 +9,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.util.ArrayList;
 
-import com.scriptrts.core.InputManager;
 import com.scriptrts.util.ResourceManager;
 
 /**

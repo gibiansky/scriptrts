@@ -2,19 +2,23 @@ package com.scriptrts.control;
 
 import java.awt.Point;
 
-import com.scriptrts.game.Unit;
+import com.scriptrts.game.GameObject;
 
 public class FollowOrder extends Order {
-    private Unit target;
+
+    GameObject unit;
+    GameObject target;
     
-    public FollowOrder(Unit unit, Unit target){
+    public FollowOrder(GameObject unit, GameObject target){
         this.unit = unit;
         this.target = target;
     }
     
+    public GameObject getUnit() {
+        return unit;
+    }
 
-
-    public Unit getTarget() {
+    public GameObject getTarget() {
         return target;
     }
 
@@ -25,12 +29,12 @@ public class FollowOrder extends Order {
 
     @Override
     public Point getPoint() {
-        return new Point(target.getX(), target.getY());
+        return new Point(target.getUnit().getX(), target.getUnit().getY());
     }
 
     @Override
     public boolean isComplete() {
-        return !target.isAlive() || unit.equals(target);
+        return !target.getUnit().isAlive() || unit.equals(target);
     }
 
 

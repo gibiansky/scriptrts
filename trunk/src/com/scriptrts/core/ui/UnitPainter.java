@@ -14,23 +14,21 @@ import java.util.LinkedList;
 import com.scriptrts.control.Order;
 import com.scriptrts.control.Selection;
 import com.scriptrts.core.Main;
-import com.scriptrts.core.Viewport;
 import com.scriptrts.game.Direction;
-import com.scriptrts.game.Entity;
-import com.scriptrts.game.MapObject;
-import com.scriptrts.game.MapObjectGrid;
-import com.scriptrts.game.Unit;
+import com.scriptrts.game.GameObject;
+import com.scriptrts.game.MapGrid;
+import com.scriptrts.game.Sprite;
 import com.scriptrts.util.ResourceManager;
 
 /**
  * Painter which draws units onto the screen on top of the map.
  */
-public class EntityPainter {
+public class UnitPainter {
 
 	/**
 	 * The grid of units to draw
 	 */
-	private MapObjectGrid grid;
+	private MapGrid grid;
 
 	/**
 	 * The map painter on top of which units are being drawn
@@ -60,7 +58,7 @@ public class EntityPainter {
 	/**
 	 * Create a new unit painter which paints the given units on the map
 	 */
-	public EntityPainter(MapObjectGrid g, MapPainter m){
+	public UnitPainter(MapGrid g, MapPainter m){
 		super();
 
 		mapPainter = m;
@@ -71,12 +69,10 @@ public class EntityPainter {
      * Get the coordinates of the back point on the unit.
      * @param unit which unit to get the back point of
      */
-    private Point getTileBackLocation(MapObject obj){
-        int tileBackX, tileBackY;
-
+    private Point getTileBackLocation(GameObject unit){
         /* Which piece of the terrain tile it's in */
-        int a = obj.getEntity().getX() % MapObjectGrid.SPACES_PER_TILE;
-        int b = obj.getEntity().getY() % MapObjectGrid.SPACES_PER_TILE;
+        int a = unit.getUnit().getX() % MapGrid.SPACES_PER_TILE;
+        int b = unit.getUnit().getY() % MapGrid.SPACES_PER_TILE;
 
         return getUnitTileBackLocation(a, b);
     }
@@ -85,13 +81,13 @@ public class EntityPainter {
      * Get all the back points of all tiles a unit occupies.
      * @param unit the unit to get tiles from
      */
-    private Point[] getAllTileBackLocations(MapObject unit){
+    private Point[] getAllTileBackLocations(GameObject unit){
         int[] xs = unit.getAllX();
         int[] ys = unit.getAllY();
         Point[] pts = new Point[xs.length];
         for(int i = 0; i < xs.length; i++){
-            int a = xs[i] % MapObjectGrid.SPACES_PER_TILE;
-            int b = ys[i] % MapObjectGrid.SPACES_PER_TILE;
+            int a = xs[i] % MapGrid.SPACES_PER_TILE;
+            int b = ys[i] % MapGrid.SPACES_PER_TILE;
             pts[i] = getUnitTileBackLocation(a,b);
         }
         return pts;
@@ -172,10 +168,6 @@ public class EntityPainter {
      * @param viewport viewport being used to view the map
 	 */
 	public void paintUnits(Graphics2D graphics, Viewport viewport){
-		/* Calculate the viewport edges (in map tiles) */
-		int tileX = mapPainter.getTileWidth();
-		int tileY = mapPainter.getTileHeight();
-
         /* Get tiles visible */
         mapPainter.getViewportTileBounds(mapBoundsArray, viewport);
         int west    = mapBoundsArray[0];
@@ -206,38 +198,19 @@ public class EntityPainter {
         int x = (i+j+1)*tileX/2;
         int y = tileY * mapPainter.getMap().getN() / 2 + (i - j - 1) * tileY / 2;
 
-		for(int a = 0; a < MapObjectGrid.SPACES_PER_TILE; a++){
-            for(int b = 0; b < MapObjectGrid.SPACES_PER_TILE; b++){
-                Unit unit = grid.getUnit(i * 3 + a, j * 3 + b);
-                if(unit != null && i * 3 + a == unit.getX() && j * 3 + b == unit.getY())
+		for(int a = 0; a < MapGrid.SPACES_PER_TILE; a++){
+            for(int b = 0; b < MapGrid.SPACES_PER_TILE; b++){
+                GameObject unit = grid.getUnit(i * 3 + a, j * 3 + b);
+                if(unit != null && i * 3 + a == unit.getUnit().getX() && j * 3 + b == unit.getUnit().getY())
                     paintUnit(graphics, unit, x - tileX/2, y);
             }
 		}
 
-
-        /* Shows green lines around unit tiles */
-        if(EntityPainter.DEBUG && false){
-            graphics.setColor(Color.green);
-            for(int a = 0; a < MapObjectGrid.SPACES_PER_TILE; a++)
-                for(int b = 0; b < MapObjectGrid.SPACES_PER_TILE; b++) {
-                    Point backCorner = getUnitTileBackLocation(a, b);
-                    backCorner.translate(x - tileX/2, y);
-                    int[] xpts = {
-                        backCorner.x, backCorner.x + tileX / 6, backCorner.x, backCorner.x - tileX / 6
-                    };
-                    int[] ypts = {
-                        backCorner.y, backCorner.y + tileY / 6, backCorner.y + tileY / 3, backCorner.y + tileY / 6
-                    };
-
-                    graphics.drawPolygon(new Polygon(xpts, ypts, 4));
-                }
-        }
-
         /* Paint taken up squares as blue */
-        if(EntityPainter.DEBUG){
-            for(int a = 0; a < MapObjectGrid.SPACES_PER_TILE; a++)
-                for(int b = 0; b < MapObjectGrid.SPACES_PER_TILE; b++) {
-                    if(Main.getGame().getUnitGrid().spaceTakenFor(i * 3 + a, j * 3 + b, null)){
+        if(UnitPainter.DEBUG){
+            for(int a = 0; a < MapGrid.SPACES_PER_TILE; a++)
+                for(int b = 0; b < MapGrid.SPACES_PER_TILE; b++) {
+                    if(Main.getGame().getGameGrid().spaceTakenFor(i * 3 + a, j * 3 + b, null)){
                         Point backCorner = getUnitTileBackLocation(a, b);
                         backCorner.translate(x - tileX/2, y);
                         int[] xpts = {
@@ -264,15 +237,15 @@ public class EntityPainter {
      * @param tileLocX graphical x coordinate of the map tile this unit is on
      * @param tileLocY graphical y coordinate of the map tile this unit is on
      */
-	private void paintUnit(Graphics2D graphics, Unit unit, int tileLocX, int tileLocY){
+	private void paintUnit(Graphics2D graphics, GameObject unit, int tileLocX, int tileLocY){
         /* How far the unit has moved from its current tile to its destination */
-        double percentMovedFromTile = unit.getMapObject().getAnimationCounter();
+        double percentMovedFromTile = unit.getAnimationCounter();
 
 		int tileX = mapPainter.getTileWidth();
 		int tileY = mapPainter.getTileHeight();
 
         /* Find the back point of the tile it's currently placed in */
-        Point backStartSubtile = getTileBackLocation(unit.getMapObject());
+        Point backStartSubtile = getTileBackLocation(unit);
 
         /* Find the shift necessary to get from the back point of its current tile
          * to the back point of the tile it's going to
@@ -287,17 +260,17 @@ public class EntityPainter {
         int xLoc = tileLocX + tileBackX;
         int yLoc = tileLocY + tileBackY;
         
-        Sprite sprite = unit.getMapObject().getCurrentSprite();
+        Sprite sprite = unit.getCurrentSprite();
 
         /* Display selected units differently */
-        if(Selection.current().contains(unit.getMapObject())){
+        if(Selection.current().contains(unit)){
             graphics.setColor(Color.RED);
             Rectangle bounds = sprite.getBounds(xLoc, yLoc);
             graphics.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
 
-            int[] xs = unit.getMapObject().getAllX();
-            int[] ys = unit.getMapObject().getAllY();
-            Point[] pts = getAllTileBackLocations(unit.getMapObject());
+            int[] xs = unit.getAllX();
+            int[] ys = unit.getAllY();
+            Point[] pts = getAllTileBackLocations(unit);
             for(int k = 0; k < xs.length; k++){
                 int i = xs[k] / 3;
                 int j = ys[k] / 3;
@@ -325,7 +298,7 @@ public class EntityPainter {
                 /* Draw the health bar */
                 graphics.setColor(Color.GREEN);
                 /* The width of the unit's current health */
-                int greenWidth = sprite.getWidth() * unit.getHealth() / unit.getMaxHealth();
+                int greenWidth = sprite.getWidth() * unit.getUnit().getHealth() / unit.getUnit().hitpoints();
                 graphics.fillRect(xLoc - sprite.getWidth() / 2, yLoc - sprite.getHeight() + 25, greenWidth, 5);
                 /* Draw the missing portion of the unit's health */
                 graphics.setColor(Color.RED);
@@ -333,19 +306,19 @@ public class EntityPainter {
             }
         }
 
-		sprite.draw(graphics, unit.getMapObject(), xLoc, yLoc);
+		sprite.draw(graphics, unit, xLoc, yLoc);
 	}
 
     /**
      * Paint a unit that is currently being placed on the map.
      * @param graphics graphics handle to the screen
      * @param viewport viewport being used to view the map
-     * @param obj which unit to draw
+     * @param unit which unit to draw
      * @param xLoc x location of the mouse
      * @param yLoc y location of the mouse
      */
-    public void paintTemporaryObject(Graphics2D graphics, Viewport viewport, MapObject obj, int xLoc, int yLoc){
-        if(obj == null)
+    public void paintTemporaryUnit(Graphics2D graphics, Viewport viewport, GameObject unit, int xLoc, int yLoc){
+        if(unit == null)
             return;
 
         /* Draw the place it will snap to */
@@ -382,7 +355,7 @@ public class EntityPainter {
         graphics.drawPolygon(poly);
 
         /* Draw the sprite on top */
-        Sprite sprite = obj.getCurrentSprite();
+        Sprite sprite = unit.getCurrentSprite();
         sprite.drawCentered(graphics, xLoc + viewport.getX(), yLoc + viewport.getY());
     }
 
@@ -391,13 +364,13 @@ public class EntityPainter {
      * @param point point in the viewport
      * @param viewport viewport that is being used to display the map
      */
-    public MapObject getUnitAtPoint(Point point, Viewport viewport){
+    public GameObject getUnitAtPoint(Point point, Viewport viewport){
         /* Treat a point as a very small rectangle of height and width 1 pixel */
         Point deltaPoint = new Point(point);
         point.translate(20, 20);
 
         /* Return the foremost unit */
-        MapObject[] unitsAtPoint = getUnitsInRect(point, deltaPoint, viewport);
+        GameObject[] unitsAtPoint = getUnitsInRect(point, deltaPoint, viewport);
         if(unitsAtPoint.length == 0) 
             return null;
         else 
@@ -410,10 +383,10 @@ public class EntityPainter {
      * @param bottomRight bottom right bound point of the rectangle
      * @param viewport viewport that is being used to display the map
      */
-    public MapObject[] getUnitsInRect(Point topLeft, Point bottomRight, Viewport viewport){
+    public GameObject[] getUnitsInRect(Point topLeft, Point bottomRight, Viewport viewport){
         /* Store unit bounds and units on screen */
         ArrayList<Shape> unitPolys = new ArrayList<Shape>();
-        ArrayList<MapObject> unitsWithPolys = new ArrayList<MapObject>();
+        ArrayList<GameObject> unitsWithPolys = new ArrayList<GameObject>();
 
         /* Avoid modifying the input points, in case they will be used later by the caller */
         topLeft = new Point(topLeft);
@@ -448,7 +421,7 @@ public class EntityPainter {
         /* Loop through visible tiles. Loop backwards, because units in front take precedence. */
         for(int j = bottomLeftTileY; j < topRightTileY; j++)
         	for(int i = topLeftTileX; i < bottomRightTileX; i++) 
-        		addVisibleMapObjectPoly(unitPolys, unitsWithPolys, i, j);
+        		addVisibleUnitPoly(unitPolys, unitsWithPolys, i, j);
 
         /* Bounds inside which we're looking for units */
         Rectangle rect = new Rectangle(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
@@ -460,7 +433,7 @@ public class EntityPainter {
                 count++;
 
         /* Put units we've counted inside an array */
-        MapObject[] selected = new MapObject[count];
+        GameObject[] selected = new GameObject[count];
         count = 0;
         for(int i = 0; i < unitPolys.size(); i++)
             if(rect.intersects(unitPolys.get(i).getBounds()))
@@ -472,12 +445,12 @@ public class EntityPainter {
     /**
      * Add units that are visible in a given unit tile to the list of visible units 
      * @param unitShapes list of polygons which represent unit boundaries
-     * @param addedObjects list of units which were detected
+     * @param addedUnits list of units which were detected
      * @param i x coordinate (unit tiles) of the unit to add
      * @param j y coordinate (unit tiles) of the unit to to the polygon and unit selection
      */
-    private void addVisibleMapObjectPoly(ArrayList<Shape> unitShapes, ArrayList<MapObject> addedObjects, int i, int j){
-        Unit unit = grid.getUnit(i, j);
+    private void addVisibleUnitPoly(ArrayList<Shape> unitShapes, ArrayList<GameObject> addedUnits, int i, int j){
+        GameObject unit = grid.getUnit(i, j);
         if(unit == null) return;
 
 		/* Calculate the pixel location of the tile on which we're looking for units */
@@ -497,10 +470,10 @@ public class EntityPainter {
         int tileLocY = y;
 
 
-        double percentMovedFromTile = unit.getMapObject().getAnimationCounter();
+        double percentMovedFromTile = unit.getAnimationCounter();
 
         /* Find the back point of the tile it's currently placed in */
-        Point backStartSubtile = getTileBackLocation(unit.getMapObject());
+        Point backStartSubtile = getTileBackLocation(unit);
 
         /* Find the shift necessary to get from the back point of its current tile
          * to the back point of the tile it's going to
@@ -515,11 +488,11 @@ public class EntityPainter {
         int xLoc = tileLocX + tileBackX;
         int yLoc = tileLocY + tileBackY;
 
-        Sprite sprite = unit.getMapObject().getCurrentSprite();
+        Sprite sprite = unit.getCurrentSprite();
         Rectangle boundingBox = sprite.getBounds(xLoc, yLoc);
 
         unitShapes.add(boundingBox);
-        addedObjects.add(unit.getMapObject());
+        addedUnits.add(unit);
     }
 
     /**
@@ -528,9 +501,9 @@ public class EntityPainter {
      * @param viewport viewport through which map is being displayed
      */
     public Point unitTileAtPoint(Point point, Viewport viewport){
-    	double tileX = (double) mapPainter.getTileWidth() / (double) MapObjectGrid.SPACES_PER_TILE;
-    	double tileY = (double) mapPainter.getTileHeight() / (double) MapObjectGrid.SPACES_PER_TILE;
-    	int n = MapObjectGrid.SPACES_PER_TILE * mapPainter.getMap().getN();
+    	double tileX = (double) mapPainter.getTileWidth() / (double) MapGrid.SPACES_PER_TILE;
+    	double tileY = (double) mapPainter.getTileHeight() / (double) MapGrid.SPACES_PER_TILE;
+    	int n = MapGrid.SPACES_PER_TILE * mapPainter.getMap().getN();
     	int mapHeight = mapPainter.getTileHeight() * mapPainter.getMap().getN();
     	
     	/* Avoid modifying the input point, in case they will be used later by the caller */
@@ -558,18 +531,18 @@ public class EntityPainter {
     
     /**
      * Get the map coordinates of the given unit
-     * @param entity the unit to get the coordinates of
+     * @param unit the unit to get the coordinates of
      * @param viewport viewport through which map is being displayed
      * @return
      */
-    public Point getEntityCoords(Entity entity, Viewport viewport){    	
-    	double tileX = (double) mapPainter.getTileWidth() / (double) MapObjectGrid.SPACES_PER_TILE;
-    	double tileY = (double) mapPainter.getTileHeight() / (double) MapObjectGrid.SPACES_PER_TILE;
+    public Point getUnitCoords(GameObject unit, Viewport viewport){    	
+    	double tileX = (double) mapPainter.getTileWidth() / (double) MapGrid.SPACES_PER_TILE;
+    	double tileY = (double) mapPainter.getTileHeight() / (double) MapGrid.SPACES_PER_TILE;
     	int mapHeight = mapPainter.getTileHeight() * mapPainter.getMap().getN();
     	
     	/* Coordinates of the unit tile the unit is on */
-    	int x = entity.getX();
-    	int y = entity.getY();
+    	int x = unit.getUnit().getX();
+    	int y = unit.getUnit().getY();
     	
     	/* Change into map coordinates */
     	int mapX = (int) ((x + y) * tileX - viewport.getWidth()) / 2;
@@ -675,7 +648,7 @@ public class EntityPainter {
      * Gets the unit grid used by the painter
      * @return unit grid
      */
-    public MapObjectGrid getGrid(){
+    public MapGrid getGrid(){
     	return grid;
     }
 

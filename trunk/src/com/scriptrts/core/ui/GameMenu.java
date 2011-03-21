@@ -80,7 +80,6 @@ public class GameMenu extends JPanel {
     public int getCenterHorizontalOffset(){
         int defSize = 538;
         int defCenter = 263;
-        int defTop = 95;
         int center = (int) ((double)(defCenter) / defSize * getPreferredSize().width);
         return center;
     }

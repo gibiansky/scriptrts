@@ -1,11 +1,10 @@
-package com.scriptrts.core;
+package com.scriptrts.game;
 
-import java.io.Serializable;
 
 /**
  * Class representing the terrain tiles of a map.
  */
-public class Map implements Serializable {
+public class Map {
 
     /**
      * Length of the map along one edge

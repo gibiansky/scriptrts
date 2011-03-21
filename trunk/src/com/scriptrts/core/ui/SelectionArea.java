@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import javax.swing.JPanel;
 
 import com.scriptrts.control.Selection;
-import com.scriptrts.game.MapObject;
+import com.scriptrts.game.GameObject;
 
 /**
  * Selection area panel which display all units which are currently selected
@@ -88,11 +88,11 @@ public class SelectionArea extends JPanel {
         Graphics2D graphics = (Graphics2D) image.getGraphics();
         
         
-        ArrayList<MapObject> units = Selection.current().getObjects();
+        ArrayList<GameObject> units = Selection.current().getObjects();
 
         /* For single unit select, draw unit info screen */
         if(units.size() == 1){
-            MapObject unit = units.get(0);
+            GameObject unit = units.get(0);
             int size = 180;
             int x = 20, y = 20;
             graphics.drawImage(unit.getArt(), x, y, size, size, null);
@@ -104,7 +104,6 @@ public class SelectionArea extends JPanel {
             int size = 60;
             int verticalMargin = 5;
             int horizontalMargin = calculateMargin(units.size(), size);
-            int rows = height / (size+verticalMargin);
             int unitsPerRow = width / (size+horizontalMargin);
 
             /* Draw each unit */

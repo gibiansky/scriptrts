@@ -16,11 +16,10 @@ import java.awt.image.Kernel;
 import javax.swing.JPanel;
 
 import com.scriptrts.core.Main;
-import com.scriptrts.core.Map;
-import com.scriptrts.core.TerrainType;
-import com.scriptrts.core.Viewport;
-import com.scriptrts.game.MapObjectGrid;
-import com.scriptrts.game.Unit;
+import com.scriptrts.game.GameObject;
+import com.scriptrts.game.Map;
+import com.scriptrts.game.MapGrid;
+import com.scriptrts.game.TerrainType;
 
 /**
  * Minimap panel which displays a miniature colored version of the map on the overlay panel
@@ -146,15 +145,14 @@ public class Minimap extends JPanel {
             for(int j = 0; j < n; j++){
                 Color c = terrain[i][j].getMinimapColor();
 
-                Unit u;
-                for(int a = 0; a < MapObjectGrid.SPACES_PER_TILE; a++)
-                    for(int b = 0; b < MapObjectGrid.SPACES_PER_TILE; b++)
-                        if((u = Main.getGame().getUnitGrid().getUnit(i * MapObjectGrid.SPACES_PER_TILE + a, j * MapObjectGrid.SPACES_PER_TILE + b)) != null)
-                            c = u.getAllegiance().getColor();
+                GameObject u;
+                for(int a = 0; a < MapGrid.SPACES_PER_TILE; a++)
+                    for(int b = 0; b < MapGrid.SPACES_PER_TILE; b++)
+                        if((u = Main.getGame().getGameGrid().getUnit(i * MapGrid.SPACES_PER_TILE + a, j * MapGrid.SPACES_PER_TILE + b)) != null)
+                            c = u.getUnit().getAllegiance().getColor();
 
                 graphics.setColor(c);
 
-                int roundedSize = (int) squareSize;
                 graphics.fillRect((int) (i * squareSize), (int) (j * squareSize), (int) (squareSize+1), (int)(squareSize+1));
             }
         }

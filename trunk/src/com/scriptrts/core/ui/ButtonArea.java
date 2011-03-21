@@ -95,7 +95,6 @@ public class ButtonArea extends JPanel {
         int size = 40;
         int verticalMargin = 10;
         int horizontalMargin = 10;
-        int rows = 4;
         int buttonsPerRow = 4;
 
         /* Draw each unit */

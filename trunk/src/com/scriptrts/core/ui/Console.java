@@ -443,7 +443,7 @@ public class Console extends JPanel {
                         /* If it's still running, wait a bit before updating the output again */
                         if(running)
                             try {
-                                Thread.currentThread().sleep(300);
+                                Thread.sleep(300);
                             } catch (Exception e) { 
                                 e.printStackTrace(); 
                             }

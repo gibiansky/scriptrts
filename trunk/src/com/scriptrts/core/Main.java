@@ -27,10 +27,11 @@ import javax.swing.JPanel;
 import com.scriptrts.core.ui.Console;
 import com.scriptrts.core.ui.GameMenu;
 import com.scriptrts.core.ui.ImageButton;
+import com.scriptrts.core.ui.InputManager;
 import com.scriptrts.core.ui.MapPainter;
 import com.scriptrts.core.ui.OverlayPane;
 import com.scriptrts.core.ui.TopBar;
-import com.scriptrts.core.ui.EntityPainter;
+import com.scriptrts.core.ui.UnitPainter;
 import com.scriptrts.game.Game;
 import com.scriptrts.net.GameClient;
 import com.scriptrts.net.GameServer;
@@ -247,7 +248,7 @@ public class Main extends JPanel {
         try {
             BufferedImage cursorImage = ResourceManager.loadImage("resource/cursor.png");
             Point hotSpot = new Point(0,0); 
-            Cursor cursor = toolkit.createCustomCursor(cursorImage, hotSpot, "spaceship"); 
+            cursor = toolkit.createCustomCursor(cursorImage, hotSpot, "spaceship"); 
             window.setCursor(cursor);
         } catch (IOException e) {
             e.printStackTrace();
@@ -397,13 +398,13 @@ public class Main extends JPanel {
         boolean noUnit = (Boolean) parser.getOptionValue(noUnitDebugOpt,  Boolean.FALSE);
 
         MapPainter.DEBUG = DEBUG;
-        EntityPainter.DEBUG = DEBUG;
+        UnitPainter.DEBUG = DEBUG;
 
         /* Allow user to turn off parts of the debug */
         if(noMap)
             MapPainter.DEBUG = false;
         if(noUnit)
-            EntityPainter.DEBUG = false;
+            UnitPainter.DEBUG = false;
     }
 
     /**

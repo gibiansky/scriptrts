@@ -15,15 +15,11 @@ import com.scriptrts.control.Order;
 import com.scriptrts.control.Selection;
 import com.scriptrts.control.SelectionStorage;
 import com.scriptrts.control.StopOrder;
-import com.scriptrts.core.InputManager;
 import com.scriptrts.core.Main;
-import com.scriptrts.core.Map;
-import com.scriptrts.core.Viewport;
-import com.scriptrts.core.ui.AnimatedSprite;
+import com.scriptrts.core.ui.InputManager;
 import com.scriptrts.core.ui.MapPainter;
-import com.scriptrts.core.ui.Sprite;
-import com.scriptrts.core.ui.EntityPainter;
-import com.scriptrts.game.Entity.EntityType;
+import com.scriptrts.core.ui.UnitPainter;
+import com.scriptrts.core.ui.Viewport;
 import com.scriptrts.util.ResourceManager;
 
 /**
@@ -50,7 +46,7 @@ public class Game extends HeadlessGame {
     /**
      * The painter used to draw units onto the screen.
      */
-    private EntityPainter unitPainter;
+    private UnitPainter unitPainter;
 
     /**
      * The current player
@@ -73,10 +69,10 @@ public class Game extends HeadlessGame {
     private boolean placingUnit = false;
 
     /**
-     * The MapObject currently being placed on the map, if a unit is being placed. It is drawn over the map,
+     * The unit currently being placed on the map, if a unit is being placed. It is drawn over the map,
      * and, unlike other units on the map, is not necessarily placed on the grid.
      */
-    private MapObject tempObj = null;
+    private GameObject tempUnit = null;
 
     /**
      * Location (in screen coordinates) at which the unit being placed is being placed.
@@ -132,7 +128,7 @@ public class Game extends HeadlessGame {
         int tileX = 128;
         int tileY = 64;
         mapPainter = new MapPainter(map, tileX, tileY);
-        unitPainter = new EntityPainter(grid, mapPainter);
+        unitPainter = new UnitPainter(grid, mapPainter);
 
         /* Create the viewport */
         int totalWidth = map.getN() * mapPainter.getTileWidth();
@@ -221,7 +217,6 @@ public class Game extends HeadlessGame {
                 manager.clearKeyCodeFlag(KeyEvent.VK_D);
 
                 Point point = manager.getMouseLocation();
-                Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
                 tempUnitX = point.x;
                 tempUnitY = point.y;
 
@@ -260,8 +255,8 @@ public class Game extends HeadlessGame {
                                     25, bY
                                 });
                     }
-                    Unit spaceship = new Unit(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, true, pathHandler);
-                    tempObj = spaceship.getMapObject();
+                    GameObject spaceship = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, true, pathHandler);
+                    tempUnit = spaceship;
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -290,18 +285,18 @@ public class Game extends HeadlessGame {
                 /* Adding units to map */
                 if(placingUnit){
                     Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
-                    tempObj.getEntity().setX(unitTile.x);
-                    tempObj.getEntity().setY(unitTile.y);
-                    grid.placeMapObject(tempObj, unitTile.x, unitTile.y);
-                    unitManager.addUnit((Unit)tempObj.getEntity());
+                    tempUnit.getUnit().setX(unitTile.x);
+                    tempUnit.getUnit().setY(unitTile.y);
+                    grid.placeUnit(tempUnit, unitTile.x, unitTile.y);
+                    unitManager.addUnit(tempUnit);
 
                     if(Main.getGameClient() != null)
-                        Main.getGameClient().sendNewUnitNotification((Unit) tempObj.getEntity());
+                        Main.getGameClient().sendNewUnitNotification(tempUnit);
 
                     placingUnit = false;
                 }
                 else{
-                    MapObject unit = unitPainter.getUnitAtPoint(point, viewport);
+                    GameObject unit = unitPainter.getUnitAtPoint(point, viewport);
                     if(unit != null) {
                         
                         /* If already selected and pressing control, deselect */
@@ -331,13 +326,13 @@ public class Game extends HeadlessGame {
                 Point point = manager.getMouseLocation();
                 bottomRightSelection = point;
 
-                MapObject[] selectedUnits = unitPainter.getUnitsInRect(topLeftSelection, bottomRightSelection, viewport);
+                GameObject[] selectedUnits = unitPainter.getUnitsInRect(topLeftSelection, bottomRightSelection, viewport);
 
                 if(!manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
                     Selection.replaceCurrent(new Selection());
                 }
                 Selection newCurrent = Selection.current().clone();
-                for(MapObject unit : selectedUnits)
+                for(GameObject unit : selectedUnits)
                     newCurrent.add(unit);
                 Selection.replaceCurrent(newCurrent);
 
@@ -352,8 +347,8 @@ public class Game extends HeadlessGame {
             if(manager.getKeyCodeFlag(KeyEvent.VK_C)){
                 if(!Selection.current().getList().isEmpty()){
                     int size = Selection.current().getList().size();
-                    Entity entity = Selection.current().getList().get(size - 1).getEntity();
-                    viewport.setLocation(unitPainter.getEntityCoords(entity, viewport));
+                    GameObject unit = Selection.current().getList().get(size - 1);
+                    viewport.setLocation(unitPainter.getUnitCoords(unit, viewport));
                 }
             }
             
@@ -362,12 +357,11 @@ public class Game extends HeadlessGame {
                 if(!Selection.current().getList().isEmpty()){
                     // I don't think stop should be queueable, if you disagree, uncomment below.
                     /*if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
-                        for(SimpleUnit unit : Selection.current().getList())
+                        for(GameObject unit : Selection.current().getList())
                             unit.getOrderHandler().queueOrder(new StopOrder(unit));
                     else*/
-                        for(MapObject obj : Selection.current().getList())
-                            if(obj.getEntity() instanceof Unit)
-                            	((Unit) obj.getEntity()).getOrderHandler().order(new StopOrder((Unit) obj.getEntity()));
+                        for(GameObject unit : Selection.current().getList())
+                            unit.getUnit().getOrderHandler().order(new StopOrder(unit));
                 }
             }
 
@@ -378,24 +372,20 @@ public class Game extends HeadlessGame {
                 /* If there is no unit at destination, move there */
                 //TODO: make it do something different if there is a unit there
                 if(unitPainter.getGrid().getUnit(unitTile.x, unitTile.y) == null){
-                    for(MapObject obj : Selection.current().getList()){
-                    	if(obj.getEntity() instanceof Unit){
-                    		if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
-                    			((Unit) obj.getEntity()).getOrderHandler().queueOrder(new MoveOrder(unitTile, (Unit) obj.getEntity()));
-                    		else
-                    			((Unit) obj.getEntity()).getOrderHandler().order(new MoveOrder(unitTile, (Unit) obj.getEntity()));
-                    	}
+                    for(GameObject unit : Selection.current().getList()){
+                        if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
+                            unit.getUnit().getOrderHandler().queueOrder(new MoveOrder(unitTile, unit));
+                        else
+                            unit.getUnit().getOrderHandler().order(new MoveOrder(unitTile, unit));
                     }
                 } else {
-                    for(MapObject obj : Selection.current().getList()){
-                    	if(obj.getEntity() instanceof Unit){
-                    		if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
-                    			((Unit) obj.getEntity()).getOrderHandler().queueOrder(new FollowOrder((Unit) obj.getEntity(),
-                    					unitPainter.getGrid().getUnit(unitTile.x, unitTile.y)));
-                    		else
-                    			((Unit) obj.getEntity()).getOrderHandler().order(new FollowOrder((Unit) obj.getEntity(), 
-                    					unitPainter.getGrid().getUnit(unitTile.x, unitTile.y)));
-                        }
+                    for(GameObject unit : Selection.current().getList()){
+                        if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
+                            unit.getUnit().getOrderHandler().queueOrder(new FollowOrder(unit,
+                                        unitPainter.getGrid().getUnit(unitTile.x, unitTile.y)));
+                        else
+                            unit.getUnit().getOrderHandler().order(new FollowOrder(unit, 
+                                        unitPainter.getGrid().getUnit(unitTile.x, unitTile.y)));
                     }
                 }
 
@@ -499,16 +489,14 @@ public class Game extends HeadlessGame {
             /* Check if units share the same order queue */
             boolean shareQueue = true;
             LinkedList<Order> queue = null;
-            for(MapObject obj : Selection.current().getList()){
-            	if(obj.getEntity() instanceof Unit){
-            		if(queue == null)
-            			queue = (LinkedList<Order>) ((Unit) obj.getEntity()).getOrderHandler().getOrders();
-            		else
-            			if(!queue.equals((LinkedList<Order>)((Unit) obj.getEntity()).getOrderHandler().getOrders())){
-            				shareQueue = false;
-            				break;
-            			}
-            	}
+            for(GameObject unit : Selection.current().getList()){
+                if(queue == null)
+                    queue = (LinkedList<Order>) unit.getUnit().getOrderHandler().getOrders();
+                else
+                    if(!queue.equals((LinkedList<Order>)unit.getUnit().getOrderHandler().getOrders())){
+                        shareQueue = false;
+                        break;
+                    }
             }
 
             boolean shareDestination = false;
@@ -516,16 +504,14 @@ public class Game extends HeadlessGame {
             if(queue == null){
                 /* Check if units share a destination */
                 shareDestination = true;
-                for(MapObject obj : Selection.current().getList()){
-                	if(obj.getEntity() instanceof Unit){
-                		if(destination == null)
-                			destination = ((Unit) obj.getEntity()).getDestination();
-                		else
-                			if(!destination.equals(((Unit) obj.getEntity()).getDestination())){
-                				shareDestination = false;
-                				break;
-                			}
-                	}
+                for(GameObject unit : Selection.current().getList()){
+                    if(destination == null)
+                        destination = unit.getUnit().getDestination();
+                    else
+                        if(!destination.equals(unit.getUnit().getDestination())){
+                            shareDestination = false;
+                            break;
+                        }
                 }
             }
 
@@ -540,7 +526,7 @@ public class Game extends HeadlessGame {
 
         /* Draw fake units and buildings on the board */
         if(placingUnit)
-            drawTemporaryObjects(graphics, viewport);
+            drawTemporaryUnits(graphics, viewport);
 
         /* Draw selection (if not placing units) */
         else    
@@ -579,13 +565,13 @@ public class Game extends HeadlessGame {
     }
 
     /**
-     * Draw temporary objects. Temporary units include things such as buildings which
+     * Draw temporary units. Temporary units include things such as buildings which
      * are not yet placed on the map, but are being placed.
      * @param graphics Graphics2D object to draw with
-     * @param viewport viewport in which the object is being placed.
+     * @param viewport viewport in which the unit is being placed.
      */
-    private void drawTemporaryObjects(Graphics2D graphics, Viewport viewport){
-        unitPainter.paintTemporaryObject(graphics, viewport, tempObj, tempUnitX, tempUnitY);
+    private void drawTemporaryUnits(Graphics2D graphics, Viewport viewport){
+        unitPainter.paintTemporaryUnit(graphics, viewport, tempUnit, tempUnitX, tempUnitY);
     }
 
     /**

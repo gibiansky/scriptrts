@@ -1,9 +1,7 @@
-package com.scriptrts.core.ui;
+package com.scriptrts.game;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-
-import com.scriptrts.game.MapObject;
 
 /**
  * An animated sprite which switches between different images depending on the frame count
@@ -45,7 +43,7 @@ public class AnimatedSprite extends Sprite {
      * @param tileBackX the back corner x coordinate of the unit tile on which this is being drawn
      * @param tileBackY the back corner y coordinate of the unit tile on which this is being drawn
      */
-    public void draw(Graphics2D graphics, MapObject unit, int tileBackX, int tileBackY){
+    public void draw(Graphics2D graphics, GameObject unit, int tileBackX, int tileBackY){
         int frame = unit.getSpriteAnimation();
         /* If the animation has progressed beyond its bounds, reset it */
         if(frame > times[times.length - 1])
