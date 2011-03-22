@@ -1,3 +1,5 @@
+package com.scriptrts.game;
+
 
 
 /**
