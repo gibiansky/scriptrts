@@ -271,7 +271,8 @@ public class GameObject {
             /* Notify the unit grid that the path has changed */
             Main.getGame().getGameGrid().unitPathChanged(this, path);
         }
-
+        
+        this.updateDirection();
     }
 
     /**
