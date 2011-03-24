@@ -76,8 +76,8 @@ public class GameObject {
      * @param direction direction in which the unit is facing originally
      * @param shaped if false, this unit takes up one square; if true, it can take up more.
      */
-    public GameObject(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, boolean shaped, PathHandler pathHandler) {
-        this.unit = new Unit(p, speed, x, y, pathHandler, new OrderHandler(this));
+    public GameObject(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, boolean shaped, UnitClass unitClass) {
+        this.unit = new Unit(p, speed, x, y, new OrderHandler(this), unitClass);
         this.sprites = sprites;
         this.direction = null;
         previousDirection = direction;
@@ -101,8 +101,8 @@ public class GameObject {
      * @param y unit's starting location y coordinate
      * @param direction direction in which the unit is facing originally
      */
-    public GameObject(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, PathHandler pathHandler) {
-        this(p, sprites, artImg, speed, x, y, direction, true, pathHandler);
+    public GameObject(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, UnitClass unitClass) {
+        this(p, sprites, artImg, speed, x, y, direction, true, unitClass);
     }
 
     /**
@@ -449,5 +449,15 @@ public class GameObject {
     public boolean equals(GameObject obj){
     	return obj.getUnit().equals(this.getUnit());
     }
-
+    
+    /**
+     * Check if the game object is movable, i.e. is not a building or terrain
+     * @return true if game object is movable
+     */
+    public boolean isMovable(){
+    	UnitClass unitClass = unit.getUnitClass();
+    	if(unitClass == UnitClass.Building || unitClass == UnitClass.Terrain)
+    		return false;
+    	return true;
+    }
 }

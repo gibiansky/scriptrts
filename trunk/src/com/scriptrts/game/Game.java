@@ -167,6 +167,7 @@ public class Game extends HeadlessGame {
         manager.registerKeyCode(KeyEvent.VK_CONTROL);
         manager.registerKeyCode(KeyEvent.VK_SHIFT);
         manager.registerKeyCode(KeyEvent.VK_C);
+        manager.registerKeyCode(KeyEvent.VK_V);
     }
 
     /**
@@ -255,8 +256,28 @@ public class Game extends HeadlessGame {
                                     25, bY
                                 });
                     }
-                    GameObject spaceship = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, true, pathHandler);
+                    GameObject spaceship = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, true, UnitClass.Standard);
                     tempUnit = spaceship;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            
+            if(manager.getKeyCodeFlag(KeyEvent.VK_V)){
+            	placingUnit = !placingUnit;
+            	manager.clearKeyCodeFlag(KeyEvent.VK_V);
+            	
+            	Point point = manager.getMouseLocation();
+                tempUnitX = point.x;
+                tempUnitY = point.y;
+
+                try {
+                    Sprite[] sprites = new Sprite[16];
+                	BufferedImage img = ResourceManager.loadImage("resource/unit/volcano/Volcano1.png");
+                    for(Direction d : Direction.values())
+                        sprites[d.ordinal()]  = new Sprite(img, 1, 87, 25);
+                    GameObject volcano = new GameObject(getPlayer(), sprites, null, 0, 0, 0, Direction.North, true, UnitClass.Terrain);
+                    tempUnit = volcano;
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

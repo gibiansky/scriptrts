@@ -1,5 +1,10 @@
 package com.scriptrts.game;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+
+import com.scriptrts.util.ResourceManager;
+
 
 /**
  * Class representing the terrain tiles of a map.
@@ -124,6 +129,7 @@ public class Map {
 			length /= 2;
 		}
 		populateTiles();
+		addTerrain();
 	}
 	
 	/**
@@ -135,7 +141,7 @@ public class Map {
 		 * the ranges here...
 		 */
 		TerrainType[] terrains = TerrainType.values();
-		for(int i = 0; i < n; i++){
+		for(int i = 0; i < n; i++)
 			for(int j = 0; j < n; j++){
 				double val = heightArray[i][j];
 				if(-20 <= val && val < -.5)
@@ -151,6 +157,34 @@ public class Map {
 				else if(.5 <= val && val < 20)
 					tileArray[i][j] = terrains[2];
 			}
+	}
+	
+	/**
+	 * Add terrain objects, for now just volcanos
+	 */
+	public void addTerrain(){
+		/* Terrain type at each map tile */
+		TerrainType[] terrains = TerrainType.values();
+		
+		try{
+			/* Initialize volcano images */
+			Sprite[] sprites = new Sprite[16];
+			BufferedImage img = ResourceManager.loadImage("resource/unit/volcano/Volcano1.png");
+			for(Direction d : Direction.values())
+				sprites[d.ordinal()]  = new Sprite(img, 1, 87, 25);
+
+			/* Loop through each square and add volcanos randomly */
+			for(int i = 2; i < n - 2; i++)
+				for(int j = 2; j < n - 2; j++)
+					if(tileArray[i][j] == terrains[5])
+						if(random.nextDouble() < 0.005){
+							System.out.println("Placing volcano at " + i + " " + j);
+							UnitClass.createTerrain(sprites, MapGrid.SPACES_PER_TILE * i + MapGrid.SPACES_PER_TILE / 2,
+									MapGrid.SPACES_PER_TILE * j + MapGrid.SPACES_PER_TILE / 2, true);
+						}
+			
+		} catch(IOException e){
+			e.printStackTrace();
 		}
 	}
 }

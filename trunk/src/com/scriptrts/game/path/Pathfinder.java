@@ -12,6 +12,7 @@ import com.scriptrts.game.GameObject;
 import com.scriptrts.game.Map;
 import com.scriptrts.game.MapGrid;
 import com.scriptrts.game.TerrainType;
+import com.scriptrts.game.UnitClass;
 
 
 public class Pathfinder extends Thread{
@@ -19,67 +20,67 @@ public class Pathfinder extends Thread{
 	 * Unit to find path for
 	 */
 	private GameObject unit;
-	
+
 	/**
 	 * Current map instance
 	 */
 	private Map map;
-	
+
 	/**
 	 * Terrain at each point on map
 	 */
 	private TerrainType[][] terrainMap;
-	
+
 	/**
 	 * Unit grid (for collisions later?) - unused
 	 */
-	private MapGrid unitGrid;
-	
+	private MapGrid mapGrid;
+
 	/**
 	 * Stores terrain costs
 	 */
 	private HashMap<TerrainType, Integer> terrainValues;
-	
+
 	/**
 	 * Open list of nodes to be checked
 	 */
 	private Node[] heap;
-	
+
 	/**
 	 * List of nodes corresponding to each unit tile on the map
 	 */
 	private HashMap<Point, Node> nodeList;
-	
+
 	/**
 	 * Number of points in the open list
 	 */
 	private int count;
-	
+
 	/**
 	 * Size of unit grid
 	 */
 	private int n;
-	
+
 	/**
 	 * List of Points in path
 	 */
 	private ArrayList<Point> path;
-	
+
 	/**
 	 * List of Directions in path
 	 */
 	private Queue<Direction> directions;
-	
+
 	/**
 	 * End coordinates of path
 	 */
 	private int endX, endY;
-	
+
 	/**
 	 * Path handler queue used to manage this pathfinder
 	 */
 	private PathHandler pathHandler;
-	
+
 	/**
 	 * Create a new Pathfinder
 	 * @param m current map instance
@@ -88,7 +89,7 @@ public class Pathfinder extends Thread{
 	public Pathfinder(Map m, MapGrid g){
 		map = m;
 		terrainMap = map.getTileArray();
-		unitGrid = g;
+		mapGrid = g;
 		n = map.getN() * MapGrid.SPACES_PER_TILE;
 		heap = new Node[n * n];
 		nodeList = new HashMap<Point, Node>();
@@ -96,7 +97,7 @@ public class Pathfinder extends Thread{
 		directions = new LinkedList<Direction>();
 		setTerrainValues();
 	}
-	
+
 	/**
 	 * Create a new Pathfinder
 	 * @param u unit which pathfinder is for
@@ -107,7 +108,7 @@ public class Pathfinder extends Thread{
 		this(m, g);
 		unit = u;
 	}
-	
+
 	/**
 	 * Reset and clear path when done
 	 */
@@ -120,7 +121,7 @@ public class Pathfinder extends Thread{
 		directions = new LinkedList<Direction>();
 		count = 0;
 	}
-	
+
 	/**
 	 * Set the terrain costs for each type of terrain
 	 */
@@ -140,7 +141,7 @@ public class Pathfinder extends Thread{
 	public void setUnit(GameObject unit){
 		this.unit = unit;
 	}
-	
+
 	/**
 	 * Set the destination
 	 */
@@ -148,22 +149,22 @@ public class Pathfinder extends Thread{
 		this.endX = endX;
 		this.endY = endY;
 	}
-	
+
 	/**
 	 * Set the path handler
 	 */
 	public void setPathHandler(PathHandler pathHandler){
 		this.pathHandler = pathHandler;
 	}
-	
+
 	/**
 	 * Calculates the route between two points
 	 */
 	public void findRoute(GameObject u, int endX, int endY){
-		
+
 		Node start = new Node(u.getUnit().getX(), u.getUnit().getY());
 		Point end = new Point(endX, endY);
-		
+
 		if(start.getPoint().equals(end))
 			return;
 
@@ -172,34 +173,39 @@ public class Pathfinder extends Thread{
 		start.setParent(null);
 		nodeList.put(start.getPoint(), start);
 		add(start);
-		
+
 		/* While the end point has not been added to the closed list */
 		while(!nodeList.containsKey(end)){
-			
+
 			/* Find the point with the shortest path length */
 			Node next = remove();
-			
+
 			/* Add it to the closed list */
 			next.setClosed();
 			nodeList.put(next.getPoint(), next);
 
 			/* Length of path from start point to current point */
 			int currentLength = next.getMinPathLength();
-			
+
 			/* Find the neighbors of the current point */
-			Point[] neighbors = unitGrid.getNeighbors(next.getX(), next.getY());
-			
+			Point[] neighbors = mapGrid.getNeighbors(next.getX(), next.getY());
+
 			for(int i = 0; i < neighbors.length; i++){
 				Point p = neighbors[i];
-				
+
+				if(mapGrid.getUnit(p.x, p.y) != null && !(mapGrid.getUnit(p.x, p.y).getUnit().getUnitClass() == UnitClass.Standard)){
+					System.out.println(p);
+					Node n = new Node(p.x, p.y);
+					n.setClosed();
+					nodeList.put(p, n);
+				}
+
 				/* Only check neighbors not on the closed list */
 				if(!nodeList.containsKey(p) || nodeList.get(p).isOpen()){
-					
-					//System.out.println(p);
-					
+
 					/* Map tile corresponding to unit grid tile */
-					int[] mapTile = unitGrid.getMapTile(p.x, p.y);
-					
+					int[] mapTile = mapGrid.getMapTile(p.x, p.y);
+
 					/* Increment path length by length of path from current point to neighbor point */
 					double dlength = dist2D(next.getX(), next.getY(), p.x, p.y) * terrainValues.get(terrainMap[mapTile[0]][mapTile[1]]) + manhattan(p.x, p.y, endX, endY);
 					int newLength = currentLength + (int)dlength;
@@ -220,7 +226,7 @@ public class Pathfinder extends Thread{
 						int loc = find(p.x,p.y);
 						Node oldNode = heap[loc];
 						int oldLength = oldNode.getMinPathLength();
-						
+
 						/* If better path exists, update info */
 						if(newLength < oldLength){
 							oldNode.setMinPathLength(newLength);
@@ -234,6 +240,7 @@ public class Pathfinder extends Thread{
 
 		/* Retrace path starting from endpoint */
 		retrace(nodeList.get(end));
+		System.out.println(path);
 	}
 
 	/**
@@ -259,7 +266,7 @@ public class Pathfinder extends Thread{
 
 		/* Heap up */
 		heapUp(count);
-		
+
 		/* Increment number of open points in heap */
 		count++;
 	}
@@ -271,7 +278,7 @@ public class Pathfinder extends Thread{
 		/* Move last element to top of heap */
 		Node first = heap[0];
 		heap[0] = heap[count - 1];
-		
+
 		/* Decrement number of open points in heap */
 		count--;
 
@@ -386,40 +393,40 @@ public class Pathfinder extends Thread{
 
 		if(dx == -1)
 			switch(dy){
-				case -1:
-					return Direction.Southwest;
-				case 0:
-					return Direction.West;
-				case 1:
-					return Direction.Northwest;
-				default:
-					return null;
+			case -1:
+				return Direction.Southwest;
+			case 0:
+				return Direction.West;
+			case 1:
+				return Direction.Northwest;
+			default:
+				return null;
 
 			}
 		else if(dx == 0)
 			switch(dy){
-				case -1:
-					return Direction.South;
-				case 1:
-					return Direction.North;
-				default:
-					return null;
+			case -1:
+				return Direction.South;
+			case 1:
+				return Direction.North;
+			default:
+				return null;
 			}
 		else if(dx == 1)
 			switch(dy){
-				case -1:
-					return Direction.Southeast;
-				case 0:
-					return Direction.East;
-				case 1:
-					return Direction.Northeast;
-				default:
-					return null;
+			case -1:
+				return Direction.Southeast;
+			case 0:
+				return Direction.East;
+			case 1:
+				return Direction.Northeast;
+			default:
+				return null;
 			}
 		else
 			return null;
 	}
-	
+
 	public void run(){
 		findRoute(unit, endX, endY);
 		unit.setPath(getDirections());

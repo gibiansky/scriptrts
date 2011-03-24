@@ -18,6 +18,7 @@ import com.scriptrts.game.Direction;
 import com.scriptrts.game.GameObject;
 import com.scriptrts.game.MapGrid;
 import com.scriptrts.game.Sprite;
+import com.scriptrts.game.UnitClass;
 import com.scriptrts.util.ResourceManager;
 
 /**
@@ -452,6 +453,7 @@ public class UnitPainter {
     private void addVisibleUnitPoly(ArrayList<Shape> unitShapes, ArrayList<GameObject> addedUnits, int i, int j){
         GameObject unit = grid.getUnit(i, j);
         if(unit == null) return;
+        if(unit.getUnit().getUnitClass() == UnitClass.Building || unit.getUnit().getUnitClass() == UnitClass.Terrain) return;
 
 		/* Calculate the pixel location of the tile on which we're looking for units */
 		int tileX = mapPainter.getTileWidth();
