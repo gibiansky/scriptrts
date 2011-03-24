@@ -54,7 +54,7 @@ public class Unit extends UnitType {
     /**
      * Path handler used to route this unit
      */
-    private transient PathHandler pathHandler;
+    private PathHandler pathHandler;
 
     /**
      * The OrderHandler used to control this unit
@@ -67,16 +67,22 @@ public class Unit extends UnitType {
     private int visibilityRadius;
     
     /**
+     * Unit class of this unit, i.e. Standard, Building, Terrain
+     */
+    private UnitClass unitClass;
+    
+    /**
      * Create a new unit
      */
-    public Unit(Player p, int s, int x, int y, PathHandler pathHandler, OrderHandler orderHandler){
+    public Unit(Player p, int s, int x, int y, OrderHandler orderHandler, UnitClass unitClass){
     	super();
     	this.player = p;
     	this.speed = s;
         this.x = x;
         this.y = y;
-    	this.pathHandler = pathHandler;
     	this.orderHandler = orderHandler;
+    	this.unitClass = unitClass;
+    	pathHandler = Main.getGame().getPathHandler();
         this.id = idCounter;
         idCounter++;
         
@@ -271,4 +277,20 @@ public class Unit extends UnitType {
     public Point getLocation(){
         return new Point(x, y);
     }
+
+	/**
+	 * Set the unit class
+	 * @param unitClass the unitClass to set
+	 */
+	public void setUnitClass(UnitClass unitClass) {
+		this.unitClass = unitClass;
+	}
+
+	/**
+	 * Get the unit class
+	 * @return the unitClass
+	 */
+	public UnitClass getUnitClass() {
+		return unitClass;
+	}
 }

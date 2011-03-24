@@ -54,15 +54,15 @@ public class HeadlessGame {
      * Initialize the game
      */
     public void init(){
-        /* Create and populate map with tiles */
-        map = new Map(n);
-        map.generateMap(.64);
-
-        /* Create the grid for units */
+    	/* Create the grid for units */
         grid = new MapGrid(n);
         
         /* Create the unit manager */
         unitManager = new GameManager(this);
+    	
+        /* Create and populate map with tiles */
+        map = new Map(n);
+        map.generateMap(.64);
 
         /* Create path handler */
         pathHandler = new PathHandler(map, grid);
