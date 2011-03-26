@@ -129,10 +129,10 @@ public class Pathfinder extends Thread{
 		terrainValues = new HashMap<TerrainType, Integer>();
 		terrainValues.put(TerrainType.Grass, 1);
 		terrainValues.put(TerrainType.Dirt, 1);
-		terrainValues.put(TerrainType.Sand, 2);
+		terrainValues.put(TerrainType.Sand, 1);
 		terrainValues.put(TerrainType.Rock, 1);
-		terrainValues.put(TerrainType.Water, 500);
-		terrainValues.put(TerrainType.DeepFire, 3);
+		terrainValues.put(TerrainType.Water, 1);
+		terrainValues.put(TerrainType.DeepFire, 1);
 	}
 
 	/**
@@ -193,54 +193,57 @@ public class Pathfinder extends Thread{
 			for(int i = 0; i < neighbors.length; i++){
 				Point p = neighbors[i];
 
-				if(mapGrid.getUnit(p.x, p.y) != null && !(mapGrid.getUnit(p.x, p.y).getUnit().getUnitClass() == UnitClass.Standard)){
-					System.out.println(p);
-					Node n = new Node(p.x, p.y);
-					n.setClosed();
-					nodeList.put(p, n);
-				}
-
 				/* Only check neighbors not on the closed list */
 				if(!nodeList.containsKey(p) || nodeList.get(p).isOpen()){
 
-					/* Map tile corresponding to unit grid tile */
-					int[] mapTile = mapGrid.getMapTile(p.x, p.y);
+					Direction dir = getDirection2Pts(next.getPoint(), p);				
+					if(mapGrid.canPlaceUnit(u, next.getPoint().x, next.getPoint().y, dir) && mapGrid.canPlaceUnit(u, p.x, p.y, dir)){
 
-					/* Increment path length by length of path from current point to neighbor point */
-					double dlength = dist2D(next.getX(), next.getY(), p.x, p.y) * terrainValues.get(terrainMap[mapTile[0]][mapTile[1]]) + manhattan(p.x, p.y, endX, endY);
-					int newLength = currentLength + (int)dlength;
+						/* Map tile corresponding to unit grid tile */
+						int[] mapTile = mapGrid.getMapTile(p.x, p.y);
 
-					/* If neighbor is not on open list, add to open list and update info */
-					if(!nodeList.containsKey(p)){
-						Node newNode = new Node(p.x, p.y);
-						newNode.setMinPathLength(newLength);
-						newNode.setOpen();
-						newNode.setParent(next);
-						nodeList.put(p, newNode);
-						add(newNode);
-					}
+						/* Increment path length by length of path from current point to neighbor point */
+						double dlength = dist2D(next.getX(), next.getY(), p.x, p.y) * terrainValues.get(terrainMap[mapTile[0]][mapTile[1]]) + manhattan(p.x, p.y, endX, endY);
+						int newLength = currentLength + (int)dlength;
 
-					/* Otherwise neighbor is on open list, so check if better path exists */
-					else{
-						/* Location in heap */
-						int loc = find(p.x,p.y);
-						Node oldNode = heap[loc];
-						int oldLength = oldNode.getMinPathLength();
+						/* If neighbor is not on open list, add to open list and update info */
+						if(!nodeList.containsKey(p)){
+							Node newNode = new Node(p.x, p.y);
+							newNode.setMinPathLength(newLength);
+							newNode.setOpen();
+							newNode.setParent(next);
+							nodeList.put(p, newNode);
+							add(newNode);
+						}
 
-						/* If better path exists, update info */
-						if(newLength < oldLength){
-							oldNode.setMinPathLength(newLength);
-							oldNode.setParent(next);
-							heapUp(loc);
+						/* Otherwise neighbor is on open list, so check if better path exists */
+						else{
+							/* Location in heap */
+							int loc = find(p.x,p.y);
+							Node oldNode = heap[loc];
+							int oldLength = oldNode.getMinPathLength();
+
+							/* If better path exists, update info */
+							if(newLength < oldLength){
+								oldNode.setMinPathLength(newLength);
+								oldNode.setParent(next);
+								heapUp(loc);
+							}
 						}
 					}
+					
+					else{
+						Node n = new Node(p.x, p.y);
+						n.setClosed();
+						nodeList.put(p, n);
+					}
+					
 				}
 			}
 		}
 
 		/* Retrace path starting from endpoint */
 		retrace(nodeList.get(end));
-		System.out.println(path);
 	}
 
 	/**

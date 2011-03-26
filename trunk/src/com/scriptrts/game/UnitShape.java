@@ -14,6 +14,13 @@ class UnitShape {
      */
     Point[][] shapes = new Point[8][];
 
+    static final UnitShape SHAPE_7x7 = new UnitShape(
+    	new Point[][]{
+    		new Point[]{new Point(-3,-3), new Point(-3,-2), new Point(-3,-1), new Point(-3,0), new Point(-3,1), new Point(-3,2), new Point(-3,3), new Point(-2,-3), new Point(-2,-2), new Point(-2,-1), new Point(-2,0), new Point(-2,1), new Point(-2,2), new Point(-2,3), new Point(-1,-3), new Point(-1,-2), new Point(-1,-1), new Point(-1,0), new Point(-1,1), new Point(-1,2), new Point(-1,3), new Point(0,-3), new Point(0,-2), new Point(0,-1), new Point(0,0), new Point(0,1), new Point(0,2), new Point(0,3), new Point(1,-3), new Point(1,-2), new Point(1,-1), new Point(1,0), new Point(1,1), new Point(1,2), new Point(1,3), new Point(2,-3), new Point(2,-2), new Point(2,-1), new Point(2,0), new Point(2,1), new Point(2,2), new Point(2,3), new Point(3,-3), new Point(3,-2), new Point(3,-1), new Point(3,0), new Point(3,1), new Point(3,2), new Point(3,3)},
+    		null, null, null, null, null, null, null
+    	}
+    );
+    
     /**
      * A two-by-one elongated unit shape
      */

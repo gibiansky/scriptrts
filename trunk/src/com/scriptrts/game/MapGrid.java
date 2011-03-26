@@ -286,13 +286,19 @@ public class MapGrid {
      * @param orientation orientation of the unit
      * @return whether we can place the unit there without interfering with other units
      */
-    private boolean canPlaceUnit(GameObject unit, int x, int y, Direction orientation){
+    public boolean canPlaceUnit(GameObject unit, int x, int y, Direction orientation){
         Point[] points = unit.getShape(orientation);
 
         for(Point p : points){
-            if(spaceTakenFor(x + p.x, y + p.y, unit)){
-                return false;
-            }
+        	try{
+        		if(spaceTakenFor(x + p.x, y + p.y, unit))
+        			return false;
+        	}
+        	
+        	//If it goes off the map, return false
+        	catch(ArrayIndexOutOfBoundsException e){
+        		return false;
+        	}
         }
 
         return true;
