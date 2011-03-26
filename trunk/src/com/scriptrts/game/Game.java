@@ -225,38 +225,7 @@ public class Game extends HeadlessGame {
                 try {
                     /* Retrieve spaceship sprites */
                     BufferedImage art = ResourceManager.loadImage("resource/unit/spaceship/Art.png", 200, 200);
-                    Sprite[] sprites = new Sprite[16];
-                    for(Direction d : Direction.values()){
-                        String unitDir = "resource/unit/spaceship/";
-                        String unitFilename = "Ship" + d.name() + ".png";
-                        BufferedImage img = ResourceManager.loadBandedImage(
-                                unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, getPlayer().getColor());
-                        sprites[d.ordinal()]  = new Sprite(img, 0.3, 87, 25);
-                    }
-
-                    for(Direction d : Direction.values()){
-                        String unitDir = "resource/unit/spaceship/";
-                        String unitFilename = "Ship" + d.name() + ".png";
-                        BufferedImage normalImg = ResourceManager.loadBandedImage(
-                                unitDir + unitFilename, unitDir + "allegiance/" + unitFilename, getPlayer().getColor());
-                        BufferedImage attackImg = ResourceManager.loadBandedImage(
-                                unitDir + "attack/" + unitFilename, unitDir + "allegiance/" + unitFilename, getPlayer().getColor());
-                        int bX = 87, bY = 25;
-                        if(d == Direction.Northwest)
-                            bY += 43;
-                        if(d == Direction.Southwest)
-                            bX += 30;
-                        sprites[8 + d.ordinal()]  = new AnimatedSprite(
-                                new BufferedImage[]{
-                                    normalImg, attackImg
-                                }, new int[]{
-                                    10, 10
-                                }, 0.3, new int[]{
-                                    87, bX
-                                }, new int[]{
-                                    25, bY
-                                });
-                    }
+                    Sprite[] sprites = ResourceManager.loadSpriteSet("spaceship.sprite", getPlayer());
                     GameObject spaceship = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, true, UnitClass.Standard);
                     tempUnit = spaceship;
                 } catch (Exception e) {
@@ -273,10 +242,7 @@ public class Game extends HeadlessGame {
                 tempUnitY = point.y;
 
                 try {
-                    Sprite[] sprites = new Sprite[16];
-                	BufferedImage img = ResourceManager.loadImage("resource/terrain/volcano/Volcano1.png");
-                    for(Direction d : Direction.values())
-                        sprites[d.ordinal()]  = new Sprite(img, 1.5, 110, 80);
+                    Sprite[] sprites = ResourceManager.loadSpriteSet("volcano.sprite", null);
                     GameObject volcano = new GameObject(getPlayer(), sprites, null, 0, 0, 0, Direction.North, true, UnitClass.Terrain);
                     tempUnit = volcano;
                 } catch (Exception e) {
@@ -293,10 +259,7 @@ public class Game extends HeadlessGame {
                 tempUnitY = point.y;
 
                 try {
-                    Sprite[] sprites = new Sprite[16];
-                	BufferedImage img = ResourceManager.loadImage("resource/buildings/smithy.png");
-                    for(Direction d : Direction.values())
-                        sprites[d.ordinal()]  = new Sprite(img, 1, 120, 120);
+                    Sprite[] sprites = ResourceManager.loadSpriteSet("smithy.sprite", null);
                     GameObject volcano = new GameObject(getPlayer(), sprites, null, 0, 0, 0, Direction.North, true, UnitClass.Building);
                     tempUnit = volcano;
                 } catch (Exception e) {
