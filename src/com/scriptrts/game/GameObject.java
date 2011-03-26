@@ -83,10 +83,10 @@ public class GameObject {
         previousDirection = direction;
         state = SpriteState.Idle;
 
-        if(shaped)
+        if(unitClass == UnitClass.Standard)
             shape = UnitShape.SHAPE_2x1;
         else
-            shape = UnitShape.SHAPE_1x1;
+            shape = UnitShape.SHAPE_7x7;
 
         this.art = artImg;
     }

@@ -168,6 +168,7 @@ public class Game extends HeadlessGame {
         manager.registerKeyCode(KeyEvent.VK_SHIFT);
         manager.registerKeyCode(KeyEvent.VK_C);
         manager.registerKeyCode(KeyEvent.VK_V);
+        manager.registerKeyCode(KeyEvent.VK_B);
     }
 
     /**
@@ -273,10 +274,30 @@ public class Game extends HeadlessGame {
 
                 try {
                     Sprite[] sprites = new Sprite[16];
-                	BufferedImage img = ResourceManager.loadImage("resource/unit/volcano/Volcano1.png");
+                	BufferedImage img = ResourceManager.loadImage("resource/terrain/volcano/Volcano1.png");
                     for(Direction d : Direction.values())
-                        sprites[d.ordinal()]  = new Sprite(img, 1, 87, 25);
+                        sprites[d.ordinal()]  = new Sprite(img, 1.5, 110, 80);
                     GameObject volcano = new GameObject(getPlayer(), sprites, null, 0, 0, 0, Direction.North, true, UnitClass.Terrain);
+                    tempUnit = volcano;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            
+            if(manager.getKeyCodeFlag(KeyEvent.VK_B)){
+            	placingUnit = !placingUnit;
+            	manager.clearKeyCodeFlag(KeyEvent.VK_B);
+            	
+            	Point point = manager.getMouseLocation();
+                tempUnitX = point.x;
+                tempUnitY = point.y;
+
+                try {
+                    Sprite[] sprites = new Sprite[16];
+                	BufferedImage img = ResourceManager.loadImage("resource/buildings/smithy.png");
+                    for(Direction d : Direction.values())
+                        sprites[d.ordinal()]  = new Sprite(img, 1, 120, 120);
+                    GameObject volcano = new GameObject(getPlayer(), sprites, null, 0, 0, 0, Direction.North, true, UnitClass.Building);
                     tempUnit = volcano;
                 } catch (Exception e) {
                     e.printStackTrace();

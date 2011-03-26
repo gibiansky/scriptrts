@@ -167,20 +167,16 @@ public class Map {
 		TerrainType[] terrains = TerrainType.values();
 		
 		try{
-			/* Initialize volcano images */
-			Sprite[] sprites = new Sprite[16];
-			BufferedImage img = ResourceManager.loadImage("resource/unit/volcano/Volcano1.png");
-			for(Direction d : Direction.values())
-				sprites[d.ordinal()]  = new Sprite(img, 1, 87, 25);
+			/* Load volcano image */
+			BufferedImage img = ResourceManager.loadImage("resource/terrain/volcano/Volcano1.png");
 
 			/* Loop through each square and add volcanos randomly */
 			for(int i = 2; i < n - 2; i++)
 				for(int j = 2; j < n - 2; j++)
 					if(tileArray[i][j] == terrains[5])
 						if(random.nextDouble() < 0.005){
-							System.out.println("Placing volcano at " + i + " " + j);
-							UnitClass.createTerrain(sprites, MapGrid.SPACES_PER_TILE * i + MapGrid.SPACES_PER_TILE / 2,
-									MapGrid.SPACES_PER_TILE * j + MapGrid.SPACES_PER_TILE / 2, true);
+							UnitClass.createTerrain(img, MapGrid.SPACES_PER_TILE * i + MapGrid.SPACES_PER_TILE / 2,
+									MapGrid.SPACES_PER_TILE * j + MapGrid.SPACES_PER_TILE / 2, true, 1.5);
 						}
 			
 		} catch(IOException e){
