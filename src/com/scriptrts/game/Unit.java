@@ -88,7 +88,7 @@ public class Unit extends UnitType {
         
         hitpoints = 10;
         health = (int) (Math.random() * hitpoints);
-        visibilityRadius = 2;
+        visibilityRadius = 3;
     }
     
     /**
@@ -183,6 +183,22 @@ public class Unit extends UnitType {
      */
     public void setVisibilityRadius(int radius) {
         visibilityRadius = radius;
+    }
+    
+    /**
+     * Returns the visible tiles for this unit's visibility radius about the point x, y
+     */
+    public Point[] getVisibleTiles(int x, int y){
+    	Point[] visibleTiles = new Point[(int) Math.pow(2 * visibilityRadius + 1, 2)];
+    	int count = 0;
+    	for(int i = x - visibilityRadius; i <= x + visibilityRadius; i++){
+    		for(int j = y - visibilityRadius; j <= y + visibilityRadius; j++){
+    			if(Main.getGame().getGameGrid().contains(i, j))
+    				visibleTiles[count] = new Point(i, j);
+    			count++;
+    		}
+    	}
+    	return visibleTiles;
     }
     
     /**

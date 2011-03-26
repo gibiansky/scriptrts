@@ -148,7 +148,7 @@ public class Minimap extends JPanel {
                 GameObject u;
                 for(int a = 0; a < MapGrid.SPACES_PER_TILE; a++)
                     for(int b = 0; b < MapGrid.SPACES_PER_TILE; b++)
-                        if((u = Main.getGame().getGameGrid().getUnit(i * MapGrid.SPACES_PER_TILE + a, j * MapGrid.SPACES_PER_TILE + b)) != null)
+                        if((u = Main.getGame().getGameGrid().getUnit(i * MapGrid.SPACES_PER_TILE + a, j * MapGrid.SPACES_PER_TILE + b)) != null && u.getUnit().getAllegiance().getID() != -1)
                             c = u.getUnit().getAllegiance().getColor();
 
                 graphics.setColor(c);

@@ -1,5 +1,6 @@
 package com.scriptrts.game;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -125,19 +126,7 @@ public class GameManager {
         MapGrid grid = game.getGameGrid();
         int n = game.getCurrentMap().getN() * MapGrid.SPACES_PER_TILE;
 
-        /* Check if any movement is occurring this update */
-        boolean needsReset = false;
-        for(int i = 0; i < n; i++) {
-            for(int j = 0; j < n; j++) {
-                if(grid.getUnit(i, j) != null && grid.getUnit(i, j).getUnit().getX() == i && grid.getUnit(i, j).getUnit().getY() == j)  
-                    if(grid.getUnit(i, j).getUnit().getSpeed() != 0 && grid.getUnit(i, j).getDirection() != null)  
-                        needsReset = true;
-            }
-        }
-
-        /* If movement is occurring, reset the visibility grid */
-        if(needsReset)
-            resetVisibilityGrid();
+        
 
         /* Loop over all unit positions, update where there are units */
         for(int i = 0; i < n; i++){
@@ -164,10 +153,12 @@ public class GameManager {
         /* Unit speed is in subtiles per second */
         int uSpeed = unit.getUnit().getSpeed();
 
+        int prevX = unit.getUnit().getX(), prevY = unit.getUnit().getY();
+        
         /* For a moving unit, move it */
         if(unit.getUnit().getSpeed() != 0 && unit.getDirection() != null) {
             double subtilesMovedPerFrame = (double)(uSpeed) /* subtiles per second */ / fps /* times seconds */;
-
+            
             int tilesMoved = unit.incrementAnimationCounter(subtilesMovedPerFrame);
 
             needsVisibilityUpdate = tilesMoved > 0;
@@ -178,7 +169,6 @@ public class GameManager {
                 while(tilesMoved > 0){
                     grid.moveUnitOneTile(unit);
                     tilesMoved--;
-
                     setUnitUpdated(unit);
                 }
             }
@@ -189,25 +179,26 @@ public class GameManager {
             grid.moveUnitOneTile(unit);
         }
 
-        /* Retrieve the visibility grid */
-        byte[][] vGrid = Main.getGame().getPlayer().getVisibilityGrid();
-
         /* If the unit moved, set its new position to visible */
-        if(needsVisibilityUpdate)  
-            vGrid[unit.getUnit().getX()][unit.getUnit().getY()] = 2; 
+        if(needsVisibilityUpdate)
+        	setVisibleTiles(unit, prevX, prevY);
 
         unit.progressSpriteAnimation();
         unit.getUnit().getOrderHandler().update();
     }
-
-    /**
-     * Resets the visibility grid for the player before each update
-     */
-    private void resetVisibilityGrid() {
-        byte[][] grid = Main.getGame().getPlayer().getVisibilityGrid();
-        for(int i = 0; i < grid.length; i++)
-            for(int j = 0; j < grid[i].length; j++)
-                if(grid[i][j] == 2)
-                    grid[i][j] = 1;
+    
+    public void setVisibleTiles(GameObject unit, int prevX, int prevY){
+    	/* Retrieve the visibility grid */
+        byte[][] vGrid = Main.getGame().getPlayer().getVisibilityGrid();
+        for(Point p : unit.getShape(unit.getFacingDirection())){
+        	for(Point tile : unit.getUnit().getVisibleTiles(prevX + p.x, prevY + p.y)){
+        		if(tile != null)
+        			vGrid[tile.x][tile.y] = 1;
+        	}
+        	for(Point tile : unit.getUnit().getVisibleTiles(unit.getUnit().getX() + p.x, unit.getUnit().getY() + p.y)){
+        		if(tile != null)
+        			vGrid[tile.x][tile.y] = 2;
+        	}
+        }
     }
 }

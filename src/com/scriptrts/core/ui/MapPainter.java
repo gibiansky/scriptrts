@@ -533,7 +533,7 @@ public class MapPainter {
                 boolean partVis = false;
                 for(int k = 0; k < MapGrid.SPACES_PER_TILE; k++)
                     for(int l = 0; l < MapGrid.SPACES_PER_TILE; l++)
-                        if(vis[i * MapGrid.SPACES_PER_TILE + k][j * MapGrid.SPACES_PER_TILE + l] == 2)
+                        if(vis[i * MapGrid.SPACES_PER_TILE + k][j * MapGrid.SPACES_PER_TILE + l] != 0)
                             partVis = true;
 
                 /* If the tile is visible to a unit, paint it normally */

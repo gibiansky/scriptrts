@@ -274,7 +274,7 @@ public class MapGrid {
      * @param y y coordinate of point
      * @return whether the point is on the unit grid
      */
-    private boolean contains(int x, int y){
+    public boolean contains(int x, int y){
         return (x >= 0 && x < n && y >= 0 && y < n);
     }
 
