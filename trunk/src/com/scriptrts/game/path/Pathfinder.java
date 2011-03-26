@@ -196,6 +196,7 @@ public class Pathfinder extends Thread{
 				/* Only check neighbors not on the closed list */
 				if(!nodeList.containsKey(p) || nodeList.get(p).isOpen()){
 
+					/* Only check neighbors which can fit the unit shape */
 					Direction dir = getDirection2Pts(next.getPoint(), p);				
 					if(mapGrid.canPlaceUnit(u, next.getPoint().x, next.getPoint().y, dir) && mapGrid.canPlaceUnit(u, p.x, p.y, dir)){
 
