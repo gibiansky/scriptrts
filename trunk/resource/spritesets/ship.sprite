@@ -1,0 +1,129 @@
+16
+0.3
+STATIC BAND
+87 25
+unit/spaceship/ShipNorth.png
+unit/spaceship/allegiance/ShipNorth.png
+
+STATIC BAND
+87 25
+unit/spaceship/ShipNortheast.png
+unit/spaceship/allegiance/ShipNortheast.png
+
+STATIC BAND
+87 25
+unit/spaceship/ShipEast.png
+unit/spaceship/allegiance/ShipEast.png
+
+STATIC BAND
+87 25
+unit/spaceship/ShipSoutheast.png
+unit/spaceship/allegiance/ShipSoutheast.png
+
+STATIC BAND
+87 25
+unit/spaceship/ShipSouth.png
+unit/spaceship/allegiance/ShipSouth.png
+
+STATIC BAND
+87 25
+unit/spaceship/ShipSouthwest.png
+unit/spaceship/allegiance/ShipSouthwest.png
+
+STATIC BAND
+87 25
+unit/spaceship/ShipWest.png
+unit/spaceship/allegiance/ShipWest.png
+
+STATIC BAND
+87 25
+unit/spaceship/ShipNorthwest.png
+unit/spaceship/allegiance/ShipNorthwest.png
+
+ANIMATED BAND
+2
+10
+87 25
+unit/spaceship/ShipNorth.png
+unit/spaceship/allegiance/ShipNorth.png
+10
+87 25
+unit/spaceship/attack/ShipNorth.png
+unit/spaceship/allegiance/ShipNorth.png
+
+ANIMATED BAND
+2
+10
+87 25
+unit/spaceship/ShipNortheast.png
+unit/spaceship/allegiance/ShipNortheast.png
+10
+87 25
+unit/spaceship/attack/ShipNortheast.png
+unit/spaceship/allegiance/ShipNortheast.png
+
+ANIMATED BAND
+2
+10
+87 25
+unit/spaceship/ShipEast.png
+unit/spaceship/allegiance/ShipEast.png
+10
+87 25
+unit/spaceship/attack/ShipEast.png
+unit/spaceship/allegiance/ShipEast.png
+
+ANIMATED BAND
+2
+10
+87 25
+unit/spaceship/ShipSoutheast.png
+unit/spaceship/allegiance/ShipSoutheast.png
+10
+87 25
+unit/spaceship/attack/ShipSoutheast.png
+unit/spaceship/allegiance/ShipSoutheast.png
+
+ANIMATED BAND
+2
+10
+87 25
+unit/spaceship/ShipSouth.png
+unit/spaceship/allegiance/ShipSouth.png
+10
+87 25
+unit/spaceship/attack/ShipSouth.png
+unit/spaceship/allegiance/ShipSouth.png
+
+ANIMATED BAND
+2
+10
+117 25
+unit/spaceship/ShipSouthwest.png
+unit/spaceship/allegiance/ShipSouthwest.png
+10
+117 25
+unit/spaceship/attack/ShipSouthwest.png
+unit/spaceship/allegiance/ShipSouthwest.png
+
+ANIMATED BAND
+2
+10
+87 25
+unit/spaceship/ShipWest.png
+unit/spaceship/allegiance/ShipWest.png
+10
+87 25
+unit/spaceship/attack/ShipWest.png
+unit/spaceship/allegiance/ShipWest.png
+
+ANIMATED BAND
+2
+10
+87 68
+unit/spaceship/ShipNorthwest.png
+unit/spaceship/allegiance/ShipNorthwest.png
+10
+87 68
+unit/spaceship/attack/ShipNorthwest.png
+unit/spaceship/allegiance/ShipNorthwest.png
