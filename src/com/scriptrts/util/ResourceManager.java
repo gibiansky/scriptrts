@@ -8,9 +8,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Scanner;
 import java.awt.Color;
 
 import javax.imageio.ImageIO;
+
+import com.scriptrts.game.Player;
+import com.scriptrts.game.Sprite;
+import com.scriptrts.game.AnimatedSprite;
 
 /**
  * Utility resource manager to load images, audio, and data files
@@ -121,6 +126,105 @@ public class ResourceManager {
 
         imageCache.put(filename + " - banded " + band + " (" + original.getWidth() + ", " + original.getHeight() + ")", bandedImage);
         return bandedImage;
+    }
+    /**
+     * Load a spriteset from a sprite definition file.
+     * @param filename filename of sprite definition in the sprite resource directory
+     * @param player player to whom the sprite will belong, needed to apply banding
+     * @return array of sprites
+     */
+    public static Sprite[] loadSpriteSet(String filename, Player player) throws IOException {
+        final String defineDir = "resource/spritesets/";
+
+        Scanner reader = new Scanner(new File(defineDir + filename));
+
+        int numSprites = reader.nextInt();
+        Sprite[] sprites = new Sprite[numSprites];
+
+        float scale = reader.nextFloat();
+        for(int i = 0; i < numSprites; i++){
+            sprites[i] = readSprite(reader, scale, player);
+        }
+
+        reader.close();
+        return sprites;
+    }
+
+    /**
+     * Read a sprite defined in the given definition file stream.
+     * @param reader scanner used to read from the definition file
+     * @param scale scale to apply to sprite
+     * @param player player to use for banding
+     * @return sprite as defined by definition file
+     */
+    private static Sprite readSprite(Scanner reader, float scale, Player player) throws IOException {
+        final String imageDir = "resource/";
+
+        String type = readString(reader);
+        if(type.equals("NULL"))
+            return null;
+
+        if(type.equals("STATIC")){
+            int x = reader.nextInt();
+            int y = reader.nextInt();
+            String filename = readString(reader);
+            return new Sprite(loadImage(imageDir + filename), scale, x, y);
+        }
+
+        if(type.equals("STATIC BAND")){
+            int x = reader.nextInt();
+            int y = reader.nextInt();
+            String filename = readString(reader);
+            String bandFilename = readString(reader);
+            return new Sprite(loadBandedImage(imageDir + filename, imageDir + bandFilename, player.getColor()), scale, x, y);
+        }
+
+        if(type.equals("ANIMATED")){
+            int stages = reader.nextInt();
+            int[] durations = new int[stages];
+            int[] xs = new int[stages];
+            int[] ys = new int[stages];
+            BufferedImage[] imgs = new BufferedImage[stages];
+
+            for(int i = 0; i < stages; i++){
+                durations[i] = reader.nextInt();
+                xs[i] = reader.nextInt();
+                ys[i] = reader.nextInt();
+                imgs[i] = loadImage(imageDir + readString(reader));
+            }
+
+            return new AnimatedSprite(imgs, durations, scale, xs, ys);
+        }
+
+        if(type.equals("ANIMATED BAND")){
+            int stages = reader.nextInt();
+            int[] durations = new int[stages];
+            int[] xs = new int[stages];
+            int[] ys = new int[stages];
+            BufferedImage[] imgs = new BufferedImage[stages];
+
+            for(int i = 0; i < stages; i++){
+                durations[i] = reader.nextInt();
+                xs[i] = reader.nextInt();
+                ys[i] = reader.nextInt();
+                imgs[i] = loadBandedImage(imageDir + readString(reader), imageDir + readString(reader), player.getColor());
+            }
+
+            return new AnimatedSprite(imgs, durations, scale, xs, ys);
+        }
+
+        throw new RuntimeException("Tried to load unknown sprite type.");
+    }
+
+    /**
+     * Read a non-blank line from this scanner.
+     * @param scanner scanner to read from
+     * @return non-blank non-whitespace line
+     */
+    private static String readString(Scanner scanner) throws IOException {
+        String nextLine;
+        while((nextLine = scanner.nextLine()).trim().equals(""));
+        return nextLine;
     }
 
     /**
