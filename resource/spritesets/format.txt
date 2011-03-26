@@ -1,0 +1,38 @@
+The spriteset format is as follows:
+
+File format:
+First line: N - number of sprites
+Second line: scale factor to apply to all images
+Remaining lines: N sprite definitions, with any amount of newlines interspersed
+
+Sprite definition:
+First line: Sprite type
+    "NULL" - returns null sprite
+    "STATIC" - single sprite, no player banding
+    "STATIC BAND" - single sprite with player banding
+    "ANIMATED" - animated sprite, no player banding
+    "ANIMATED BAND" - animated sprite with no player banding
+Remaining lines: depending on sprite type. All filenames are relative to resource directory.
+
+NULL: no lines. returns a null sprite.
+STATIC: 
+    line 0 - x and y coordinates of back point, separated by spaces
+    line 1 - filename of sprite
+STATIC BAND: 
+    line 0 - x and y coordinates of back point, separated by spaces
+    line 1 - filename of sprite
+    line 2 - filename of sprite banding mask
+ANIMATED:
+    line 1 - number of stages of animation
+    remaining lines, in pairs:
+        duration,
+        x and y coordinates of back point, separated by spaces
+        image filename
+ANIMATED BAND:
+    line 1 - number of stages of animation
+    remaining lines, in triples:
+        duration,
+        x and y coordinates of back point, separated by spaces
+        image filename,
+        band mask image filename
+

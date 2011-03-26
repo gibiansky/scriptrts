@@ -71,11 +71,16 @@ public class ResourceManager {
         if(imageCache.containsKey(filename))
             return imageCache.get(filename);
 
-        BufferedImage image = ImageIO.read(new File(filename));
+        try {
+            BufferedImage image = ImageIO.read(new File(filename));
 
-        imageCache.put(filename + " (" + image.getWidth() + ", " + image.getHeight() + ")", image);
-        imageCache.put(filename, image);
-        return image;
+            imageCache.put(filename + " (" + image.getWidth() + ", " + image.getHeight() + ")", image);
+            imageCache.put(filename, image);
+            return image;
+        } catch (IOException e){
+            System.out.println("Failed to load: " + filename);
+            throw e;
+        }
     }
 
     /**
