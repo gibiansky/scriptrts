@@ -17,7 +17,12 @@ public class Node {
 	/**
 	 * Minimum path length to reach this node from the starting point
 	 */
-	private int minPathLength;
+	private int gCost;
+	
+	/**
+	 * Estimated path length from this node to the ending point
+	 */
+	private int hCost;
 	
 	/**
 	 * Whether or not the node is on the open list
@@ -37,7 +42,8 @@ public class Node {
 	public Node(int x, int y){
 		this.x = x;
 		this.y = y;
-		minPathLength = 0;
+		gCost = 0;
+		hCost = 0;
 		open = true;
 		parent = null;
 	}
@@ -48,7 +54,8 @@ public class Node {
 	public void reset(){
 		x = 0;
 		y = 0;
-		minPathLength = 0;
+		gCost = 0;
+		hCost = 0;
 		open = true;
 		parent = null;
 	}
@@ -94,19 +101,43 @@ public class Node {
 	}
 	
 	/**
-	 * Get the minimum path length
+	 * Get the minimum path length to reach this node from the starting point
 	 * @return minimum path length to reach this node
 	 */
-	public int getMinPathLength(){
-		return minPathLength;
+	public int getGCost(){
+		return gCost;
 	}
 	
 	/**
 	 * Set the minimum path length
-	 * @param minPathLength minimum path length to reach this node
+	 * @param gCost minimum path length to reach this node
 	 */
-	public void setMinPathLength(int minPathLength){
-		this.minPathLength = minPathLength;
+	public void setGCost(int gCost){
+		this.gCost = gCost;
+	}
+	
+	/**
+	 * Get the estimated path length from this node to the ending point
+	 * @return estimated path length to the end point
+	 */
+	public int getHCost(){
+		return hCost;
+	}
+	
+	/**
+	 * Set the estimated path length
+	 * @param hCost estimated path length to the end point
+	 */
+	public void setHCost(int hCost){
+		this.hCost = hCost;
+	}
+	
+	/**
+	 * Get the total cost f = g + h
+	 * @return fCost total cost
+	 */
+	public int getFCost(){
+		return gCost + hCost;
 	}
 	
 	/**

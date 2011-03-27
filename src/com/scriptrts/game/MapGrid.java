@@ -142,7 +142,10 @@ public class MapGrid {
      * @return unit at specified coordinates
      */
     public GameObject getUnit(int i, int j){
-        return grid[i][j];
+    	if(this.contains(i, j))
+    		return grid[i][j];
+    	else
+    		return null;
     }
 
     /**
