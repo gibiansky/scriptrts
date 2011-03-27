@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import com.scriptrts.core.Main;
 import com.scriptrts.game.Direction;
 import com.scriptrts.game.GameObject;
 import com.scriptrts.game.Map;
@@ -185,7 +186,7 @@ public class Pathfinder extends Thread{
 			nodeList.put(next.getPoint(), next);
 
 			/* Length of path from start point to current point */
-			int currentLength = next.getMinPathLength();
+			int currentGCost = next.getGCost();
 
 			/* Find the neighbors of the current point */
 			Point[] neighbors = mapGrid.getNeighbors(next.getX(), next.getY());
@@ -204,13 +205,15 @@ public class Pathfinder extends Thread{
 						int[] mapTile = mapGrid.getMapTile(p.x, p.y);
 
 						/* Increment path length by length of path from current point to neighbor point */
-						double dlength = dist2D(next.getX(), next.getY(), p.x, p.y) * terrainValues.get(terrainMap[mapTile[0]][mapTile[1]]) + manhattan(p.x, p.y, endX, endY);
-						int newLength = currentLength + (int)dlength;
+						int dlength = 1;//dist2D(next.getX(), next.getY(), p.x, p.y) * terrainValues.get(terrainMap[mapTile[0]][mapTile[1]]);
+						int newHCost = manhattan(p.x, p.y, endX, endY);
+						int newGCost = currentGCost + dlength;
 
 						/* If neighbor is not on open list, add to open list and update info */
 						if(!nodeList.containsKey(p)){
 							Node newNode = new Node(p.x, p.y);
-							newNode.setMinPathLength(newLength);
+							newNode.setGCost(newGCost);
+							newNode.setHCost(newHCost);
 							newNode.setOpen();
 							newNode.setParent(next);
 							nodeList.put(p, newNode);
@@ -222,11 +225,12 @@ public class Pathfinder extends Thread{
 							/* Location in heap */
 							int loc = find(p.x,p.y);
 							Node oldNode = heap[loc];
-							int oldLength = oldNode.getMinPathLength();
+							int oldFCost = oldNode.getFCost();
 
 							/* If better path exists, update info */
-							if(newLength < oldLength){
-								oldNode.setMinPathLength(newLength);
+							if(newGCost + newHCost < oldFCost){
+								oldNode.setGCost(newGCost);
+								oldNode.setHCost(newHCost);
 								oldNode.setParent(next);
 								heapUp(loc);
 							}
@@ -314,7 +318,7 @@ public class Pathfinder extends Thread{
 		/* Heap up */
 		int i = start;
 		while(i > 0){
-			if(heap[i].getMinPathLength() <= heap[(i-1)/2].getMinPathLength()){
+			if(heap[i].getFCost() <= heap[(i-1)/2].getFCost()){
 				Node temp = heap[(i-1)/2];
 				heap[(i-1)/2] = heap[i];
 				heap[i] = temp;
@@ -333,12 +337,12 @@ public class Pathfinder extends Thread{
 		while(true){
 			int child = parent;
 			if(2*parent + 2 <= count){
-				if(heap[parent].getMinPathLength() > heap[2*child + 1].getMinPathLength())
+				if(heap[parent].getFCost() > heap[2*child + 1].getFCost())
 					parent = 2*child + 1;
-				if(heap[parent].getMinPathLength() > heap[2*child + 2].getMinPathLength())
+				if(heap[parent].getFCost() > heap[2*child + 2].getFCost())
 					parent = 2*child + 2;
 			} else if(2*parent + 1 <= count){
-				if(heap[parent].getMinPathLength() > heap[2*child + 1].getMinPathLength())
+				if(heap[parent].getFCost() > heap[2*child + 1].getFCost())
 					parent = 2*child + 1;
 			}
 			if(parent > child){
