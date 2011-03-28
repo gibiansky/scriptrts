@@ -191,7 +191,7 @@ public class Main extends JPanel {
         
 
         /* Create game and server */
-        game = new Game(129, window.getWidth(), window.getHeight());
+        game = new Game(128, window.getWidth(), window.getHeight());
         game.init();
         if(serverIP == null){
             server = new GameServer();

@@ -62,7 +62,7 @@ public class HeadlessGame {
     	
         /* Create and populate map with tiles */
         map = new Map(n);
-        map.generateMap(.64);
+        map.generateMap(.64, 2);
 
         /* Create path handler */
         pathHandler = new PathHandler(map, grid);
