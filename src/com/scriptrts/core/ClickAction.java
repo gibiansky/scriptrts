@@ -18,8 +18,11 @@ public abstract class ClickAction {
     /**
      * Draws cursor for the action
      * @param graphics graphics handle on the screen
+     * @param viewport viewport used to display map
+     * @param x x coordinate of mouse
+     * @param y y coordinate of mouse
      */
-    public void paintCursor(Graphics graphics, Viewport viewport) {
+    public void paintCursor(Graphics graphics, Viewport viewport, int x, int y) {
         /* Does nothing */
     }
     

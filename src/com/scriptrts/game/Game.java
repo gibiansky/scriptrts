@@ -66,17 +66,6 @@ public class Game extends HeadlessGame {
     private Point bottomRightSelection = null;
 
     /**
-     * The unit currently being placed on the map, if a unit is being placed. It is drawn over the map,
-     * and, unlike other units on the map, is not necessarily placed on the grid.
-     */
-    private GameObject tempUnit = null;
-
-    /**
-     * Location (in screen coordinates) at which the unit being placed is being placed.
-     */
-    private int tempUnitX, tempUnitY;
-
-    /**
      * Whether the mouse was pressed on last update.
      */
     private boolean mousePreviouslyPressed = false;
@@ -502,9 +491,7 @@ public class Game extends HeadlessGame {
 
         /* Draw fake cursors */
         if(clickAction != null && clickAction.hasCursor()){
-            graphics.translate(manager.getMouseLocation().x, manager.getMouseLocation().y);
-            clickAction.paintCursor(graphics, viewport);
-            graphics.translate(-manager.getMouseLocation().x, -manager.getMouseLocation().y);
+            clickAction.paintCursor(graphics, viewport, manager.getMouseLocation().x, manager.getMouseLocation().y);
         }
 
         /* Draw selection (if not placing units) */
@@ -541,16 +528,6 @@ public class Game extends HeadlessGame {
             graphics.drawRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
             graphics.translate(-viewport.getX(), -viewport.getY());
         }
-    }
-
-    /**
-     * Draw temporary units. Temporary units include things such as buildings which
-     * are not yet placed on the map, but are being placed.
-     * @param graphics Graphics2D object to draw with
-     * @param viewport viewport in which the unit is being placed.
-     */
-    private void drawTemporaryUnits(Graphics2D graphics, Viewport viewport){
-        unitPainter.paintTemporaryUnit(graphics, viewport, tempUnit, tempUnitX, tempUnitY);
     }
 
     /**
