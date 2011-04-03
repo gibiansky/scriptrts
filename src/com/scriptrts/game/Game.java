@@ -17,6 +17,7 @@ import com.scriptrts.control.SelectionStorage;
 import com.scriptrts.control.StopOrder;
 import com.scriptrts.core.Main;
 import com.scriptrts.core.ClickAction;
+import com.scriptrts.core.PlaceAction;
 import com.scriptrts.core.ui.InputManager;
 import com.scriptrts.core.ui.MapPainter;
 import com.scriptrts.core.ui.UnitPainter;
@@ -63,11 +64,6 @@ public class Game extends HeadlessGame {
      * Bottom point of the current selection on the map. If this is null, it means there is no selection.
      */
     private Point bottomRightSelection = null;
-
-    /** 
-     * Whether the user is currently placing a unit.
-     */
-    private boolean placingUnit = false;
 
     /**
      * The unit currently being placed on the map, if a unit is being placed. It is drawn over the map,
@@ -214,7 +210,6 @@ public class Game extends HeadlessGame {
             }
 
             if(manager.getKeyCodeFlag(KeyEvent.VK_D) || manager.getKeyCodeFlag(KeyEvent.VK_M)){
-                placingUnit = !placingUnit;
                 int uSpeed;
                 if(manager.getKeyCodeFlag(KeyEvent.VK_D))
                     uSpeed = 0;
@@ -224,50 +219,36 @@ public class Game extends HeadlessGame {
                 manager.clearKeyCodeFlag(KeyEvent.VK_M);
                 manager.clearKeyCodeFlag(KeyEvent.VK_D);
 
-                Point point = manager.getMouseLocation();
-                tempUnitX = point.x;
-                tempUnitY = point.y;
-
                 try {
                     /* Retrieve spaceship sprites */
                     BufferedImage art = ResourceManager.loadImage("resource/unit/spaceship/Art.png", 200, 200);
                     Sprite[] sprites = ResourceManager.loadSpriteSet("spaceship.sprite", getPlayer());
                     GameObject spaceship = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, true, UnitClass.Standard);
-                    tempUnit = spaceship;
+                    clickAction = new PlaceAction(spaceship);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
             
             if(manager.getKeyCodeFlag(KeyEvent.VK_V)){
-            	placingUnit = !placingUnit;
             	manager.clearKeyCodeFlag(KeyEvent.VK_V);
             	
-            	Point point = manager.getMouseLocation();
-                tempUnitX = point.x;
-                tempUnitY = point.y;
-
                 try {
                     Sprite[] sprites = ResourceManager.loadSpriteSet("volcano.sprite", null);
                     GameObject volcano = new GameObject(getPlayer(), sprites, null, 0, 0, 0, Direction.North, true, UnitClass.Terrain);
-                    tempUnit = volcano;
+                    clickAction = new PlaceAction(volcano);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
             
             if(manager.getKeyCodeFlag(KeyEvent.VK_B)){
-            	placingUnit = !placingUnit;
             	manager.clearKeyCodeFlag(KeyEvent.VK_B);
-            	
-            	Point point = manager.getMouseLocation();
-                tempUnitX = point.x;
-                tempUnitY = point.y;
-
                 try {
                     Sprite[] sprites = ResourceManager.loadSpriteSet("smithy.sprite", null);
                     GameObject volcano = new GameObject(getPlayer(), sprites, null, 0, 0, 0, Direction.North, true, UnitClass.Building);
-                    tempUnit = volcano;
+                    clickAction = new PlaceAction(volcano);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -282,30 +263,15 @@ public class Game extends HeadlessGame {
 
             }
 
-            if(placingUnit && manager.getMouseMoved()){
-                Point point = manager.getMouseLocation();
-                tempUnitX = point.x;
-                tempUnitY = point.y;
-            }
-
             /* Mouse clicked (not dragged) */
             if(!manager.getLeftMouseDown() && mousePreviouslyPressed && bottomRightSelection == null && !manager.getKeyCodeFlag(KeyEvent.VK_SHIFT)){
                 /* Get mouse location */
                 Point point = manager.getMouseLocation();
 
-                /* Adding units to map */
-                if(placingUnit){
-                    Point unitTile = unitPainter.unitTileAtPoint(point, viewport);
-                    tempUnit.getUnit().setX(unitTile.x);
-                    tempUnit.getUnit().setY(unitTile.y);
-                    grid.placeUnit(tempUnit, unitTile.x, unitTile.y);
-                    unitManager.addUnit(tempUnit);
-                    unitManager.setVisibleTiles(tempUnit, tempUnit.getUnit().getX(), tempUnit.getUnit().getY());
-
-                    if(Main.getGameClient() != null)
-                        Main.getGameClient().sendNewUnitNotification(tempUnit);
-
-                    placingUnit = false;
+                /* Click actions */
+                if(clickAction != null){
+                    clickAction.click(point.x, point.y);
+                    clickAction = null;
                 }
 
                 else{
@@ -534,9 +500,12 @@ public class Game extends HeadlessGame {
         /* On top of the map, paint all the units and buildings */
         unitPainter.paintUnits(graphics, viewport);
 
-        /* Draw fake units and buildings on the board */
-        if(placingUnit)
-            drawTemporaryUnits(graphics, viewport);
+        /* Draw fake cursors */
+        if(clickAction != null && clickAction.hasCursor()){
+            graphics.translate(manager.getMouseLocation().x, manager.getMouseLocation().y);
+            clickAction.paintCursor(graphics, viewport);
+            graphics.translate(-manager.getMouseLocation().x, -manager.getMouseLocation().y);
+        }
 
         /* Draw selection (if not placing units) */
         else    
@@ -605,6 +574,14 @@ public class Game extends HeadlessGame {
      */
     public Viewport getViewport(){
         return viewport;
+    }
+
+    /**
+     * Get the unit painter
+     * @return unit painter used to draw units on the map
+     */
+    public UnitPainter getUnitPainter(){
+        return unitPainter;
     }
 
 }
