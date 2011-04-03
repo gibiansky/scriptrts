@@ -1,6 +1,7 @@
 package com.scriptrts.core.ui;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -29,6 +30,12 @@ public class ButtonArea extends JPanel {
     private int height = 200;
 
     /**
+     * Input manager used to determine whether the button is being pressed
+     */
+    private InputManager manager = InputManager.getInputManager();
+
+
+    /**
      * List of buttons to draw
      */
     private ImageButton[] buttons = new ImageButton[16];
@@ -49,23 +56,23 @@ public class ButtonArea extends JPanel {
     private static final ImageButton[] ALL_BUTTONS = loadButtons();
 
     /**
+     * What this button panel is being drawn on
+     */
+    private OverlayPane overlay;
+
+    /**
+     * Previous point
+     */
+    private Point previous;
+
+    /**
      * Create a new button area
      */
-    public ButtonArea(){
+    public ButtonArea(OverlayPane overlay){
         super(true);
-        setBackground(Color.yellow);
+        this.overlay = overlay;
 
-        addMouseListener(new MouseAdapter(){
-            public void mouseClicked(MouseEvent mouse){
-                mouseClick(mouse.getX(), mouse.getY());
-            }
-        });
-        addMouseMotionListener(new MouseMotionAdapter(){
-            public void mouseMoved(MouseEvent mouse){
-                mouseHover(mouse.getX(), mouse.getY());
-            }
-        });
-
+        previous = manager.getMouseLocation();
         buttons = ALL_BUTTONS;
     }
 
@@ -83,6 +90,11 @@ public class ButtonArea extends JPanel {
      * @param g graphics handle for the screen
      */
     public void paintComponent(Graphics g){
+        if(!previous.equals(manager.getMouseLocation())){
+            Point mouse = manager.getMouseLocation();
+            mouseHover(mouse.x, mouse.y);
+        }
+
         if(changedButtons)
             redrawButtons();
 
@@ -114,8 +126,9 @@ public class ButtonArea extends JPanel {
             int row = i / buttonsPerRow;
             int y = row * size + (row+1) * verticalMargin - 2;
 
-            if(buttons.length > i && buttons[i] != null){
+            if(i < buttons.length && buttons[i] != null){
                 buttons[i].setLocation(x, y);
+                buttons[i].setParentComponent(overlay);
                 buttons[i].paint(graphics);
             } else {
                 graphics.setColor(Color.red);
@@ -146,7 +159,8 @@ public class ButtonArea extends JPanel {
      * @param y y coordinate of click
      */
     public void mouseHover(int x, int y){
-
+        changedButtons = true;
+        System.out.println("HI");
     }
 
     /**

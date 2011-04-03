@@ -78,7 +78,7 @@ public class OverlayPane extends JPanel {
         int minimapX = width - size.width;
         add(minimap);
 
-        buttonArea = new ButtonArea();
+        buttonArea = new ButtonArea(this);
         size = buttonArea.getPreferredSize();
         buttonArea.setBounds(0, 0, size.width, size.height);
         add(buttonArea);

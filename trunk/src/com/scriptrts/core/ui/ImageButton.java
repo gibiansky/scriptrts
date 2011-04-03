@@ -3,6 +3,7 @@ package com.scriptrts.core.ui;
 import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -128,7 +129,7 @@ public class ImageButton {
         /* Get the mouse location relative to the parent component */
         Point mouse = manager.getMouseLocation();
         if(parent != null){
-            Point componentLocation = parent.getLocation();
+            Rectangle componentLocation = parent.getBounds();
             mouse.translate(-componentLocation.x, -componentLocation.y);
         }
         
