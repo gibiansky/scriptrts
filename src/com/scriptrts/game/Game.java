@@ -16,6 +16,7 @@ import com.scriptrts.control.Selection;
 import com.scriptrts.control.SelectionStorage;
 import com.scriptrts.control.StopOrder;
 import com.scriptrts.core.Main;
+import com.scriptrts.core.ClickAction;
 import com.scriptrts.core.ui.InputManager;
 import com.scriptrts.core.ui.MapPainter;
 import com.scriptrts.core.ui.UnitPainter;
@@ -89,18 +90,23 @@ public class Game extends HeadlessGame {
      */
     private static final int SCROLLING_DISTANCE = 30;
 
-    /*)et
+    /**
      * How many frames the map has been scrolling for
      */
-    int framesScrolled = 0;
+    private int framesScrolled = 0;
 
     /**
      * Current increment in map scrolling
      */
-    int increment = SCROLLING_DISTANCE;
+    private int increment = SCROLLING_DISTANCE;
 
-    int movedX;
-    int movedY;
+    private int movedX;
+    private int movedY;
+
+    /**
+     * Action to take upon next map click
+     */
+    private ClickAction clickAction = null;
 
     /**
      * Create the game.
@@ -282,7 +288,7 @@ public class Game extends HeadlessGame {
                 tempUnitY = point.y;
             }
 
-            /* Mouse released, but was never dragged */
+            /* Mouse clicked (not dragged) */
             if(!manager.getLeftMouseDown() && mousePreviouslyPressed && bottomRightSelection == null && !manager.getKeyCodeFlag(KeyEvent.VK_SHIFT)){
                 /* Get mouse location */
                 Point point = manager.getMouseLocation();
@@ -301,10 +307,10 @@ public class Game extends HeadlessGame {
 
                     placingUnit = false;
                 }
+
                 else{
                     GameObject unit = unitPainter.getUnitAtPoint(point, viewport);
                     if(unit != null) {
-                        
                         /* If already selected and pressing control, deselect */
                         if(manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
                             Selection newCurrent = Selection.current().clone();
@@ -421,11 +427,10 @@ public class Game extends HeadlessGame {
             }
 
             /* Mouse scrolling. Disabled for windowed mode. */
-            if (Main.FULLSCREEN
-                    && manager.getMouseLocation().x > viewport.getWidth() - 30) {
+            if (Main.FULLSCREEN && manager.getMouseLocation().x > viewport.getWidth() - 30) {
                 viewport.translate(increment, 0);
                 scrolling = true;
-                    }
+            }
             if (Main.FULLSCREEN && manager.getMouseLocation().x < 30) {
                 viewport.translate(-increment, 0);
                 scrolling = true;
@@ -434,11 +439,10 @@ public class Game extends HeadlessGame {
                 viewport.translate(0, -increment);
                 scrolling = true;
             }
-            if (Main.FULLSCREEN
-                    && manager.getMouseLocation().y > viewport.getHeight() - 30) {
+            if (Main.FULLSCREEN && manager.getMouseLocation().y > viewport.getHeight() - 30) {
                 viewport.translate(0, increment);
                 scrolling = true;
-                    }
+            }
 
             if(scrolling){
                 framesScrolled++;
