@@ -368,7 +368,7 @@ public class UnitPainter {
     public GameObject getUnitAtPoint(Point point, Viewport viewport){
         /* Treat a point as a very small rectangle of height and width 1 pixel */
         Point deltaPoint = new Point(point);
-        point.translate(20, 20);
+        deltaPoint.translate(20, 20);
 
         /* Return the foremost unit */
         GameObject[] unitsAtPoint = getUnitsInRect(point, deltaPoint, viewport);
@@ -405,11 +405,13 @@ public class UnitPainter {
             bottomRight.y = temp;
         }
         
-        /* Change to map tiles */
-        int topLeftTileX = unitTileAtPoint(topLeft, viewport).x;
-        int topRightTileY = unitTileAtPoint(new Point(bottomRight.x, topLeft.y), viewport).y;
-        int bottomLeftTileY = unitTileAtPoint(new Point(topLeft.x, bottomRight.y), viewport).y;
-        int bottomRightTileX = unitTileAtPoint(bottomRight, viewport).x;
+        /* Find bounds of map in unit tiles */
+        Point mapTL = new Point(0, 0);
+        Point mapBR = new Point(viewport.getWidth(), viewport.getHeight());
+        int topLeftTileX = unitTileAtPoint(mapTL, viewport).x;
+        int topRightTileY = unitTileAtPoint(new Point(mapBR.x, mapTL.y), viewport).y;
+        int bottomLeftTileY = unitTileAtPoint(new Point(mapTL.x, mapBR.y), viewport).y;
+        int bottomRightTileX = unitTileAtPoint(mapBR, viewport).x;
 
         /* Translate the points to be on the map coordinates instead of in screen coordinates */
         topLeft.translate(viewport.getX(), viewport.getY());
