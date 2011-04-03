@@ -35,8 +35,8 @@ public class PlaceAction extends ClickAction {
         return true;
     }
 
-    public void paintCursor(Graphics graphics, Viewport viewport){
-        Main.getGame().getUnitPainter().paintTemporaryUnit((Graphics2D) graphics, viewport, unit, 0, 0);
+    public void paintCursor(Graphics graphics, Viewport viewport, int x, int y){
+        Main.getGame().getUnitPainter().paintTemporaryUnit((Graphics2D) graphics, viewport, unit, x, y);
     }
 
 }

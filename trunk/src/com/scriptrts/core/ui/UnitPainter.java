@@ -406,8 +406,12 @@ public class UnitPainter {
         }
         
         /* Find bounds of map in unit tiles */
-        Point mapTL = new Point(0, 0);
-        Point mapBR = new Point(viewport.getWidth(), viewport.getHeight());
+        int minX = Math.min(topLeft.x, -30);
+        int minY = Math.min(topLeft.y, -30);
+        int maxX = Math.max(bottomRight.x, viewport.getX() + 30);
+        int maxY = Math.max(bottomRight.y, viewport.getY() + 30);
+        Point mapTL = new Point(minX, minY);
+        Point mapBR = new Point(maxX, maxY);
         int topLeftTileX = unitTileAtPoint(mapTL, viewport).x;
         int topRightTileY = unitTileAtPoint(new Point(mapBR.x, mapTL.y), viewport).y;
         int bottomLeftTileY = unitTileAtPoint(new Point(mapTL.x, mapBR.y), viewport).y;
