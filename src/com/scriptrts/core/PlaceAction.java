@@ -9,14 +9,29 @@ import com.scriptrts.core.ui.Viewport;
 import com.scriptrts.core.ClickAction;
 import com.scriptrts.game.GameObject;
 
+/**
+ * A click action to place a unit on the map
+ */
 public class PlaceAction extends ClickAction {
+    /**
+     * Unit to place on the map
+     */
     private GameObject unit = null;
 
+    /**
+     * Create a new place action to put a given unit on the map
+     * @param placing unit to place on the map
+     */
     public PlaceAction(GameObject placing){
         super();
         unit = placing;
     }
 
+    /**
+     * Perform the click action
+     * @param x mouse coordinate x
+     * @param y mouse coordinate y
+     */
     public void click(int x, int y){
         Viewport viewport = Main.getGame().getViewport();
         Point point = new Point(x, y);
@@ -31,10 +46,16 @@ public class PlaceAction extends ClickAction {
             Main.getGameClient().sendNewUnitNotification(unit);
     }
 
+    /**
+     * Returns true because the place action draws the unit it's placing
+     */
     public boolean hasCursor() {
         return true;
     }
 
+    /**
+     * Draw the cursor (the unit being placed) on the screen
+     */
     public void paintCursor(Graphics graphics, Viewport viewport, int x, int y){
         Main.getGame().getUnitPainter().paintTemporaryUnit((Graphics2D) graphics, viewport, unit, x, y);
     }

@@ -7,6 +7,8 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.Composite;
+import java.awt.AlphaComposite;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -357,7 +359,10 @@ public class UnitPainter {
 
         /* Draw the sprite on top */
         Sprite sprite = unit.getCurrentSprite();
+        Composite composite = graphics.getComposite();
+        graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
         sprite.drawCentered(graphics, xLoc + viewport.getX(), yLoc + viewport.getY());
+        graphics.setComposite(composite);
     }
 
     /**
