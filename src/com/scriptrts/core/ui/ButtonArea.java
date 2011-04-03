@@ -160,7 +160,6 @@ public class ButtonArea extends JPanel {
      */
     public void mouseHover(int x, int y){
         changedButtons = true;
-        System.out.println("HI");
     }
 
     /**
