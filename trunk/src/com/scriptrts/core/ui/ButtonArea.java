@@ -8,8 +8,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 import javax.swing.JPanel;
+
+import com.scriptrts.util.ResourceManager;
 
 /**
  * Button area to display command buttons
@@ -39,6 +42,11 @@ public class ButtonArea extends JPanel {
      * Whether the buttons need repainting
      */
     private static boolean changedButtons = true;
+    
+    /**
+     * All the possible buttons in the game.
+     */
+    private static final ImageButton[] ALL_BUTTONS = loadButtons();
 
     /**
      * Create a new button area
@@ -58,6 +66,7 @@ public class ButtonArea extends JPanel {
             }
         });
 
+        buttons = ALL_BUTTONS;
     }
 
     /**
@@ -97,15 +106,15 @@ public class ButtonArea extends JPanel {
         int horizontalMargin = 10;
         int buttonsPerRow = 4;
 
-        /* Draw each unit */
-        for(int i = 0; i < buttons.length; i++){
+        /* Draw each button */
+        for(int i = 0; i < 16; i++){
             int col = i % buttonsPerRow;
             int x = col * size + (col+1) * horizontalMargin;
 
             int row = i / buttonsPerRow;
             int y = row * size + (row+1) * verticalMargin - 2;
 
-            if(buttons[i] != null){
+            if(buttons.length > i && buttons[i] != null){
                 buttons[i].setLocation(x, y);
                 buttons[i].paint(graphics);
             } else {
@@ -145,6 +154,26 @@ public class ButtonArea extends JPanel {
      */
     public Dimension getPreferredSize(){
         return new Dimension(width, height);
+    }
+    
+    /**
+     * Load all the button images.
+     */
+    private static ImageButton[] loadButtons(){
+    	try{
+    		BufferedImage defImg =  ResourceManager.loadImage("resource/button/move.jpeg");
+    		BufferedImage highImg = ResourceManager.loadImage("resource/button/move_hover.jpeg");
+    		BufferedImage clickedImg = ResourceManager.loadImage("resource/button/move_press.jpeg");
+
+    	double scale = 40.0/234;
+    	int x = 0;
+    	int y = 0;
+    	ImageButton[] thing = {new ImageButton(defImg, highImg, clickedImg, scale, x, y)};
+    	return thing;
+    	}	catch(IOException e){
+    		System.err.println("Can't load button image!");
+    	}
+    	return null;
     }
 }
 
