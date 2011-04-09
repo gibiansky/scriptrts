@@ -326,18 +326,16 @@ public class Game extends HeadlessGame {
                     if(unitPainter.getGrid().getUnit(unitTile.x, unitTile.y) == null){
                         for(GameObject unit : Selection.current().getList()){
                             if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
-                                unit.getUnit().getOrderHandler().queueOrder(new MoveOrder(unitTile, unit));
+                                unit.getUnit().getOrderHandler().queueOrder(new MoveOrder(unitTile));
                             else
-                                unit.getUnit().getOrderHandler().order(new MoveOrder(unitTile, unit));
+                                unit.getUnit().getOrderHandler().order(new MoveOrder(unitTile));
                         }
                     } else {
                         for(GameObject unit : Selection.current().getList()){
                             if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
-                                unit.getUnit().getOrderHandler().queueOrder(new FollowOrder(unit,
-                                            unitPainter.getGrid().getUnit(unitTile.x, unitTile.y)));
+                                unit.getUnit().getOrderHandler().queueOrder(new FollowOrder(unit));
                             else
-                                unit.getUnit().getOrderHandler().order(new FollowOrder(unit, 
-                                            unitPainter.getGrid().getUnit(unitTile.x, unitTile.y)));
+                                unit.getUnit().getOrderHandler().order(new FollowOrder(unit));
                         }
                     }
 
@@ -357,7 +355,7 @@ public class Game extends HeadlessGame {
                 manager.clearKeyCodeFlag(KeyEvent.VK_S);
                 if(!Selection.current().getList().isEmpty()){
                     for(GameObject unit : Selection.current().getList())
-                        unit.getUnit().getOrderHandler().order(new StopOrder(unit));
+                        unit.getUnit().getOrderHandler().order(new StopOrder());
                 }
             }
 

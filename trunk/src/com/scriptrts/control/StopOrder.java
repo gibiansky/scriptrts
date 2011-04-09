@@ -1,31 +1,34 @@
 package com.scriptrts.control;
 
 import java.awt.Point;
+import java.util.Queue;
 
 import com.scriptrts.game.GameObject;
 
+/**
+ * Stop all orders going on immediately after this.
+ */
 public class StopOrder extends Order {
-
-    public StopOrder(GameObject unit){
-        this.unit = unit;
-    }
-    
-    @Override
+    /**
+     * Check for order equality.
+     */
     public boolean equals(Order o) {
         return o instanceof StopOrder;
     }
 
-    @Override
-    public Point getPoint() {
-        return unit.getUnit().getLocation();
-    }
-
     /**
      * Only complete when there are no orders
+     * @return true if the unit has no orders left, false otherwise.
      */
-    @Override
-    public boolean isComplete() {
+    public boolean isComplete(GameObject unit) {
         return unit.getUnit().getOrderHandler().getOrders().size() == 0;
     }
 
+    /**
+     * Try to remove all orders from the queue
+     */
+    public void perform(GameObject unit, Queue<Order> orders){
+        orders.clear();
+        unit.getUnit().setDestination(unit.getUnit().getLocation());
+    }
 }

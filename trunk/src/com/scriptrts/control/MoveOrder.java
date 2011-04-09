@@ -1,51 +1,61 @@
 package com.scriptrts.control;
 
 import java.awt.Point;
+import java.util.Queue;
 
 import com.scriptrts.game.GameObject;
 
+/**
+ * Order a unit to move to a given location
+ */
 public class MoveOrder extends Order implements Comparable<MoveOrder> {
-   
-    
-    public MoveOrder(Point point, GameObject unit){
+    /**
+     * Where this unit should move.
+     */
+    private Point point;
+
+    /**
+     * Create a new move order
+     */
+    public MoveOrder(Point point){
         this.point = point;
-        this.unit = unit;
-    }
-   
-    public Point getPoint(){
-        return point;
-    }
-    
-    @Override
-    public boolean equals(Object other){
-        if(! (other instanceof MoveOrder))
-            return false;
-        else
-            return this.point.x == ((MoveOrder)other).point.x && this.point.y == ((MoveOrder)other).point.y;
     }
 
     /**
-     * Assumes e is the unit being moved.
-     * @return true if e is in final position of order, else false.
-     * @param e unit being moved.
+     * Check whether this order is equivalent to another.
      */
-    @Override
-    public boolean isComplete() {
+    public boolean equals(Order other){
+        if(! (other instanceof MoveOrder))
+            return false;
+        else
+            return point.x == ((MoveOrder)other).point.x && point.y == ((MoveOrder)other).point.y;
+    }
+
+    /**
+     * Checks if this unit has finished moving to its desired location.
+     * @return true if the unit is in final position of order, else false.
+     */
+    public boolean isComplete(GameObject unit) {
         return unit.getUnit().getX() == point.getX() && unit.getUnit().getY() == point.getY();
     }
 
     /**
      * Sorts in order of distance. Note that distance isn't actually distance but that squared.
-     * Since square root is monotonic, this don't matter.
+     * Since square root is monotonic, this doesn't matter.
      */
-    @Override
     public int compareTo(MoveOrder other) {
         double distance = Math.pow(this.point.x - other.point.x,2) + Math.pow(this.point.y - other.point.y,2);
         return (int)distance == 0 ? 0 : 1 + (int)distance;
     }
 
-	@Override
-	public boolean equals(Order o) {
-		return (this.point.x == o.getPoint().x) && (this.point.y == o.getPoint().y);
-	}
+    /**
+     * Start performing this order.
+     */
+    public void perform(GameObject unit, Queue<Order> orders){
+        unit.getUnit().setDestination(point);
+    }
+
+    public Point getPoint(){
+        return point;
+    }
 }
