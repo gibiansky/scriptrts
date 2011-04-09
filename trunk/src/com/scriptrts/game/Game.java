@@ -165,7 +165,7 @@ public class Game extends HeadlessGame {
     /**
      * Handle game input. Called once per frame.
      */
-    public void handleInput(boolean focused){
+    public void handleInput(boolean focused, boolean mouseOverMap){
         /* Respond to input if the game has focus (as opposed to the console) */
         if(focused){
             /* Grouping */
@@ -218,10 +218,10 @@ public class Game extends HeadlessGame {
                     e.printStackTrace();
                 }
             }
-            
+
             if(manager.getKeyCodeFlag(KeyEvent.VK_V)){
-            	manager.clearKeyCodeFlag(KeyEvent.VK_V);
-            	
+                manager.clearKeyCodeFlag(KeyEvent.VK_V);
+
                 try {
                     Sprite[] sprites = ResourceManager.loadSpriteSet("volcano.sprite", null);
                     GameObject volcano = new GameObject(getPlayer(), sprites, null, 0, 0, 0, Direction.North, true, UnitClass.Terrain);
@@ -230,9 +230,9 @@ public class Game extends HeadlessGame {
                     e.printStackTrace();
                 }
             }
-            
+
             if(manager.getKeyCodeFlag(KeyEvent.VK_B)){
-            	manager.clearKeyCodeFlag(KeyEvent.VK_B);
+                manager.clearKeyCodeFlag(KeyEvent.VK_B);
                 try {
                     Sprite[] sprites = ResourceManager.loadSpriteSet("smithy.sprite", null);
                     GameObject volcano = new GameObject(getPlayer(), sprites, null, 0, 0, 0, Direction.North, true, UnitClass.Building);
@@ -243,73 +243,107 @@ public class Game extends HeadlessGame {
                 }
             }
 
-            if(manager.getLeftMouseDown() && !mousePreviouslyPressed){
-                /* Get mouse location */
-                Point point = manager.getMouseLocation();
-                topLeftSelection = point;
-                movedX = 0;
-                movedY = 0;
+            if(mouseOverMap){
+                if(manager.getLeftMouseDown() && !mousePreviouslyPressed){
+                    /* Get mouse location */
+                    Point point = manager.getMouseLocation();
+                    topLeftSelection = point;
+                    movedX = 0;
+                    movedY = 0;
 
-            }
-
-            /* Mouse clicked (not dragged) */
-            if(!manager.getLeftMouseDown() && mousePreviouslyPressed && bottomRightSelection == null && !manager.getKeyCodeFlag(KeyEvent.VK_SHIFT)){
-                /* Get mouse location */
-                Point point = manager.getMouseLocation();
-
-                /* Click actions */
-                if(clickAction != null){
-                    clickAction.click(point.x, point.y);
-                    clickAction = null;
                 }
 
-                else{
-                    GameObject unit = unitPainter.getUnitAtPoint(point, viewport);
-                    if(unit != null) {
-                        /* If already selected and pressing control, deselect */
-                        if(manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
-                            Selection newCurrent = Selection.current().clone();
-                            if(Selection.current().contains(unit)){
-                                newCurrent.remove(unit);
-                            } else {
-                                newCurrent.add(unit);
+                /* Mouse released (from previously pressed position) without dragging or pressing shift */
+                if(!manager.getLeftMouseDown() && mousePreviouslyPressed && bottomRightSelection == null && !manager.getKeyCodeFlag(KeyEvent.VK_SHIFT)){
+                    /* Get mouse location */
+                    Point point = manager.getMouseLocation();
+
+                    /* Click actions */
+                    if(clickAction != null){
+                        clickAction.click(point.x, point.y);
+                        clickAction = null;
+                    }
+
+                    else{
+                        /* Select or deselect a unit that was clicked on */
+                        GameObject unit = unitPainter.getUnitAtPoint(point, viewport);
+                        if(unit != null) {
+                            /* If already selected and pressing control, deselect */
+                            if(manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
+                                Selection newCurrent = Selection.current().clone();
+                                if(Selection.current().contains(unit)){
+                                    newCurrent.remove(unit);
+                                } else {
+                                    newCurrent.add(unit);
+                                }
+                                Selection.replaceCurrent(newCurrent);
                             }
-                            Selection.replaceCurrent(newCurrent);
-                        }
+                            else {
+                                Selection newCurrent = Selection.current().clone();
+                                newCurrent.clear();
+                                newCurrent.add(unit);
+                                Selection.replaceCurrent(newCurrent);
+                            }
+                        } 
+
+                        /* If no unit was clicked on, deselect everything */
                         else {
-                            Selection newCurrent = Selection.current().clone();
-                            newCurrent.clear();
-                            newCurrent.add(unit);
-                            Selection.replaceCurrent(newCurrent);
+                            Selection.replaceCurrent(new Selection());
                         }
-                    } else {
+                    }
+
+                }
+
+                if(manager.getMouseDragged() && topLeftSelection != null){
+                    Point point = manager.getMouseLocation();
+                    bottomRightSelection = point;
+
+                    GameObject[] selectedUnits = unitPainter.getUnitsInRect(topLeftSelection, bottomRightSelection, viewport);
+
+                    if(!manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
                         Selection.replaceCurrent(new Selection());
                     }
+                    Selection newCurrent = Selection.current().clone();
+                    for(GameObject unit : selectedUnits)
+                        newCurrent.add(unit);
+                    Selection.replaceCurrent(newCurrent);
+
+                } else if(!manager.getLeftMouseDown()){
+                    topLeftSelection = null;
+                    bottomRightSelection = null;
+                }
+
+
+                mousePreviouslyPressed = manager.getLeftMouseDown();
+
+
+                /* Clicking (to set unit destination) */
+                if(manager.getRightMouseClicked()){
+                    Point point = manager.getMouseLocation();
+                    Point unitTile = unitPainter.unitTileAtPoint(point, viewport);    
+                    /* If there is no unit at destination, move there */
+                    //TODO: make it do something different if there is a unit there
+                    if(unitPainter.getGrid().getUnit(unitTile.x, unitTile.y) == null){
+                        for(GameObject unit : Selection.current().getList()){
+                            if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
+                                unit.getUnit().getOrderHandler().queueOrder(new MoveOrder(unitTile, unit));
+                            else
+                                unit.getUnit().getOrderHandler().order(new MoveOrder(unitTile, unit));
+                        }
+                    } else {
+                        for(GameObject unit : Selection.current().getList()){
+                            if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
+                                unit.getUnit().getOrderHandler().queueOrder(new FollowOrder(unit,
+                                            unitPainter.getGrid().getUnit(unitTile.x, unitTile.y)));
+                            else
+                                unit.getUnit().getOrderHandler().order(new FollowOrder(unit, 
+                                            unitPainter.getGrid().getUnit(unitTile.x, unitTile.y)));
+                        }
+                    }
+
                 }
 
             }
-
-            if(manager.getMouseDragged() && topLeftSelection != null){
-                Point point = manager.getMouseLocation();
-                bottomRightSelection = point;
-
-                GameObject[] selectedUnits = unitPainter.getUnitsInRect(topLeftSelection, bottomRightSelection, viewport);
-
-                if(!manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
-                    Selection.replaceCurrent(new Selection());
-                }
-                Selection newCurrent = Selection.current().clone();
-                for(GameObject unit : selectedUnits)
-                    newCurrent.add(unit);
-                Selection.replaceCurrent(newCurrent);
-
-            } else if(!manager.getLeftMouseDown()){
-                topLeftSelection = null;
-                bottomRightSelection = null;
-            }
-
-
-            mousePreviouslyPressed = manager.getLeftMouseDown();
 
             if(manager.getKeyCodeFlag(KeyEvent.VK_C)){
                 if(!Selection.current().getList().isEmpty()){
@@ -318,44 +352,13 @@ public class Game extends HeadlessGame {
                     viewport.setLocation(unitPainter.getUnitCoords(unit, viewport));
                 }
             }
-            
+
             if(manager.getKeyCodeFlag(KeyEvent.VK_S)){
                 manager.clearKeyCodeFlag(KeyEvent.VK_S);
                 if(!Selection.current().getList().isEmpty()){
-                    // I don't think stop should be queueable, if you disagree, uncomment below.
-                    /*if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
-                        for(GameObject unit : Selection.current().getList())
-                            unit.getOrderHandler().queueOrder(new StopOrder(unit));
-                    else*/
-                        for(GameObject unit : Selection.current().getList())
-                            unit.getUnit().getOrderHandler().order(new StopOrder(unit));
+                    for(GameObject unit : Selection.current().getList())
+                        unit.getUnit().getOrderHandler().order(new StopOrder(unit));
                 }
-            }
-
-            /* Clicking (to set unit destination) */
-            if(manager.getRightMouseClicked()){
-                Point point = manager.getMouseLocation();
-                Point unitTile = unitPainter.unitTileAtPoint(point, viewport);    
-                /* If there is no unit at destination, move there */
-                //TODO: make it do something different if there is a unit there
-                if(unitPainter.getGrid().getUnit(unitTile.x, unitTile.y) == null){
-                    for(GameObject unit : Selection.current().getList()){
-                        if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
-                            unit.getUnit().getOrderHandler().queueOrder(new MoveOrder(unitTile, unit));
-                        else
-                            unit.getUnit().getOrderHandler().order(new MoveOrder(unitTile, unit));
-                    }
-                } else {
-                    for(GameObject unit : Selection.current().getList()){
-                        if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
-                            unit.getUnit().getOrderHandler().queueOrder(new FollowOrder(unit,
-                                        unitPainter.getGrid().getUnit(unitTile.x, unitTile.y)));
-                        else
-                            unit.getUnit().getOrderHandler().order(new FollowOrder(unit, 
-                                        unitPainter.getGrid().getUnit(unitTile.x, unitTile.y)));
-                    }
-                }
-
             }
 
             /* Scrolling */
