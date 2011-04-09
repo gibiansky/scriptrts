@@ -93,7 +93,15 @@ public class Game extends HeadlessGame {
      */
     private ClickAction clickAction = null;
 
-    /**
+    public ClickAction getClickAction() {
+		return clickAction;
+	}
+
+	public void setClickAction(ClickAction clickAction) {
+		this.clickAction = clickAction;
+	}
+
+	/**
      * Create the game.
      * @param n size of the map (length along one edge)
      */
