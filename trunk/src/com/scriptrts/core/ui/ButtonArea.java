@@ -5,6 +5,8 @@ import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -13,6 +15,8 @@ import java.io.IOException;
 
 import javax.swing.JPanel;
 
+import com.scriptrts.core.Main;
+import com.scriptrts.core.MoveAction;
 import com.scriptrts.util.ResourceManager;
 
 /**
@@ -182,6 +186,14 @@ public class ButtonArea extends JPanel {
     	int x = 0;
     	int y = 0;
     	ImageButton[] thing = {new ImageButton(defImg, highImg, clickedImg, scale, x, y)};
+    	thing[0].addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent a) {
+				Main.getGame().setClickAction(new MoveAction());
+			}
+    	}
+    	);
     	return thing;
     	}	catch(IOException e){
     		System.err.println("Can't load button image!");

@@ -119,7 +119,11 @@ public class Main extends JPanel {
      */
     private OverlayPane overlay = null;
 
-    /** 
+    public static OverlayPane getOverlay() {
+		return main.overlay;
+	}
+
+	/** 
      * Whether or not the console is currently displayed.
      */
     private boolean consoleDown = false;
@@ -248,7 +252,7 @@ public class Main extends JPanel {
         try {
             BufferedImage cursorImage = ResourceManager.loadImage("resource/cursor.png");
             Point hotSpot = new Point(0,0); 
-            cursor = toolkit.createCustomCursor(cursorImage, hotSpot, "spaceship"); 
+            cursor = toolkit.createCustomCursor(cursorImage, hotSpot, "cursor"); 
             window.setCursor(cursor);
         } catch (IOException e) {
             e.printStackTrace();

@@ -54,6 +54,7 @@ public class OverlayPane extends JPanel {
      * The button area used to show buttons
      */
     private ButtonArea buttonArea;
+    
 
     /**
      * Create a new top bar
