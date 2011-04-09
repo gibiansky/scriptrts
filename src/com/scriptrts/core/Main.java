@@ -764,7 +764,9 @@ public class Main extends JPanel {
 
         /* Update the game */
         if(!paused){
-            game.handleInput(!console.hasFocus());
+            boolean inOverlay = overlay.isVisible() && overlay.getBounds().contains(manager.getMouseLocation());
+            boolean inTopBar = topBar.isVisible() && topBar.getBounds().getBounds().contains(manager.getMouseLocation());
+            game.handleInput(!console.hasFocus(), !inOverlay && !inTopBar);
         }
         game.update();
     }
