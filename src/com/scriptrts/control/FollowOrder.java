@@ -1,41 +1,55 @@
 package com.scriptrts.control;
 
 import java.awt.Point;
+import java.util.Queue;
 
 import com.scriptrts.game.GameObject;
 
+/**
+ * Order a unit to follow another unit.
+ */
 public class FollowOrder extends Order {
 
-    GameObject unit;
-    GameObject target;
+    /**
+     * Unit to follow.
+     */
+    private GameObject target;
     
-    public FollowOrder(GameObject unit, GameObject target){
-        this.unit = unit;
+    /**
+     * Create a new follow order to follow a given unit.
+     * @param target unit to follow
+     */
+    public FollowOrder(GameObject target){
+        super();
         this.target = target;
     }
     
-    public GameObject getUnit() {
-        return unit;
-    }
-
-    public GameObject getTarget() {
-        return target;
-    }
-
-    @Override
+    /**
+     * Check whether two orders are equal
+     */
     public boolean equals(Order o) {
         return o instanceof FollowOrder && target == ((FollowOrder)o).target;
     }
 
-    @Override
-    public Point getPoint() {
-        return new Point(target.getUnit().getX(), target.getUnit().getY());
-    }
-
-    @Override
-    public boolean isComplete() {
+    /**
+     * Check whether this order is complete.
+     */
+    public boolean isComplete(GameObject unit) {
         return !target.getUnit().isAlive() || unit.equals(target);
     }
 
+    /**
+     * Start performing the order.
+     */
+    public void perform(GameObject unit, Queue<Order> orders){
+        Point point = new Point(target.getUnit().getX(), target.getUnit().getY());
+        unit.getUnit().setDestination(point);
+    }
 
+    /**
+     * Update the location to which this unit is moving.
+     */
+    public void update(GameObject unit){
+        perform(unit, null);
+    }
 }

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 import com.scriptrts.control.Order;
+import com.scriptrts.control.MoveOrder;
 import com.scriptrts.control.Selection;
 import com.scriptrts.core.Main;
 import com.scriptrts.game.Direction;
@@ -620,8 +621,10 @@ public class UnitPainter {
         int number = 0;
         if(queue.peek() != null)
         for(Order order : queue){
-            int i = order.getPoint().x;
-            int j = order.getPoint().y;
+            if(!(order instanceof MoveOrder)) continue;
+
+            int i = ((MoveOrder) order).getPoint().x;
+            int j = ((MoveOrder) order).getPoint().y;
             
             int iMap = i / 3;
             int jMap = j / 3;
