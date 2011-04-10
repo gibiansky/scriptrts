@@ -167,12 +167,12 @@ public class Game extends HeadlessGame {
         manager.registerKeyCode(KeyEvent.VK_SHIFT);
         manager.registerKeyCode(KeyEvent.VK_C);
 
-        HotkeyManager.registerHotkey(new Action("Create Smithy"){
+        HotkeyManager.registerHotkey(new Action("Create Headquarters"){
             public void execute() {
                 try {
-                    Sprite[] sprites = ResourceManager.loadSpriteSet("smithy.sprite", null);
-                    GameObject volcano = new GameObject(getPlayer(), sprites, null, 0, 0, 0, Direction.North, true, UnitClass.Building);
-                    Main.getGame().onClick(new PlaceAction(volcano));
+                    Sprite[] sprites = ResourceManager.loadSpriteSet("headquarters.sprite", null);
+                    GameObject build = new GameObject(getPlayer(), sprites, ResourceManager.loadImage("resource/building/headquarters-frontal.png", 200, 200), 0, 0, 0, Direction.North, true, UnitClass.Building);
+                    Main.getGame().onClick(new PlaceAction(build));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
