@@ -100,8 +100,10 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
      * @param code keycode to track.
      */
     public void registerKeyCode(int code) {
-    	registeredKeyCodes.add(code);
-    	keyCodeFlags.put(code, false);
+        if(!registeredKeyCodes.contains(code)){
+            registeredKeyCodes.add(code);
+            keyCodeFlags.put(code, false);
+        }
     }
     
     /**

@@ -22,6 +22,8 @@ import com.scriptrts.core.ui.InputManager;
 import com.scriptrts.core.ui.MapPainter;
 import com.scriptrts.core.ui.UnitPainter;
 import com.scriptrts.core.ui.Viewport;
+import com.scriptrts.core.ui.HotkeyManager;
+import com.scriptrts.core.ui.Action;
 import com.scriptrts.util.ResourceManager;
 
 /**
@@ -150,8 +152,6 @@ public class Game extends HeadlessGame {
         manager.registerKeyCode(KeyEvent.VK_DOWN);
         manager.registerKeyCode(KeyEvent.VK_S);
         manager.registerKeyCode(KeyEvent.VK_W);
-        manager.registerKeyCode(KeyEvent.VK_M);
-        manager.registerKeyCode(KeyEvent.VK_D);
         manager.registerKeyCode(KeyEvent.VK_1);
         manager.registerKeyCode(KeyEvent.VK_2);
         manager.registerKeyCode(KeyEvent.VK_3);
@@ -166,8 +166,60 @@ public class Game extends HeadlessGame {
         manager.registerKeyCode(KeyEvent.VK_CONTROL);
         manager.registerKeyCode(KeyEvent.VK_SHIFT);
         manager.registerKeyCode(KeyEvent.VK_C);
-        manager.registerKeyCode(KeyEvent.VK_V);
-        manager.registerKeyCode(KeyEvent.VK_B);
+
+        HotkeyManager.registerHotkey(new Action("Create Smithy"){
+            public void execute() {
+                try {
+                    Sprite[] sprites = ResourceManager.loadSpriteSet("smithy.sprite", null);
+                    GameObject volcano = new GameObject(getPlayer(), sprites, null, 0, 0, 0, Direction.North, true, UnitClass.Building);
+                    Main.getGame().onClick(new PlaceAction(volcano));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, KeyEvent.VK_B);
+
+        HotkeyManager.registerHotkey(new Action("Create Moving Unit"){
+            public void execute() {
+                int uSpeed = 9;
+                try {
+                    /* Retrieve spaceship sprites */
+                    BufferedImage art = ResourceManager.loadImage("resource/unit/spaceship/Art.png", 200, 200);
+                    Sprite[] sprites = ResourceManager.loadSpriteSet("spaceship.sprite", getPlayer());
+                    GameObject spaceship = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, true, UnitClass.Standard);
+                    clickAction = new PlaceAction(spaceship);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, KeyEvent.VK_M);
+
+        HotkeyManager.registerHotkey(new Action("Create Stationary Unit"){
+            public void execute() {
+                int uSpeed = 0;
+                try {
+                    /* Retrieve spaceship sprites */
+                    BufferedImage art = ResourceManager.loadImage("resource/unit/spaceship/Art.png", 200, 200);
+                    Sprite[] sprites = ResourceManager.loadSpriteSet("spaceship.sprite", getPlayer());
+                    GameObject spaceship = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, true, UnitClass.Standard);
+                    clickAction = new PlaceAction(spaceship);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, KeyEvent.VK_D);
+
+        HotkeyManager.registerHotkey(new Action("Create Volcano"){
+            public void execute() {
+                try {
+                    Sprite[] sprites = ResourceManager.loadSpriteSet("volcano.sprite", null);
+                    GameObject volcano = new GameObject(getPlayer(), sprites, null, 0, 0, 0, Direction.North, true, UnitClass.Terrain);
+                    clickAction = new PlaceAction(volcano);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, KeyEvent.VK_V);
     }
 
     /**
@@ -206,50 +258,8 @@ public class Game extends HeadlessGame {
                 manager.clearKeyCodeFlag(KeyEvent.VK_BACK_QUOTE);
             }
 
-            if(manager.getKeyCodeFlag(KeyEvent.VK_D) || manager.getKeyCodeFlag(KeyEvent.VK_M)){
-                int uSpeed;
-                if(manager.getKeyCodeFlag(KeyEvent.VK_D))
-                    uSpeed = 0;
-                else
-                    uSpeed = 9;
+            HotkeyManager.update();
 
-                manager.clearKeyCodeFlag(KeyEvent.VK_M);
-                manager.clearKeyCodeFlag(KeyEvent.VK_D);
-
-                try {
-                    /* Retrieve spaceship sprites */
-                    BufferedImage art = ResourceManager.loadImage("resource/unit/spaceship/Art.png", 200, 200);
-                    Sprite[] sprites = ResourceManager.loadSpriteSet("spaceship.sprite", getPlayer());
-                    GameObject spaceship = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, true, UnitClass.Standard);
-                    clickAction = new PlaceAction(spaceship);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            if(manager.getKeyCodeFlag(KeyEvent.VK_V)){
-                manager.clearKeyCodeFlag(KeyEvent.VK_V);
-
-                try {
-                    Sprite[] sprites = ResourceManager.loadSpriteSet("volcano.sprite", null);
-                    GameObject volcano = new GameObject(getPlayer(), sprites, null, 0, 0, 0, Direction.North, true, UnitClass.Terrain);
-                    clickAction = new PlaceAction(volcano);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            if(manager.getKeyCodeFlag(KeyEvent.VK_B)){
-                manager.clearKeyCodeFlag(KeyEvent.VK_B);
-                try {
-                    Sprite[] sprites = ResourceManager.loadSpriteSet("smithy.sprite", null);
-                    GameObject volcano = new GameObject(getPlayer(), sprites, null, 0, 0, 0, Direction.North, true, UnitClass.Building);
-                    clickAction = new PlaceAction(volcano);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
 
             if(mouseOverMap){
                 if(manager.getLeftMouseDown() && !mousePreviouslyPressed){
@@ -367,6 +377,7 @@ public class Game extends HeadlessGame {
                 }
             }
 
+
             /* Scrolling */
             boolean scrolling = false;
 
@@ -458,8 +469,6 @@ public class Game extends HeadlessGame {
 
         /* Paint the destination of all current selected units, if they share one */
         if(Selection.current().getList().size() != 0){
-
-
             /* Check if units share the same order queue */
             boolean shareQueue = true;
             LinkedList<Order> queue = null;
@@ -568,6 +577,14 @@ public class Game extends HeadlessGame {
      */
     public UnitPainter getUnitPainter(){
         return unitPainter;
+    }
+
+    /**
+     * Set the click action. 
+     * @param clickAct click action to be executed on next click
+     */
+    public void onClick(ClickAction act){
+        clickAction = act;
     }
 
 }
