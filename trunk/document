@@ -1,0 +1,7 @@
+#!/bin/bash
+cd src
+find -name *.java > ../.files
+javadoc -d ../doc $@ @../.files
+cd ..;
+rm .files
+echo "Documented!"
