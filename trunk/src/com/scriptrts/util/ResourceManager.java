@@ -160,7 +160,7 @@ public class ResourceManager {
     private static Sprite readSprite(Scanner reader, float scale, Player player) throws IOException {
         final String imageDir = "resource/";
 
-        String type = readString(reader);
+        String type = readString(reader).trim();
         if(type.equals("NULL"))
             return null;
 
@@ -213,7 +213,7 @@ public class ResourceManager {
             return new AnimatedSprite(imgs, durations, scale, xs, ys);
         }
 
-        throw new RuntimeException("Tried to load unknown sprite type.");
+        throw new RuntimeException("Tried to load unknown sprite type: '" + type + "'");
     }
 
     /**

@@ -194,6 +194,21 @@ public class Game extends HeadlessGame {
             }
         }, KeyEvent.VK_M);
 
+        HotkeyManager.registerHotkey(new Action("Create Drone"){
+            public void execute() {
+                int uSpeed = 9;
+                try {
+                    /* Retrieve spaceship sprites */
+                    BufferedImage art = ResourceManager.loadImage("resource/unit/spaceship/Art.png", 200, 200);
+                    Sprite[] sprites = ResourceManager.loadSpriteSet("drone.sprite", getPlayer());
+                    GameObject spaceship = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, true, UnitClass.Standard);
+                    clickAction = new PlaceAction(spaceship);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, KeyEvent.VK_W);
+
         HotkeyManager.registerHotkey(new Action("Create Stationary Unit"){
             public void execute() {
                 int uSpeed = 0;
