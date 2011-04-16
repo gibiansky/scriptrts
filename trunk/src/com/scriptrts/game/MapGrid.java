@@ -263,7 +263,7 @@ public class MapGrid {
      * @param i x coordinate of spot
      * @param j y coordinate of spot
      */
-    private void setUnit(GameObject unit, int i, int j){
+    public void setUnit(GameObject unit, int i, int j){
         grid[i][j] = unit;
         Minimap.updateMinimap();
 

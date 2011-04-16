@@ -50,6 +50,7 @@ public class Sprite {
     public void draw(Graphics2D graphics, GameObject unit, int tileBackX, int tileBackY){
         int bX = (int) (spriteBackX * scale);
         int bY = (int) (spriteBackY * scale);
+        //System.out.println(tileBackX + " " + tileBackY + " " + bX + " " + bY);
 
         graphics.drawImage(image, tileBackX - bX, tileBackY - bY, getWidth(), getHeight(), null);
 

@@ -59,5 +59,9 @@ public class PlaceAction extends ClickAction {
     public void paintCursor(Graphics graphics, Viewport viewport, int x, int y){
         Main.getGame().getUnitPainter().paintTemporaryUnit((Graphics2D) graphics, viewport, unit, x, y);
     }
+    
+    public GameObject getUnit(){
+    	return unit;
+    }
 
 }
