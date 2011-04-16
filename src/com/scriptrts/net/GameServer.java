@@ -20,6 +20,7 @@ import com.scriptrts.game.HeadlessGame;
 import com.scriptrts.game.Player;
 import com.scriptrts.game.Sprite;
 import com.scriptrts.game.UnitClass;
+import com.scriptrts.game.UnitShape;
 import com.scriptrts.util.ResourceManager;
 
 /**
@@ -457,7 +458,7 @@ public class GameServer {
                         });
             }
 
-            GameObject spaceship = new GameObject(null, sprites, art, 0, 0, 0, null, true, UnitClass.Standard);
+            GameObject spaceship = new GameObject(null, sprites, art, 0, 0, 0, null, UnitShape.SHAPE_2x1, UnitClass.Standard);
             spaceship.setParameters(newUnit);
             GameObject unit = spaceship;
             Main.getGame().getGameGrid().placeUnit(unit, unit.getUnit().getX(), unit.getUnit().getY());

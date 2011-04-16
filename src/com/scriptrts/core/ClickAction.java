@@ -3,6 +3,7 @@ package com.scriptrts.core;
 import java.awt.Graphics;
 
 import com.scriptrts.core.ui.Viewport;
+import com.scriptrts.game.GameObject;
 
 /**
  * Action that should be taken when the map is next clicked
@@ -32,5 +33,9 @@ public abstract class ClickAction {
      */
     public boolean hasCursor() {
         return false;
+    }
+    
+    public GameObject getUnit(){
+		return null;
     }
 }

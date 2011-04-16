@@ -74,20 +74,16 @@ public class GameObject {
      * @param x unit's starting location x coordinate
      * @param y unit's starting location y coordinate
      * @param direction direction in which the unit is facing originally
-     * @param shaped if false, this unit takes up one square; if true, it can take up more.
+     * @param unitShape the shape of the unit
+     * @param unitClass the unit's class (i.e. standard, building, terrain)
      */
-    public GameObject(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, boolean shaped, UnitClass unitClass) {
+    public GameObject(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, UnitShape unitShape, UnitClass unitClass) {
         this.unit = new Unit(p, speed, x, y, new OrderHandler(this), unitClass);
         this.sprites = sprites;
         this.direction = null;
         previousDirection = direction;
         state = SpriteState.Idle;
-
-        if(unitClass == UnitClass.Standard)
-            shape = UnitShape.SHAPE_2x1;
-        else
-            shape = UnitShape.SHAPE_7x7;
-
+        shape = unitShape;
         this.art = artImg;
     }
 
@@ -100,9 +96,10 @@ public class GameObject {
      * @param x unit's starting location x coordinate
      * @param y unit's starting location y coordinate
      * @param direction direction in which the unit is facing originally
+     * @param unitClass the unit's class (i.e. standard, building, terrain)
      */
     public GameObject(Player p, Sprite[] sprites, BufferedImage artImg, int speed, int x, int y, Direction direction, UnitClass unitClass) {
-        this(p, sprites, artImg, speed, x, y, direction, true, unitClass);
+        this(p, sprites, artImg, speed, x, y, direction, UnitShape.SHAPE_1x1, unitClass);
     }
 
     /**
@@ -459,5 +456,9 @@ public class GameObject {
     	if(unitClass == UnitClass.Building || unitClass == UnitClass.Terrain)
     		return false;
     	return true;
+    }
+    
+    public void setUnitShape(UnitShape unitShape){
+    	shape = unitShape;
     }
 }

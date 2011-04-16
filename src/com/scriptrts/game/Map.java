@@ -244,7 +244,7 @@ public class Map {
 					if(tileArray[i][j] == terrains[5])
 						if(random.nextDouble() < 0.005){
 							UnitClass.createTerrain(img, MapGrid.SPACES_PER_TILE * i + MapGrid.SPACES_PER_TILE / 2,
-									MapGrid.SPACES_PER_TILE * j + MapGrid.SPACES_PER_TILE / 2, true, 1.5);
+									MapGrid.SPACES_PER_TILE * j + MapGrid.SPACES_PER_TILE / 2, UnitShape.SHAPE_7x7, 1.5);
 						}
 
 		} catch(IOException e){

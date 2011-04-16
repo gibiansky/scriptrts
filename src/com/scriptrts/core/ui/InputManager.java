@@ -347,6 +347,8 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
         mouseWheelScroll += mouse.getWheelRotation();
     }
 
-
+    public ArrayList<Integer> getRegisteredKeyCodes(){
+    	return registeredKeyCodes;
+    }
 
 }

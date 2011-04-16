@@ -96,7 +96,12 @@ public class ResourceManager {
      * @return BufferedImage read from file with applied color band
      */
     public static BufferedImage loadBandedImage(String filename, String band, Color color) throws IOException {
-        BufferedImage original = loadImage(filename);
+    	BufferedImage original = loadImage(filename);
+    	
+    	String id = filename + " - banded " + band + " (" + original.getWidth() + ", " + original.getHeight() + ")";
+    	if(imageCache.containsKey(id))
+            return imageCache.get(id);
+    	
         BufferedImage mask = loadImage(band);
 
         /* Create the band image */
@@ -124,7 +129,7 @@ public class ResourceManager {
         bandedImage.getGraphics().drawImage(bandImg, 0, 0, null);
         bandedImage.getGraphics().dispose();
 
-        imageCache.put(filename + " - banded " + band + " (" + original.getWidth() + ", " + original.getHeight() + ")", bandedImage);
+        imageCache.put(id, bandedImage);
         return bandedImage;
     }
     /**

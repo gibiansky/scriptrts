@@ -7,14 +7,14 @@ import java.awt.Point;
  * The shape of the unit, defined by what points it takes up 
  * around the center point.
  */
-class UnitShape {
+public class UnitShape {
     /**
      * An array of point arrays, with each element being an array that corresponds to the shape
      * of the unit when it is facing in each of the 8 directions.
      */
     Point[][] shapes = new Point[8][];
 
-    static final UnitShape SHAPE_7x7 = new UnitShape(
+    public static final UnitShape SHAPE_7x7 = new UnitShape(
     	new Point[][]{
     		new Point[]{new Point(-3,-3), new Point(-3,-2), new Point(-3,-1), new Point(-3,0), new Point(-3,1), new Point(-3,2), new Point(-3,3), new Point(-2,-3), new Point(-2,-2), new Point(-2,-1), new Point(-2,0), new Point(-2,1), new Point(-2,2), new Point(-2,3), new Point(-1,-3), new Point(-1,-2), new Point(-1,-1), new Point(-1,0), new Point(-1,1), new Point(-1,2), new Point(-1,3), new Point(0,-3), new Point(0,-2), new Point(0,-1), new Point(0,0), new Point(0,1), new Point(0,2), new Point(0,3), new Point(1,-3), new Point(1,-2), new Point(1,-1), new Point(1,0), new Point(1,1), new Point(1,2), new Point(1,3), new Point(2,-3), new Point(2,-2), new Point(2,-1), new Point(2,0), new Point(2,1), new Point(2,2), new Point(2,3), new Point(3,-3), new Point(3,-2), new Point(3,-1), new Point(3,0), new Point(3,1), new Point(3,2), new Point(3,3)},
     		null, null, null, null, null, null, null
@@ -24,7 +24,7 @@ class UnitShape {
     /**
      * A two-by-one elongated unit shape
      */
-    static final UnitShape SHAPE_2x1 = new UnitShape(
+    public static final UnitShape SHAPE_2x1 = new UnitShape(
             new Point[][]{
                 /* North */
                 new Point[]{new Point(0,0), new Point(0, -1)},
@@ -48,7 +48,7 @@ class UnitShape {
     /**
      * A simple shape composed of one square
      */
-    static final UnitShape SHAPE_1x1 = new UnitShape(
+    public static final UnitShape SHAPE_1x1 = new UnitShape(
             new Point[][]{
                 /* North */
                 new Point[]{new Point(0,0)},
