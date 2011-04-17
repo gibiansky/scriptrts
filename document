@@ -5,3 +5,4 @@ javadoc -d ../doc $@ @../.files
 cd ..;
 rm .files
 echo "Documented!"
+scp -r doc/* angibian@mbhs.edu:public_html
