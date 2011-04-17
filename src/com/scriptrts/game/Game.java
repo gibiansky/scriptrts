@@ -25,7 +25,6 @@ import com.scriptrts.core.ui.MapPainter;
 import com.scriptrts.core.ui.UnitPainter;
 import com.scriptrts.core.ui.Viewport;
 import com.scriptrts.util.ResourceManager;
-import com.scriptrts.util.SpriteHelper;
 
 /**
  * Game class which stores all information about a currently running game and manages
