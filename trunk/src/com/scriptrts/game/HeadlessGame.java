@@ -12,7 +12,7 @@ public class HeadlessGame {
     /**
      * The map on which this game is being played
      */
-    protected Map map;
+    protected GameMap map;
 
     /**
      * PathHandler used for all units
@@ -61,7 +61,7 @@ public class HeadlessGame {
         unitManager = new GameManager(this);
     	
         /* Create and populate map with tiles */
-        map = new Map(n);
+        map = new GameMap(n);
         map.generateMap(.64, 2);
 
         /* Create path handler */
@@ -96,7 +96,7 @@ public class HeadlessGame {
      * Get the map.
      * @return the current map
      */
-    public Map getCurrentMap(){
+    public GameMap getCurrentMap(){
         return map;
     }
 

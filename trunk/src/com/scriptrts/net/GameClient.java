@@ -13,7 +13,7 @@ import com.scriptrts.core.Main;
 import com.scriptrts.game.AnimatedSprite;
 import com.scriptrts.game.Direction;
 import com.scriptrts.game.GameObject;
-import com.scriptrts.game.Map;
+import com.scriptrts.game.GameMap;
 import com.scriptrts.game.Player;
 import com.scriptrts.game.Sprite;
 import com.scriptrts.game.UnitClass;
@@ -69,7 +69,7 @@ public class GameClient {
                     Main.getGame().getPlayer().setColor(color);
                     Main.getGame().getPlayer().setID(id);
 
-                    Map map = GameProtocol.readMap(input);
+                    GameMap map = GameProtocol.readMap(input);
                     Main.getGame().setCurrentMap(map);
                     System.out.println("Done initializing game client.");
                 }
@@ -174,8 +174,8 @@ public class GameClient {
             Object o = toSend.poll();
             if(o instanceof ServerRequest)
                 GameProtocol.sendRequest(output, (ServerRequest) o);
-            if(o instanceof Map)
-                GameProtocol.sendMap(output, (Map) o);
+            if(o instanceof GameMap)
+                GameProtocol.sendMap(output, (GameMap) o);
             if(o instanceof String)
                 GameProtocol.sendString(output, (String) o);
             if(o instanceof Color)

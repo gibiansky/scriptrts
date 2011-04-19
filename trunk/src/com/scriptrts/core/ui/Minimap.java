@@ -17,7 +17,7 @@ import javax.swing.JPanel;
 
 import com.scriptrts.core.Main;
 import com.scriptrts.game.GameObject;
-import com.scriptrts.game.Map;
+import com.scriptrts.game.GameMap;
 import com.scriptrts.game.MapGrid;
 import com.scriptrts.game.TerrainType;
 
@@ -136,7 +136,7 @@ public class Minimap extends JPanel {
         Graphics2D graphics = (Graphics2D) temporary.getGraphics();
 
         int n = Main.getGame().getCurrentMap().getN();
-        Map map = Main.getGame().getCurrentMap();
+        GameMap map = Main.getGame().getCurrentMap();
         TerrainType[][] terrain = map.getTileArray();
         double squareSize = size / n;
 

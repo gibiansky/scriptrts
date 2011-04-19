@@ -8,7 +8,7 @@ import java.io.IOException;
 import com.scriptrts.core.Main;
 import com.scriptrts.game.Direction;
 import com.scriptrts.game.GameObject;
-import com.scriptrts.game.Map;
+import com.scriptrts.game.GameMap;
 import com.scriptrts.game.Player;
 import com.scriptrts.game.SpriteState;
 import com.scriptrts.game.TerrainType;
@@ -59,7 +59,7 @@ public class GameProtocol {
      * @param out output stream to which to write
      * @param m map to write
      */
-    public static void sendMap(DataOutputStream out, Map m) throws IOException {
+    public static void sendMap(DataOutputStream out, GameMap m) throws IOException {
         int n = m.getN();
         out.writeInt(n);
         for(int i = 0; i < n; i++)
@@ -146,9 +146,9 @@ public class GameProtocol {
      * @param in input stream from which to read
      * @return map read from input stream
      */
-    public static Map readMap(DataInputStream in) throws IOException {
+    public static GameMap readMap(DataInputStream in) throws IOException {
         int n = in.readInt();
-        Map map = new Map(n);
+        GameMap map = new GameMap(n);
         for(int i = 0; i < n; i++)
             for(int j = 0; j < n; j++)
                 map.getTileArray()[i][j] = TerrainType.values()[in.readInt()];

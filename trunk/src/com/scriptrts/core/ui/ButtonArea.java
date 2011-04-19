@@ -12,11 +12,15 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JPanel;
 
 import com.scriptrts.core.Main;
 import com.scriptrts.core.MoveAction;
+import com.scriptrts.core.StopAction;
 import com.scriptrts.util.ResourceManager;
 
 /**
@@ -57,7 +61,7 @@ public class ButtonArea extends JPanel {
     /**
      * All the possible buttons in the game.
      */
-    private static final ImageButton[] ALL_BUTTONS = loadButtons();
+    private static final Map<String, ImageButton> ALL_BUTTONS = loadButtons();
 
     /**
      * What this button panel is being drawn on
@@ -77,7 +81,7 @@ public class ButtonArea extends JPanel {
         this.overlay = overlay;
 
         previous = manager.getMouseLocation();
-        buttons = ALL_BUTTONS;
+        buttons = new ArrayList<ImageButton>(ALL_BUTTONS.values()).toArray(buttons);
     }
 
     /**
@@ -176,25 +180,47 @@ public class ButtonArea extends JPanel {
     /**
      * Load all the button images.
      */
-    private static ImageButton[] loadButtons(){
+    private static HashMap<String, ImageButton> loadButtons(){
     	try{
-    		BufferedImage defImg =  ResourceManager.loadImage("resource/button/move.jpeg");
-    		BufferedImage highImg = ResourceManager.loadImage("resource/button/move_hover.jpeg");
-    		BufferedImage clickedImg = ResourceManager.loadImage("resource/button/move_press.jpeg");
+    		int x = 0;
+    		int y = 0;
+    		
+    		// Move button
+    		BufferedImage moveImg =  ResourceManager.loadImage("resource/button/move.jpeg");
+    		BufferedImage moveHoverImg = ResourceManager.loadImage("resource/button/move_hover.jpeg");
+    		BufferedImage movePressImg = ResourceManager.loadImage("resource/button/move_press.jpeg");
 
-    	double scale = 40.0/234;
-    	int x = 0;
-    	int y = 0;
-    	ImageButton[] thing = {new ImageButton(defImg, highImg, clickedImg, scale, x, y)};
-    	thing[0].addActionListener(new ActionListener(){
+    		double moveScale = 40.0/234;
+    		
+    		ImageButton moveButton = new ImageButton(moveImg, moveHoverImg, movePressImg, moveScale, x, y);
+    		moveButton.addActionListener(new ActionListener(){
+    			@Override
+    			public void actionPerformed(ActionEvent a) {
+    				Main.getGame().setClickAction(new MoveAction());
+    			}
+    		});
+    		
+    		// Stop button
+    		BufferedImage stopImg =  ResourceManager.loadImage("resource/button/stop.png");
+    		BufferedImage stopHoverImg = ResourceManager.loadImage("resource/button/stop_hover.png");
+    		BufferedImage stopPressImg = ResourceManager.loadImage("resource/button/stop_press.png");
 
-			@Override
-			public void actionPerformed(ActionEvent a) {
-				Main.getGame().setClickAction(new MoveAction());
-			}
-    	}
-    	);
-    	return thing;
+    		double stopScale = 40.0/300;
+    		    		
+    		ImageButton stopButton = new ImageButton(stopImg, stopHoverImg, stopPressImg, stopScale, x, y);
+    		moveButton.addActionListener(new ActionListener(){
+    			@Override
+    			public void actionPerformed(ActionEvent a) {
+    				Main.getGame().setClickAction(new StopAction());
+    			}
+    		});
+    		
+
+    		HashMap<String, ImageButton> m = new HashMap<String, ImageButton>();
+    		m.put("move", moveButton);
+    		m.put("stop", stopButton);
+    		
+    		return m;
     	}	catch(IOException e){
     		System.err.println("Can't load button image!");
     	}

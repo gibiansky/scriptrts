@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import com.scriptrts.core.Main;
-import com.scriptrts.game.Map;
+import com.scriptrts.game.GameMap;
 import com.scriptrts.game.MapGrid;
 import com.scriptrts.game.TerrainType;
 import com.scriptrts.util.ResourceManager;
@@ -127,7 +127,7 @@ public class MapPainter {
      * @param tileX horizontal size of each tile
      * @param tileY vertical size of each tile (should be half of horizontal size)
      */
-    public MapPainter(Map map, int tileX, int tileY){
+    public MapPainter(GameMap map, int tileX, int tileY){
         /* Store fields */
         this.tileX = tileX;
         this.tileY = tileY;
@@ -453,7 +453,7 @@ public class MapPainter {
      * Get the map this painter draws
      * @return map drawn by this painter
      */
-    public Map getMap(){
+    public GameMap getMap(){
         return Main.getGame().getCurrentMap();
     }
 
