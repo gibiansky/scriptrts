@@ -1,0 +1,298 @@
+24
+1.0
+ANIMATED
+10
+1
+0 0
+unit/drone/DroneNorth0.png
+1
+0 0
+unit/drone/DroneNorth1.png
+1
+0 0
+unit/drone/DroneNorth2.png
+1
+0 0
+unit/drone/DroneNorth3.png
+1
+0 0
+unit/drone/DroneNorth4.png
+1
+0 0
+unit/drone/DroneNorth5.png
+1
+0 0
+unit/drone/DroneNorth6.png
+1
+0 0
+unit/drone/DroneNorth7.png
+1
+0 0
+unit/drone/DroneNorth8.png
+1
+0 0
+unit/drone/DroneNorth9.png
+
+ANIMATED
+10
+1
+0 0
+unit/drone/DroneNortheast0.png
+1
+0 0
+unit/drone/DroneNortheast1.png
+1
+0 0
+unit/drone/DroneNortheast2.png
+1
+0 0
+unit/drone/DroneNortheast3.png
+1
+0 0
+unit/drone/DroneNortheast4.png
+1
+0 0
+unit/drone/DroneNortheast5.png
+1
+0 0
+unit/drone/DroneNortheast6.png
+1
+0 0
+unit/drone/DroneNortheast7.png
+1
+0 0
+unit/drone/DroneNortheast8.png
+1
+0 0
+unit/drone/DroneNortheast9.png
+
+ANIMATED
+10
+1
+0 0
+unit/drone/DroneEast0.png
+1
+0 0
+unit/drone/DroneEast1.png
+1
+0 0
+unit/drone/DroneEast2.png
+1
+0 0
+unit/drone/DroneEast3.png
+1
+0 0
+unit/drone/DroneEast4.png
+1
+0 0
+unit/drone/DroneEast5.png
+1
+0 0
+unit/drone/DroneEast6.png
+1
+0 0
+unit/drone/DroneEast7.png
+1
+0 0
+unit/drone/DroneEast8.png
+1
+0 0
+unit/drone/DroneEast9.png
+
+ANIMATED
+10
+1
+0 0
+unit/drone/DroneSoutheast0.png
+1
+0 0
+unit/drone/DroneSoutheast1.png
+1
+0 0
+unit/drone/DroneSoutheast2.png
+1
+0 0
+unit/drone/DroneSoutheast3.png
+1
+0 0
+unit/drone/DroneSoutheast4.png
+1
+0 0
+unit/drone/DroneSoutheast5.png
+1
+0 0
+unit/drone/DroneSoutheast6.png
+1
+0 0
+unit/drone/DroneSoutheast7.png
+1
+0 0
+unit/drone/DroneSoutheast8.png
+1
+0 0
+unit/drone/DroneSoutheast9.png
+
+ANIMATED
+10
+1
+0 0
+unit/drone/DroneSouth0.png
+1
+0 0
+unit/drone/DroneSouth1.png
+1
+0 0
+unit/drone/DroneSouth2.png
+1
+0 0
+unit/drone/DroneSouth3.png
+1
+0 0
+unit/drone/DroneSouth4.png
+1
+0 0
+unit/drone/DroneSouth5.png
+1
+0 0
+unit/drone/DroneSouth6.png
+1
+0 0
+unit/drone/DroneSouth7.png
+1
+0 0
+unit/drone/DroneSouth8.png
+1
+0 0
+unit/drone/DroneSouth9.png
+
+ANIMATED
+10
+1
+0 0
+unit/drone/DroneSouthwest0.png
+1
+0 0
+unit/drone/DroneSouthwest1.png
+1
+0 0
+unit/drone/DroneSouthwest2.png
+1
+0 0
+unit/drone/DroneSouthwest3.png
+1
+0 0
+unit/drone/DroneSouthwest4.png
+1
+0 0
+unit/drone/DroneSouthwest5.png
+1
+0 0
+unit/drone/DroneSouthwest6.png
+1
+0 0
+unit/drone/DroneSouthwest7.png
+1
+0 0
+unit/drone/DroneSouthwest8.png
+1
+0 0
+unit/drone/DroneSouthwest9.png
+
+ANIMATED
+10
+1
+0 0
+unit/drone/DroneWest0.png
+1
+0 0
+unit/drone/DroneWest1.png
+1
+0 0
+unit/drone/DroneWest2.png
+1
+0 0
+unit/drone/DroneWest3.png
+1
+0 0
+unit/drone/DroneWest4.png
+1
+0 0
+unit/drone/DroneWest5.png
+1
+0 0
+unit/drone/DroneWest6.png
+1
+0 0
+unit/drone/DroneWest7.png
+1
+0 0
+unit/drone/DroneWest8.png
+1
+0 0
+unit/drone/DroneWest9.png
+
+ANIMATED
+10
+1
+0 0
+unit/drone/DroneNorthwest0.png
+1
+0 0
+unit/drone/DroneNorthwest1.png
+1
+0 0
+unit/drone/DroneNorthwest2.png
+1
+0 0
+unit/drone/DroneNorthwest3.png
+1
+0 0
+unit/drone/DroneNorthwest4.png
+1
+0 0
+unit/drone/DroneNorthwest5.png
+1
+0 0
+unit/drone/DroneNorthwest6.png
+1
+0 0
+unit/drone/DroneNorthwest7.png
+1
+0 0
+unit/drone/DroneNorthwest8.png
+1
+0 0
+unit/drone/DroneNorthwest9.png
+
+NULL
+
+NULL
+
+NULL
+
+NULL
+
+NULL
+
+NULL
+
+NULL
+
+NULL
+
+NULL
+
+NULL
+
+NULL
+
+NULL
+
+NULL
+
+NULL
+
+NULL
+
+NULL
+

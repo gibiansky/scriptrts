@@ -1,9 +1,11 @@
 package com.scriptrts.control;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-import com.scriptrts.game.*;
 import com.scriptrts.core.ui.SelectionArea;
+import com.scriptrts.game.GameObject;
 
 /**
  * A selection of units and other map entities

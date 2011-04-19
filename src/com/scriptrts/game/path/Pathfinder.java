@@ -7,13 +7,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import com.scriptrts.core.Main;
 import com.scriptrts.game.Direction;
 import com.scriptrts.game.GameObject;
 import com.scriptrts.game.GameMap;
 import com.scriptrts.game.MapGrid;
 import com.scriptrts.game.TerrainType;
-import com.scriptrts.game.UnitClass;
 
 
 public class Pathfinder extends Thread{

@@ -1,5 +1,5 @@
 package com.scriptrts.control;
-import java.util.*;
+import java.util.HashMap;
 public class SelectionStorage {
     private static HashMap<Integer, Selection> map = new HashMap<Integer, Selection>(100);
 

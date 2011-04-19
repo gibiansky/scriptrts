@@ -239,12 +239,12 @@ public class GameMap {
 			BufferedImage img = ResourceManager.loadImage("resource/terrain/volcano/Volcano1.png");
 
 			/* Loop through each square and add volcanos randomly */
-			for(int i = 2; i < origN - 2; i++)
-				for(int j = 2; j < origN - 2; j++)
+			for(int i = 5; i < origN - 5; i++)
+				for(int j = 5; j < origN - 5; j++)
 					if(tileArray[i][j] == terrains[5])
 						if(random.nextDouble() < 0.005){
 							UnitClass.createTerrain(img, MapGrid.SPACES_PER_TILE * i + MapGrid.SPACES_PER_TILE / 2,
-									MapGrid.SPACES_PER_TILE * j + MapGrid.SPACES_PER_TILE / 2, UnitShape.SHAPE_7x7, 1.5);
+									MapGrid.SPACES_PER_TILE * j + MapGrid.SPACES_PER_TILE / 2, UnitShape.SHAPE_VOLCANO, 1.5);
 						}
 
 		} catch(IOException e){

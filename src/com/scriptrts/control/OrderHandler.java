@@ -3,7 +3,6 @@ package com.scriptrts.control;
 import java.util.LinkedList;
 import java.util.Queue;
 
-
 import com.scriptrts.game.GameObject;
 
 public class OrderHandler {

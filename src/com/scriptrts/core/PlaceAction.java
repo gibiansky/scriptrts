@@ -1,12 +1,10 @@
 package com.scriptrts.core;
 
-import java.awt.Point;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 
-import com.scriptrts.core.ui.UnitPainter;
 import com.scriptrts.core.ui.Viewport;
-import com.scriptrts.core.ClickAction;
 import com.scriptrts.game.GameObject;
 
 /**

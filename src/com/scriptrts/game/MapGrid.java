@@ -3,7 +3,6 @@ package com.scriptrts.game;
 import java.awt.Point;
 import java.util.Queue;
 
-import com.scriptrts.core.Main;
 import com.scriptrts.core.ui.Minimap;
 
 /**
