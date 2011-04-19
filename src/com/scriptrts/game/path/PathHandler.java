@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import com.scriptrts.game.GameObject;
-import com.scriptrts.game.Map;
+import com.scriptrts.game.GameMap;
 import com.scriptrts.game.MapGrid;
 
 
@@ -19,7 +19,7 @@ public class PathHandler{
 	/**
 	 * Current map instance
 	 */
-	private Map map;
+	private GameMap map;
 	
 	/**
 	 * Current unit grid instance
@@ -41,7 +41,7 @@ public class PathHandler{
 	 * @param map current map instance
 	 * @param unitGrid current unit grid instance
 	 */
-	public PathHandler(Map map, MapGrid unitGrid){
+	public PathHandler(GameMap map, MapGrid unitGrid){
 		pathfinders = new LinkedList<Pathfinder>();
 		this.map = map;
 		this.unitGrid = unitGrid;

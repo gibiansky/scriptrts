@@ -9,7 +9,7 @@ import com.scriptrts.util.ResourceManager;
 /**
  * Class representing the terrain tiles of a map.
  */
-public class Map {
+public class GameMap {
 
 	/**
 	 * Length of the map along one edge
@@ -47,7 +47,7 @@ public class Map {
 	 * Create a new map.
 	 * @param n size of the map along one edge.
 	 */
-	public Map(int n) {
+	public GameMap(int n) {
 		this.origN = n;
 		this.n = (int) (Math.pow(2, Math.ceil(Math.log(n - 1) / Math.log(2))) + 1);
 		heightArray = new double[this.n][this.n];

@@ -10,7 +10,7 @@ import java.util.Queue;
 import com.scriptrts.core.Main;
 import com.scriptrts.game.Direction;
 import com.scriptrts.game.GameObject;
-import com.scriptrts.game.Map;
+import com.scriptrts.game.GameMap;
 import com.scriptrts.game.MapGrid;
 import com.scriptrts.game.TerrainType;
 import com.scriptrts.game.UnitClass;
@@ -25,7 +25,7 @@ public class Pathfinder extends Thread{
 	/**
 	 * Current map instance
 	 */
-	private Map map;
+	private GameMap map;
 
 	/**
 	 * Terrain at each point on map
@@ -87,7 +87,7 @@ public class Pathfinder extends Thread{
 	 * @param m current map instance
 	 * @param g unit grid
 	 */
-	public Pathfinder(Map m, MapGrid g){
+	public Pathfinder(GameMap m, MapGrid g){
 		map = m;
 		terrainMap = map.getTileArray();
 		mapGrid = g;
@@ -105,7 +105,7 @@ public class Pathfinder extends Thread{
 	 * @param m current map instance
 	 * @param g unit grid
 	 */
-	public Pathfinder(GameObject u, Map m, MapGrid g){
+	public Pathfinder(GameObject u, GameMap m, MapGrid g){
 		this(m, g);
 		unit = u;
 	}

@@ -461,7 +461,7 @@ public class Game extends HeadlessGame {
 	 * Set the map
 	 * @param m new map
 	 */
-	public void setCurrentMap(Map m){
+	public void setCurrentMap(GameMap m){
 		this.map = m;
 		mapPainter.update();
 	}
