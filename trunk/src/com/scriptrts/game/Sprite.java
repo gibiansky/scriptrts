@@ -123,4 +123,28 @@ public class Sprite {
         int yLoc = (int) (tileBackY - spriteBackY * scale);
         return new Rectangle(xLoc, yLoc, getWidth(), getHeight());
     }
+
+    /**
+     * Get the scale used for the current sprite
+     * @return scale of the sprite
+     */
+	public double getScale() {
+		return scale;
+	}
+
+	/**
+	 * Get the back x coordinate of the sprite
+	 * @return back x coordinate of the sprite
+	 */
+	public int getSpriteBackX() {
+		return spriteBackX;
+	}
+
+	/**
+	 * Get the back y coordinate of the sprite
+	 * @return back y coordinate of the sprite
+	 */
+	public int getSpriteBackY() {
+		return spriteBackY;
+	}
 }

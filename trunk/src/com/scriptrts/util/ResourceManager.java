@@ -1,5 +1,6 @@
 package com.scriptrts.util;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -9,13 +10,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Scanner;
-import java.awt.Color;
 
 import javax.imageio.ImageIO;
 
+import com.scriptrts.game.AnimatedSprite;
 import com.scriptrts.game.Player;
 import com.scriptrts.game.Sprite;
-import com.scriptrts.game.AnimatedSprite;
 
 /**
  * Utility resource manager to load images, audio, and data files

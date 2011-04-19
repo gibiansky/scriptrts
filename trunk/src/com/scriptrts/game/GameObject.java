@@ -7,7 +7,6 @@ import java.util.Queue;
 
 import com.scriptrts.control.OrderHandler;
 import com.scriptrts.core.Main;
-import com.scriptrts.game.path.PathHandler;
 
 /**
  * Unit class which only implements most basic functions.
@@ -268,8 +267,6 @@ public class GameObject {
             /* Notify the unit grid that the path has changed */
             Main.getGame().getGameGrid().unitPathChanged(this, path);
         }
-        
-        this.updateDirection();
     }
 
     /**

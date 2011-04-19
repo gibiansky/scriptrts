@@ -1,6 +1,5 @@
 package com.scriptrts.control;
 
-import java.awt.Point;
 import java.util.Queue;
 
 import com.scriptrts.game.GameObject;

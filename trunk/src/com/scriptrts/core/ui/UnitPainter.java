@@ -1,20 +1,20 @@
 package com.scriptrts.core.ui;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.Composite;
-import java.awt.AlphaComposite;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import com.scriptrts.control.Order;
 import com.scriptrts.control.MoveOrder;
+import com.scriptrts.control.Order;
 import com.scriptrts.control.Selection;
 import com.scriptrts.core.Main;
 import com.scriptrts.game.Direction;
@@ -312,37 +312,42 @@ public class UnitPainter {
 
 		/* Draw the place it will snap to */
 		Point pointOnScreen = new Point(xLoc, yLoc);
-		Point unitTile = unitTileAtPoint(pointOnScreen, viewport);
+		Point unitTile;
+		
+		for(Point p : unit.getShape(unit.getFacingDirection())){
+			unitTile = unitTileAtPoint(pointOnScreen, viewport);
+			unitTile.translate(p.x, p.y);
 
-		/* Back corner pixel locations of map tile */
-		int iMap = unitTile.x / 3;
-		int jMap = unitTile.y / 3;
-		int tileX = mapPainter.getTileWidth();
-		int tileY = mapPainter.getTileHeight();
-		int x = (iMap+jMap+1)*tileX/2;
-		int y = tileY * mapPainter.getMap().getN() / 2 + (iMap - jMap - 1) * tileY / 2;
+			/* Back corner pixel locations of map tile */
+			int iMap = unitTile.x / 3;
+			int jMap = unitTile.y / 3;
+			int tileX = mapPainter.getTileWidth();
+			int tileY = mapPainter.getTileHeight();
+			int x = (iMap+jMap+1)*tileX/2;
+			int y = tileY * mapPainter.getMap().getN() / 2 + (iMap - jMap - 1) * tileY / 2;
 
-		/* Indices inside the map tile */
-		int a = unitTile.x % 3;
-		int b = unitTile.y % 3;
-		Point backCorner = getUnitTileBackLocation(a, b);
-		backCorner.translate(x - tileX/2, y);
+			/* Indices inside the map tile */
+			int a = unitTile.x % 3;
+			int b = unitTile.y % 3;
+			Point backCorner = getUnitTileBackLocation(a, b);
+			backCorner.translate(x - tileX/2, y);
 
-		/* Polygon around the unit tile */
-		int[] xpts = {
-				backCorner.x, backCorner.x + tileX / 6 + 2, backCorner.x, backCorner.x - tileX / 6 - 2
-		};
-		int[] ypts = {
-				backCorner.y - 2, backCorner.y + tileY / 6, backCorner.y + tileY / 3 + 2, backCorner.y + tileY / 6
-		};
-		Polygon poly = new Polygon(xpts, ypts, 4);
+			/* Polygon around the unit tile */
+			int[] xpts = {
+					backCorner.x, backCorner.x + tileX / 6 + 2, backCorner.x, backCorner.x - tileX / 6 - 2
+			};
+			int[] ypts = {
+					backCorner.y - 2, backCorner.y + tileY / 6, backCorner.y + tileY / 3 + 2, backCorner.y + tileY / 6
+			};
+			Polygon poly = new Polygon(xpts, ypts, 4);
 
-		/* Draw half transparent polygons where the unit will go */
-		graphics.setColor(new Color(0, 255, 0, 120));
-		graphics.fillPolygon(poly);
-		graphics.setColor(Color.green);
-		graphics.drawPolygon(poly);
-
+			/* Draw half transparent polygons where the unit will go */
+			graphics.setColor(new Color(0, 255, 0, 120));
+			graphics.fillPolygon(poly);
+			graphics.setColor(Color.green);
+			graphics.drawPolygon(poly);
+		}
+		
 		/* Draw the sprite on top */
 		Sprite sprite = unit.getCurrentSprite();
 		Composite composite = graphics.getComposite();

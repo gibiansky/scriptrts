@@ -2,7 +2,6 @@ package com.scriptrts.game;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
 
 /**
  * An animated sprite which switches between different images depending on the frame count
@@ -109,11 +108,49 @@ public class AnimatedSprite extends Sprite {
     }
     
     /**
+     * Get the number of frames in this animation
+     * @return the number of frames in this animation
+     */
+    public int getNumberFrames(){
+    	return images.length;
+    }
+    
+    /**
      * Get the image at the given frame
      * @param frame frame to check
      * @return image at the given frame
      */
     public BufferedImage getFrameImage(int frame){
     	return images[frame - 1];
+    }
+    
+    /**
+     * Get the duration the given frame is shown for
+     * @param frame frame to check
+     * @return duration of the given frame
+     */
+    public int getFrameDuration(int frame){
+    	if(frame == 1)
+    		return times[0];
+    	else
+    		return times[frame - 1] - times[frame - 2];
+    }
+    
+    /**
+     * Get the back x coordinate of this frame
+     * @param frame frame to check
+     * @return back x coordinate of the given frame
+     */
+    public int getFrameBackX(int frame){
+    	return backXs[frame - 1];
+    }
+    
+    /**
+     * Get the back y coordinate of this frame
+     * @param frame frame to check
+     * @return back y coordinate of the given frame
+     */
+    public int getFrameBackY(int frame){
+    	return backYs[frame - 1];
     }
 }

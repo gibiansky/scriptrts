@@ -198,16 +198,31 @@ public class Game extends HeadlessGame {
 			public void execute() {
 				int uSpeed = 9;
 				try {
-					/* Retrieve spaceship sprites */
+					/* Retrieve drone sprites */
 					BufferedImage art = ResourceManager.loadImage("resource/unit/spaceship/Art.png", 200, 200);
 					Sprite[] sprites = ResourceManager.loadSpriteSet("drone.sprite", getPlayer());
-					GameObject spaceship = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, UnitShape.SHAPE_2x1, UnitClass.Standard);
-					Main.getGame().onClick(new PlaceAction(spaceship));
+					GameObject drone = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, UnitShape.SHAPE_2x1, UnitClass.Standard);
+					Main.getGame().onClick(new PlaceAction(drone));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		}, KeyEvent.VK_W);
+		
+		HotkeyManager.registerHotkey(new Action("Create Cruiser"){
+			public void execute(){
+				int uSpeed = 5;
+				try {
+					/* Retrieve cruiser sprites */
+					BufferedImage art = ResourceManager.loadImage("resource/unit/spaceship/Art.png", 200, 200);
+					Sprite[] sprites = ResourceManager.loadSpriteSet("cruiser.sprite", getPlayer());
+					GameObject cruiser = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, UnitShape.SHAPE_2x1, UnitClass.Standard);
+					Main.getGame().onClick(new PlaceAction(cruiser));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}, KeyEvent.VK_E);
 
 		HotkeyManager.registerHotkey(new Action("Create Stationary Unit"){
 			public void execute() {
@@ -228,7 +243,7 @@ public class Game extends HeadlessGame {
 			public void execute() {
 				try {
 					Sprite[] sprites = ResourceManager.loadSpriteSet("volcano.sprite", null);
-					GameObject volcano = new GameObject(getPlayer(), sprites, null, 0, 0, 0, Direction.North, UnitShape.SHAPE_7x7, UnitClass.Terrain);
+					GameObject volcano = new GameObject(getPlayer(), sprites, null, 0, 0, 0, Direction.North, UnitShape.SHAPE_VOLCANO, UnitClass.Terrain);
 					Main.getGame().onClick(new PlaceAction(volcano));
 				} catch (Exception e) {
 					e.printStackTrace();
