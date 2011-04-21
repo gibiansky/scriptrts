@@ -36,7 +36,7 @@ public class Player {
         this.color = color;
         this.id = id;
 
-        int n = Main.getGame().getCurrentMap().getN() * MapGrid.SPACES_PER_TILE;
+        int n = Main.getGame().n * MapGrid.SPACES_PER_TILE;
         visibilityGrid = new byte[n][n];
     }
     

@@ -1,8 +1,9 @@
 package com.scriptrts.game;
 
-import java.awt.image.BufferedImage;
+import java.awt.Color;
 import java.io.IOException;
 
+import com.scriptrts.core.Main;
 import com.scriptrts.util.ResourceManager;
 
 
@@ -15,7 +16,7 @@ public class GameMap {
 	 * Length of the map along one edge
 	 */
 	private int origN;
-	
+
 	/**
 	 * Length of the map used for calculation purposes
 	 * If origN is not of the form 2^k+1, this is the next highest number of that form
@@ -44,6 +45,11 @@ public class GameMap {
 	private java.util.Random random = new java.util.Random();
 
 	/**
+	 * Player used to place terrain objects
+	 */
+	private Player terrainPlayer;
+
+	/**
 	 * Create a new map.
 	 * @param n size of the map along one edge.
 	 */
@@ -52,6 +58,7 @@ public class GameMap {
 		this.n = (int) (Math.pow(2, Math.ceil(Math.log(n - 1) / Math.log(2))) + 1);
 		heightArray = new double[this.n][this.n];
 		tileArray = new TerrainType[origN][origN];
+		terrainPlayer = new Player("", new Color(255, 255, 255, 1), -1);
 	}
 
 	/**
@@ -194,12 +201,12 @@ public class GameMap {
 	 * If tie, returns null
 	 * @return terrain type that occurs most frequently
 	 */
-	
+
 	public TerrainType findMaxTerrain(TerrainType t1, TerrainType t2, TerrainType t3, TerrainType t4){
 		/* Arrays to work with */
 		TerrainType[] input = {t1, t2, t3, t4};
 		int[] counts = {1,1,1,1};
-		
+
 		/* Loop through and count how many matches each terrain type has */
 		for(int i = 0; i < input.length - 1; i++)
 			for(int j = i+1; j < input.length; j++)
@@ -207,7 +214,7 @@ public class GameMap {
 					counts[i]++;
 					counts[j]++;
 				}
-		
+
 		/* Find the maximum number of matches */
 		int max = 0;
 		int indexOfMax = 0;
@@ -217,11 +224,11 @@ public class GameMap {
 				indexOfMax = i;
 			}
 		}
-		
+
 		/* Maximum of 2 matches means it was a tie, so return null */
 		if(max == 2)
 			return null;
-		
+
 		/* Otherwise return the terrain found most often */
 		else
 			return input[indexOfMax];
@@ -234,19 +241,22 @@ public class GameMap {
 		/* Terrain type at each map tile */
 		TerrainType[] terrains = TerrainType.values();
 
-		try{
-			/* Load volcano image */
-			BufferedImage img = ResourceManager.loadImage("resource/terrain/volcano/Volcano1.png");
-
 			/* Loop through each square and add volcanos randomly */
 			for(int i = 5; i < origN - 5; i++)
 				for(int j = 5; j < origN - 5; j++)
 					if(tileArray[i][j] == terrains[5])
 						if(random.nextDouble() < 0.005){
-							UnitClass.createTerrain(img, MapGrid.SPACES_PER_TILE * i + MapGrid.SPACES_PER_TILE / 2,
-									MapGrid.SPACES_PER_TILE * j + MapGrid.SPACES_PER_TILE / 2, UnitShape.SHAPE_VOLCANO, 1.5);
+							addVolcano(MapGrid.SPACES_PER_TILE * i + MapGrid.SPACES_PER_TILE / 2, 
+									MapGrid.SPACES_PER_TILE * j + MapGrid.SPACES_PER_TILE / 2);
 						}
+	}
 
+	public void addVolcano(int i, int j){
+		try{
+			Sprite[] sprites = ResourceManager.loadSpriteSet("volcano.sprite", null);
+			GameObject volcano = new GameObject(terrainPlayer, sprites, null, 0, i, j, Direction.North, UnitShape.SHAPE_VOLCANO, UnitClass.Terrain);
+			Main.getGame().grid.placeUnit(volcano);
+			//Main.getGame().gameManager.addUnit(volcano);
 		} catch(IOException e){
 			e.printStackTrace();
 		}
