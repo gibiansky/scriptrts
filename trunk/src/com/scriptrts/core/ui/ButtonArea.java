@@ -82,7 +82,6 @@ public class ButtonArea extends JPanel {
         this.overlay = overlay;
 
         previous = manager.getMouseLocation();
-        buttons = new ArrayList<ImageButton>(ALL_BUTTONS.values()).toArray(buttons);
     }
 
     /**
@@ -244,5 +243,38 @@ public class ButtonArea extends JPanel {
     	}
     	return null;
     }
+
+    /**
+     * Updates the buttons given a selection.
+     * @param s current Selection
+     */
+	public void updateButtons(Selection s) {
+		if(s == null || s.getList().size() == 0)
+			buttons = new ImageButton[16];
+		else if(s.getList().get(0).getUnit().isBuilding())
+			buttons = ButtonSet.HEADQUARTERS.buttons();
+		else
+			buttons = ButtonSet.DRONE.buttons();
+		changedButtons = true;
+	}
+	
+	/**
+	 * Stores the different sets of buttons, e.x. DRONE has move, stop, build buttons.
+	 * @author lev
+	 *
+	 */
+	private enum ButtonSet{
+		DRONE(ALL_BUTTONS.get("stop"), ALL_BUTTONS.get("move"), ALL_BUTTONS.get("build")),
+		SPACESHIP(ALL_BUTTONS.get("stop"), ALL_BUTTONS.get("move")),
+		HEADQUARTERS;
+		
+		private final ImageButton[] buttons;
+		
+		ButtonSet(ImageButton... buttons){
+			this.buttons = buttons;
+		}
+		
+		public ImageButton[] buttons(){ return buttons; }
+	}
 }
 
