@@ -331,12 +331,14 @@ public class Game extends HeadlessGame {
 								newCurrent.clear();
 								newCurrent.add(unit);
 								Selection.replaceCurrent(newCurrent);
+								Main.getOverlay().getButtonArea().updateButtons(newCurrent);
 							}
 						} 
 
 						/* If no unit was clicked on, deselect everything */
 						else {
 							Selection.replaceCurrent(new Selection());
+							Main.getOverlay().getButtonArea().updateButtons(new Selection());
 						}
 					}
 
@@ -360,7 +362,6 @@ public class Game extends HeadlessGame {
 				} else if(!manager.getLeftMouseDown()){
 					topLeftSelection = null;
 					bottomRightSelection = null;
-					Main.getOverlay().getButtonArea().updateButtons(new Selection());
 				}
 
 
