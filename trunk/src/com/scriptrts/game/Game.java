@@ -371,7 +371,7 @@ public class Game extends HeadlessGame {
 					Point unitTile = unitPainter.unitTileAtPoint(point, viewport);    
 					/* If there is no unit at destination, move there */
 					//TODO: make it do something different if there is a unit there
-					if(unitPainter.getGrid().getUnit(unitTile.x, unitTile.y) == null){
+					if(getGameGrid().getUnit(unitTile.x, unitTile.y) == null){
 						for(GameObject unit : Selection.current().getList()){
 							if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
 								unit.getUnit().getOrderHandler().queueOrder(new MoveOrder(unitTile));
