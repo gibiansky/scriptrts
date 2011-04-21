@@ -458,4 +458,14 @@ public class GameObject {
     public void setUnitShape(UnitShape unitShape){
     	shape = unitShape;
     }
+    
+    /**
+     * Similar to clone(), but not a general-purpose clone.
+     * To be used for copying a 'default' GameObject for redistribution to the masses. 
+     * @return GameObject a copy of this object.
+     */
+    public GameObject copy(){
+    	return new GameObject(this.unit.getAllegiance(), sprites,  art, this.unit.getSpeed(),
+    			this.unit.getX(), this.unit.getY(), getFacingDirection(), shape, this.unit.getUnitClass());
+    }
 }
