@@ -19,7 +19,9 @@ import com.scriptrts.control.Selection;
 import com.scriptrts.control.StopOrder;
 import com.scriptrts.core.Main;
 import com.scriptrts.core.MoveAction;
+import com.scriptrts.core.PlaceAction;
 import com.scriptrts.game.GameObject;
+import com.scriptrts.game.Units;
 import com.scriptrts.util.ResourceManager;
 
 /**
@@ -215,10 +217,26 @@ public class ButtonArea extends JPanel {
     			}
     		});
     		
+    		// Build button
+    		BufferedImage buildImg =  ResourceManager.loadImage("resource/button/build.png");
+    		BufferedImage buildHoverImg = ResourceManager.loadImage("resource/button/build_hover.png");
+    		BufferedImage buildPressImg = ResourceManager.loadImage("resource/button/build_press.png");
+
+    		double buildScale = 40.0/125;
+    		
+    		ImageButton buildButton = new ImageButton(buildImg, buildHoverImg, buildPressImg, buildScale, x, y);
+    		buildButton.addActionListener(new ActionListener(){
+    			@Override
+    			public void actionPerformed(ActionEvent a) {
+    				Main.getGame().setClickAction(new PlaceAction(Units.headquarters()));
+    			}
+    		});
+    		
 
     		HashMap<String, ImageButton> m = new HashMap<String, ImageButton>();
     		m.put("move", moveButton);
     		m.put("stop", stopButton);
+    		m.put("build", buildButton);
     		
     		return m;
     	}	catch(IOException e){
