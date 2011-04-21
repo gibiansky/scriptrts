@@ -15,9 +15,11 @@ import java.util.Map;
 
 import javax.swing.JPanel;
 
+import com.scriptrts.control.Selection;
+import com.scriptrts.control.StopOrder;
 import com.scriptrts.core.Main;
 import com.scriptrts.core.MoveAction;
-import com.scriptrts.core.StopAction;
+import com.scriptrts.game.GameObject;
 import com.scriptrts.util.ResourceManager;
 
 /**
@@ -208,7 +210,8 @@ public class ButtonArea extends JPanel {
     		stopButton.addActionListener(new ActionListener(){
     			@Override
     			public void actionPerformed(ActionEvent a) {
-    				Main.getGame().setClickAction(new StopAction());
+    				for(GameObject s : Selection.current().getList())
+    					s.getUnit().getOrderHandler().order(new StopOrder());
     			}
     		});
     		
