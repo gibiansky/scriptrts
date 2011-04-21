@@ -231,11 +231,27 @@ public class ButtonArea extends JPanel {
     			}
     		});
     		
+    		// Build drone button
+    		BufferedImage buildDroneImg =  ResourceManager.loadImage("resource/button/build_drone.png");
+    		BufferedImage buildDroneHoverImg = ResourceManager.loadImage("resource/button/build_drone_hover.png");
+    		BufferedImage buildDronePressImg = ResourceManager.loadImage("resource/button/build_drone_press.png");
+
+    		double buildDroneScale = 40.0/80;
+    		
+    		ImageButton buildDroneButton = new ImageButton(buildDroneImg, buildDroneHoverImg, buildDronePressImg, buildDroneScale, x, y);
+    		buildDroneButton.addActionListener(new ActionListener(){
+    			@Override
+    			public void actionPerformed(ActionEvent a) {
+    				Main.getGame().setClickAction(new PlaceAction(Units.drone()));
+    			}
+    		});
+    		
 
     		HashMap<String, ImageButton> m = new HashMap<String, ImageButton>();
     		m.put("move", moveButton);
     		m.put("stop", stopButton);
     		m.put("build", buildButton);
+    		m.put("build_drone", buildDroneButton);
     		
     		return m;
     	}	catch(IOException e){
@@ -266,7 +282,7 @@ public class ButtonArea extends JPanel {
 	private enum ButtonSet{
 		DRONE(ALL_BUTTONS.get("stop"), ALL_BUTTONS.get("move"), ALL_BUTTONS.get("build")),
 		SPACESHIP(ALL_BUTTONS.get("stop"), ALL_BUTTONS.get("move")),
-		HEADQUARTERS;
+		HEADQUARTERS(ALL_BUTTONS.get("build_drone"));
 		
 		private final ImageButton[] buttons;
 		
