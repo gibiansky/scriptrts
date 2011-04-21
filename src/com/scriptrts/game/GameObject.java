@@ -263,7 +263,7 @@ public class GameObject {
         /* Server */
         else {
             this.path =  path;
-
+            setDirection(null);
             /* Notify the unit grid that the path has changed */
             Main.getGame().getGameGrid().unitPathChanged(this, path);
         }
