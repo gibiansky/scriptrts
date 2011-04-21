@@ -205,7 +205,7 @@ public class ButtonArea extends JPanel {
     		double stopScale = 40.0/300;
     		    		
     		ImageButton stopButton = new ImageButton(stopImg, stopHoverImg, stopPressImg, stopScale, x, y);
-    		moveButton.addActionListener(new ActionListener(){
+    		stopButton.addActionListener(new ActionListener(){
     			@Override
     			public void actionPerformed(ActionEvent a) {
     				Main.getGame().setClickAction(new StopAction());
