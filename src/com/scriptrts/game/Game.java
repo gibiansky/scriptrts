@@ -355,10 +355,12 @@ public class Game extends HeadlessGame {
 					for(GameObject unit : selectedUnits)
 						newCurrent.add(unit);
 					Selection.replaceCurrent(newCurrent);
+					Main.getOverlay().getButtonArea().updateButtons(newCurrent);
 
 				} else if(!manager.getLeftMouseDown()){
 					topLeftSelection = null;
 					bottomRightSelection = null;
+					Main.getOverlay().getButtonArea().updateButtons(new Selection());
 				}
 
 

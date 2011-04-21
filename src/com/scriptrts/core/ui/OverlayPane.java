@@ -56,7 +56,11 @@ public class OverlayPane extends JPanel {
     private ButtonArea buttonArea;
     
 
-    /**
+    public ButtonArea getButtonArea() {
+		return buttonArea;
+	}
+
+	/**
      * Create a new top bar
      * @param viewport viewport used to display the screen
      */
