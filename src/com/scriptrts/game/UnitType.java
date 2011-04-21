@@ -17,7 +17,7 @@ public class UnitType {
     protected int id;
 
     /**
-     * What type of unit this is
+     * Unit class of this unit, i.e. Standard, Building, Terrain
      */
     protected UnitClass unitClass = UnitClass.Standard;
 
@@ -168,4 +168,20 @@ public class UnitType {
 
         return damage;
     }
+    
+	/**
+	 * Set the unit class
+	 * @param unitClass the unitClass to set
+	 */
+	public void setUnitClass(UnitClass unitClass) {
+		this.unitClass = unitClass;
+	}
+
+	/**
+	 * Get the unit class
+	 * @return the unitClass
+	 */
+	public UnitClass getUnitClass() {
+		return unitClass;
+	}
 }

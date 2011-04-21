@@ -394,9 +394,10 @@ public class UnitPainter {
 	 * @param viewport viewport that is being used to display the map
 	 */
 	public GameObject getUnitAtPoint(Point point, Viewport viewport){
-		/* Treat a point as a very small rectangle of height and width 1 pixel */
+		/* Treat a point as a very small rectangle of height and width 30 pixels */
+		point.translate(-15, -15);
 		Point deltaPoint = new Point(point);
-		deltaPoint.translate(20, 20);
+		deltaPoint.translate(30, 30);
 
 		/* Return the foremost unit */
 		GameObject[] unitsAtPoint = getUnitsInRect(point, deltaPoint, viewport);
@@ -413,7 +414,6 @@ public class UnitPainter {
 	 * @param viewport viewport that is being used to display the map
 	 */
 	public GameObject[] getUnitsInRect(Point topLeft, Point bottomRight, Viewport viewport){
-		//System.out.println((bottomRight.x - topLeft.x) + " " + (bottomRight.y - topLeft.y));
 		/* Store unit bounds and units on screen */
 		ArrayList<Shape> unitPolys = new ArrayList<Shape>();
 		ArrayList<GameObject> unitsWithPolys = new ArrayList<GameObject>();
@@ -422,16 +422,22 @@ public class UnitPainter {
 		topLeft = new Point(topLeft);
 		bottomRight = new Point(bottomRight);
 
+		/* Keep track of the direction the rectangle was selected from */
+		boolean topToBottom = true;
+		boolean leftToRight = true;
+		
 		/* Rearrange coordinates so the top left point really is the top left, and bottom right really is bottom right */
 		if(topLeft.x > bottomRight.x){
 			int temp = topLeft.x;
 			topLeft.x = bottomRight.x;
 			bottomRight.x = temp;
+			leftToRight = false;
 		}
 		if(topLeft.y > bottomRight.y){
 			int temp = topLeft.y;
 			topLeft.y = bottomRight.y;
 			bottomRight.y = temp;
+			topToBottom = false;
 		}
 
 		/* Find bounds of map in unit tiles */
@@ -454,27 +460,76 @@ public class UnitPainter {
 		unitPolys.clear();
 		unitsWithPolys.clear();
 
-		/* Loop through visible tiles. Loop backwards, because units in front take precedence. */
-		for(int j = bottomLeftTileY; j < topRightTileY; j++)
-			for(int i = topLeftTileX; i < bottomRightTileX; i++) 
-				addVisibleUnitPoly(unitPolys, unitsWithPolys, i, j);
+		/* Loop through visible tiles in the direction they were selected.
+		 * This is so the first building gets selected if there are multiple.
+		 * This part is kind of ugly, even though it's basically 2 for loops. */
+		if(topToBottom){
+			/* Top left to bottom right */
+			if(leftToRight){
+				for(int i = topLeftTileX; i <= bottomRightTileX; i++)
+					for(int j = bottomLeftTileY; j <= topRightTileY; j++)
+						addVisibleUnitPoly(unitPolys, unitsWithPolys, i, j);
+			}
+			/* Top right to bottom left */
+			else {
+				for(int j = topRightTileY; j >= bottomLeftTileY; j--)
+					for(int i = bottomRightTileX; i >= topLeftTileX; i--)
+						addVisibleUnitPoly(unitPolys, unitsWithPolys, i, j);
+			}			
+		} else {
+			/* Bottom left to top right */
+			if(leftToRight){
+				for(int j = bottomLeftTileY; j <= topRightTileY; j++)
+					for(int i = topLeftTileX; i <= bottomRightTileX; i++)
+						addVisibleUnitPoly(unitPolys, unitsWithPolys, i, j);
+			}
+			/* Bottom right to top left */
+			else {
+				for(int i = bottomRightTileX; i >= topLeftTileX; i--)
+					for(int j = topRightTileY; j >= bottomLeftTileY; j--)
+						addVisibleUnitPoly(unitPolys, unitsWithPolys, i, j);
+			}
+		}
 
 		/* Bounds inside which we're looking for units */
 		Rectangle rect = new Rectangle(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
 
-		/* Count units inside bounds */
+		/* Count units (including buildings) inside bounds */
 		int count = 0;
-		for(int i = 0; i < unitPolys.size(); i++)
-			if(rect.intersects(unitPolys.get(i).getBounds()))
+		/* Count number of buildings inside bounds */
+		int nBuildings = 0;
+		for(int i = 0; i < unitPolys.size(); i++){
+			if(rect.intersects(unitPolys.get(i).getBounds())){
 				count++;
-
+				if(unitsWithPolys.get(i).getUnit().isBuilding())
+					nBuildings++;
+			}
+		}
+		
 		/* Put units we've counted inside an array */
-		GameObject[] selected = new GameObject[count];
-		count = 0;
-		for(int i = 0; i < unitPolys.size(); i++)
-			if(rect.intersects(unitPolys.get(i).getBounds()))
-				selected[count++] = unitsWithPolys.get(i);
-
+		GameObject[] selected;
+		
+		/* If we have only selected buildings, return the first building selected */
+		if(nBuildings == count && nBuildings > 0){
+			selected = new GameObject[1];
+			for(int i = 0; i < unitPolys.size(); i++){
+				if(unitsWithPolys.get(i).getUnit().isBuilding() && rect.intersects(unitPolys.get(i).getBounds())){
+					selected[0] = unitsWithPolys.get(i);
+					break;
+				}
+			}
+		}
+		/* Otherwise return all non-building units selected */
+		else {
+			selected = new GameObject[count - nBuildings];
+			count = 0;
+			for(int i = 0; i < unitPolys.size(); i++)
+				if(!unitsWithPolys.get(i).getUnit().isBuilding() && rect.intersects(unitPolys.get(i).getBounds()))
+					selected[count++] = unitsWithPolys.get(i);
+		}
+		
+		updateButtons(selected);
+		
 		return selected;
 	}
 
@@ -488,7 +543,11 @@ public class UnitPainter {
 	private void addVisibleUnitPoly(ArrayList<Shape> unitShapes, ArrayList<GameObject> addedUnits, int i, int j){
 		GameObject unit = grid.getUnit(i, j);
 		if(unit == null) return;
-		if(unit.getUnit().getUnitClass() == UnitClass.Building || unit.getUnit().getUnitClass() == UnitClass.Terrain) return;
+		if(unit.getUnit().isTerrain()) return;
+		/* If this is a building, check that this is the tile the building is centered on */
+		if(unit.getUnit().isBuilding())
+			if(unit.getUnit().getX() != i || unit.getUnit().getY() != j)
+				return;
 
 		/* Calculate the pixel location of the tile on which we're looking for units */
 		int tileX = mapPainter.getTileWidth();
@@ -683,12 +742,8 @@ public class UnitPainter {
 					}
 	}
 
-	/**
-	 * Gets the unit grid used by the painter
-	 * @return unit grid
-	 */
-	public MapGrid getGrid(){
-		return grid;
+	//TODO: LEV GOGOGOGOGO
+	private void updateButtons(GameObject[] selected){
+		//selected can be empty so check for that
 	}
-
 }
