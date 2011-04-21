@@ -33,7 +33,7 @@ public class HeadlessGame {
     /**
      * Unit manager to move and update units
      */
-    protected GameManager unitManager;
+    protected GameManager gameManager;
 
     /**
      * All players currently connected
@@ -57,8 +57,8 @@ public class HeadlessGame {
     	/* Create the grid for units */
         grid = new MapGrid(n);
         
-        /* Create the unit manager */
-        unitManager = new GameManager(this);
+        /* Create the game manager */
+        gameManager = new GameManager(this);
     	
         /* Create and populate map with tiles */
         map = new GameMap(n);
@@ -75,7 +75,7 @@ public class HeadlessGame {
      */
     public void update(){
         /* Update all units */
-        unitManager.update();
+        gameManager.update();
     }
 
     /**
@@ -121,6 +121,6 @@ public class HeadlessGame {
      * @return current unit manager
      */
     public GameManager getGameManager(){
-        return unitManager;
+        return gameManager;
     }
 }

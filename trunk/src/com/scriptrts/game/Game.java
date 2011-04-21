@@ -316,23 +316,39 @@ public class Game extends HeadlessGame {
 						/* Select or deselect a unit that was clicked on */
 						GameObject unit = unitPainter.getUnitAtPoint(point, viewport);
 						if(unit != null) {
+							/* Whether the current selection is a building */
+							boolean currentIsBuilding = Selection.current().isEmpty() || 
+							Selection.current().getList().get(0).getUnit().isBuilding();
+							Selection newCurrent;
 							/* If already selected and pressing control, deselect */
 							if(manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
-								Selection newCurrent = Selection.current().clone();
+								newCurrent = Selection.current().clone();
+								/* If the current selection contains the clicked unit, remove it and stop */
 								if(Selection.current().contains(unit)){
 									newCurrent.remove(unit);
-								} else {
-									newCurrent.add(unit);
+									Selection.replaceCurrent(newCurrent);
 								}
-								Selection.replaceCurrent(newCurrent);
+								else{
+									/* If the current selection contains non-building units, add any non-building unit */
+									if(!currentIsBuilding && !unit.getUnit().isBuilding()){
+										newCurrent.add(unit);
+										Selection.replaceCurrent(newCurrent);
+									}
+									/* If the current selection is a building, replace the current selection with the new selection */
+									else if(currentIsBuilding){
+										newCurrent.clear();
+										newCurrent.add(unit);
+										Selection.replaceCurrent(newCurrent);
+									}
+								}
 							}
 							else {
-								Selection newCurrent = Selection.current().clone();
+								newCurrent = Selection.current().clone();
 								newCurrent.clear();
 								newCurrent.add(unit);
 								Selection.replaceCurrent(newCurrent);
-								Main.getOverlay().getButtonArea().updateButtons(newCurrent);
 							}
+							Main.getOverlay().getButtonArea().updateButtons(newCurrent);
 						} 
 
 						/* If no unit was clicked on, deselect everything */
@@ -353,12 +369,31 @@ public class Game extends HeadlessGame {
 					if(!manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
 						Selection.replaceCurrent(new Selection());
 					}
-					Selection newCurrent = Selection.current().clone();
-					for(GameObject unit : selectedUnits)
-						newCurrent.add(unit);
-					Selection.replaceCurrent(newCurrent);
+					Selection newCurrent = Selection.current();
+					/* Check if the new selection contains stuff */
+					if(selectedUnits.length > 0){
+						/* Add all the newly selected units to a new selection */
+						newCurrent = new Selection();
+						for(GameObject unit : selectedUnits)
+							newCurrent.add(unit);
+						
+						/* Whether the current selection is a building */
+						boolean currentIsBuilding = Selection.current().isEmpty() || 
+							Selection.current().getList().get(0).getUnit().isBuilding();
+						
+						/* Whether the new selection is a building */
+						boolean newIsBuilding = selectedUnits.length > 0 && selectedUnits[0].getUnit().isBuilding();
+						
+						/* Combine the two current and new selections if both contain units */
+						if(!currentIsBuilding){
+							if(!newIsBuilding)
+								newCurrent = Selection.combine(Selection.current(), newCurrent);
+							else
+								newCurrent = Selection.current();
+						}
+						Selection.replaceCurrent(newCurrent);
+					}
 					Main.getOverlay().getButtonArea().updateButtons(newCurrent);
-
 				} else if(!manager.getLeftMouseDown()){
 					topLeftSelection = null;
 					bottomRightSelection = null;
