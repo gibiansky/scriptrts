@@ -458,7 +458,7 @@ public class GameServer {
                         });
             }
 
-            GameObject spaceship = new GameObject(null, sprites, art, 0, 0, 0, null, UnitShape.SHAPE_2x1, UnitClass.Standard);
+            GameObject spaceship = new GameObject(null, sprites, art, 0, 0, 0, null, UnitShape.SHAPE_1x1, UnitClass.Standard);
             spaceship.setParameters(newUnit);
             GameObject unit = spaceship;
             Main.getGame().getGameGrid().placeUnit(unit, unit.getUnit().getX(), unit.getUnit().getY());

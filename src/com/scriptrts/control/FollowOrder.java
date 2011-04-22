@@ -16,6 +16,16 @@ public class FollowOrder extends Order {
     private GameObject target;
     
     /**
+     * Counter to determine when to update calls
+     */
+    private int count;
+    
+    /**
+     * Number of frames between updates to the follow order
+     */
+    private int updateFrequency = 20;
+    
+    /**
      * Create a new follow order to follow a given unit.
      * @param target unit to follow
      */
@@ -50,6 +60,10 @@ public class FollowOrder extends Order {
      * Update the location to which this unit is moving.
      */
     public void update(GameObject unit){
-        perform(unit, null);
+    	if(count == updateFrequency)
+    		perform(unit, null);
+    	count++;
+    	if(count > updateFrequency)
+    		count = 0;
     }
 }

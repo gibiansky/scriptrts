@@ -65,7 +65,7 @@ public class HeadlessGame {
         map.generateMap(.64, 2);
 
         /* Create path handler */
-        pathHandler = new PathHandler(map, grid);
+        pathHandler = new PathHandler();
         /* Set number of pathfinders used */
         pathHandler.setNumPathfinders(10);
     }

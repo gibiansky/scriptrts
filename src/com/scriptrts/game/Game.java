@@ -186,7 +186,7 @@ public class Game extends HeadlessGame {
 					/* Retrieve spaceship sprites */
 					BufferedImage art = ResourceManager.loadImage("resource/unit/spaceship/Art.png", 200, 200);
 					Sprite[] sprites = ResourceManager.loadSpriteSet("spaceship.sprite", getPlayer());
-					GameObject spaceship = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, UnitShape.SHAPE_2x1, UnitClass.Standard);
+					GameObject spaceship = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, UnitShape.SHAPE_1x1, UnitClass.Standard);
 					Main.getGame().onClick(new PlaceAction(spaceship));
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -201,7 +201,7 @@ public class Game extends HeadlessGame {
 					/* Retrieve drone sprites */
 					BufferedImage art = ResourceManager.loadImage("resource/unit/spaceship/Art.png", 200, 200);
 					Sprite[] sprites = ResourceManager.loadSpriteSet("drone.sprite", getPlayer());
-					GameObject drone = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, UnitShape.SHAPE_2x1, UnitClass.Standard);
+					GameObject drone = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, UnitShape.SHAPE_1x1, UnitClass.Standard);
 					Main.getGame().onClick(new PlaceAction(drone));
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -216,7 +216,7 @@ public class Game extends HeadlessGame {
 					/* Retrieve cruiser sprites */
 					BufferedImage art = ResourceManager.loadImage("resource/unit/spaceship/Art.png", 200, 200);
 					Sprite[] sprites = ResourceManager.loadSpriteSet("cruiser.sprite", getPlayer());
-					GameObject cruiser = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, UnitShape.SHAPE_2x1, UnitClass.Standard);
+					GameObject cruiser = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, UnitShape.SHAPE_1x1, UnitClass.Standard);
 					Main.getGame().onClick(new PlaceAction(cruiser));
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -231,7 +231,7 @@ public class Game extends HeadlessGame {
 					/* Retrieve spaceship sprites */
 					BufferedImage art = ResourceManager.loadImage("resource/unit/spaceship/Art.png", 200, 200);
 					Sprite[] sprites = ResourceManager.loadSpriteSet("spaceship.sprite", getPlayer());
-					GameObject spaceship = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, UnitShape.SHAPE_2x1, UnitClass.Standard);
+					GameObject spaceship = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, UnitShape.SHAPE_1x1, UnitClass.Standard);
 					Main.getGame().onClick(new PlaceAction(spaceship));
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -406,7 +406,7 @@ public class Game extends HeadlessGame {
 				/* Clicking (to set unit destination) */
 				if(manager.getRightMouseClicked()){
 					Point point = manager.getMouseLocation();
-					Point unitTile = unitPainter.unitTileAtPoint(point, viewport);    
+					Point unitTile = unitPainter.unitTileAtPoint(point, viewport);  
 					/* If there is no unit at destination, move there */
 					//TODO: make it do something different if there is a unit there
 					if(getGameGrid().getUnit(unitTile.x, unitTile.y) == null){
@@ -417,11 +417,12 @@ public class Game extends HeadlessGame {
 								unit.getUnit().getOrderHandler().order(new MoveOrder(unitTile));
 						}
 					} else {
+						GameObject unitAtPoint = grid.getUnit(unitTile.x, unitTile.y);
 						for(GameObject unit : Selection.current().getList()){
 							if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
-								unit.getUnit().getOrderHandler().queueOrder(new FollowOrder(unit));
+								unit.getUnit().getOrderHandler().queueOrder(new FollowOrder(unitAtPoint));
 							else
-								unit.getUnit().getOrderHandler().order(new FollowOrder(unit));
+								unit.getUnit().getOrderHandler().order(new FollowOrder(unitAtPoint));
 						}
 					}
 

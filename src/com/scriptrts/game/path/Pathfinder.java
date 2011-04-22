@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import com.scriptrts.core.Main;
 import com.scriptrts.game.Direction;
 import com.scriptrts.game.GameObject;
 import com.scriptrts.game.GameMap;
@@ -23,17 +24,17 @@ public class Pathfinder extends Thread{
 	/**
 	 * Current map instance
 	 */
-	private GameMap map;
+	private GameMap map = Main.getGame().getCurrentMap();
 
 	/**
 	 * Terrain at each point on map
 	 */
-	private TerrainType[][] terrainMap;
+	private TerrainType[][] terrainMap = map.getTileArray();
 
 	/**
-	 * Unit grid (for collisions later?) - unused
+	 * Unit grid
 	 */
-	private MapGrid mapGrid;
+	private MapGrid mapGrid = Main.getGame().getGameGrid();
 
 	/**
 	 * Stores terrain costs
@@ -58,7 +59,7 @@ public class Pathfinder extends Thread{
 	/**
 	 * Size of unit grid
 	 */
-	private int n;
+	private int n = map.getN() * MapGrid.SPACES_PER_TILE;
 
 	/**
 	 * List of Points in path
@@ -80,16 +81,16 @@ public class Pathfinder extends Thread{
 	 */
 	private PathHandler pathHandler;
 
+	
+	/**
+	 * Number of nodes to search before giving up
+	 */
+	private int threshold = n * n / 10;
+	
 	/**
 	 * Create a new Pathfinder
-	 * @param m current map instance
-	 * @param g unit grid
 	 */
-	public Pathfinder(GameMap m, MapGrid g){
-		map = m;
-		terrainMap = map.getTileArray();
-		mapGrid = g;
-		n = map.getN() * MapGrid.SPACES_PER_TILE;
+	public Pathfinder(){
 		heap = new Node[n * n];
 		nodeList = new HashMap<Point, Node>();
 		path = new ArrayList<Point>();
@@ -100,11 +101,9 @@ public class Pathfinder extends Thread{
 	/**
 	 * Create a new Pathfinder
 	 * @param u unit which pathfinder is for
-	 * @param m current map instance
-	 * @param g unit grid
 	 */
-	public Pathfinder(GameObject u, GameMap m, MapGrid g){
-		this(m, g);
+	public Pathfinder(GameObject u){
+		this();
 		unit = u;
 	}
 
@@ -173,11 +172,15 @@ public class Pathfinder extends Thread{
 		nodeList.put(start.getPoint(), start);
 		add(start);
 
+		int tilesChecked = 1;
+		
 		/* While the end point has not been added to the closed list */
-		while(!nodeList.containsKey(end)){
+		while(!nodeList.containsKey(end) && tilesChecked < threshold){
 
 			/* Find the point with the shortest path length */
 			Node next = remove();
+			if(next == null)
+				break;
 
 			/* Add it to the closed list */
 			next.setClosed();
@@ -196,7 +199,7 @@ public class Pathfinder extends Thread{
 				if(!nodeList.containsKey(p) || nodeList.get(p).isOpen()){
 
 					/* Only check neighbors which can fit the unit shape */
-					Direction dir = getDirection2Pts(next.getPoint(), p);				
+					Direction dir = mapGrid.getDirection(next.getPoint(), p);				
 					if(mapGrid.canPlaceUnit(u, next.getPoint().x, next.getPoint().y, dir) && mapGrid.canPlaceUnit(u, p.x, p.y, dir)){
 
 						/* Map tile corresponding to unit grid tile */
@@ -216,6 +219,8 @@ public class Pathfinder extends Thread{
 							newNode.setParent(next);
 							nodeList.put(p, newNode);
 							add(newNode);
+							/* Increment number of tiles checked */
+							tilesChecked++;
 						}
 
 						/* Otherwise neighbor is on open list, so check if better path exists */
@@ -234,19 +239,25 @@ public class Pathfinder extends Thread{
 							}
 						}
 					}
-					
+					/* If we can't place the unit at the current tile, add the current tile to the closed list */ 
 					else{
 						Node n = new Node(p.x, p.y);
 						n.setClosed();
+						n.setParent(next);
 						nodeList.put(p, n);
+						/* Increment number of tiles checked */
+						tilesChecked++;
 					}
-					
 				}
 			}
 		}
-
-		/* Retrace path starting from endpoint */
-		retrace(nodeList.get(end));
+		
+		/* If we broke out of the loop because we gave up searching, pick the node on the open list with the lowest G cost */
+		if(!nodeList.containsKey(end))
+			retrace(heap[0]);
+		/* Otherwise retrace path starting from endpoint */
+		else
+			retrace(nodeList.get(end));
 	}
 
 	/**
@@ -283,7 +294,13 @@ public class Pathfinder extends Thread{
 	private Node remove(){
 		/* Move last element to top of heap */
 		Node first = heap[0];
-		heap[0] = heap[count - 1];
+		try{
+			heap[0] = heap[count - 1];
+		}
+		/* If there are no nodes on the open list, return null */
+		catch(ArrayIndexOutOfBoundsException e){
+			return null;
+		}
 
 		/* Decrement number of open points in heap */
 		count--;
@@ -373,7 +390,7 @@ public class Pathfinder extends Thread{
 
 	/**
 	 * Get directions corresponding to the path found
-	 e @return directions
+	 * @return directions
 	 */
 	public Queue<Direction> getDirections(){
 		if(path.size() == 0)
@@ -382,56 +399,15 @@ public class Pathfinder extends Thread{
 		Point current = (Point) itr.next();
 		Point next = (Point) itr.next();
 		while(itr.hasNext()){
-			directions.add(getDirection2Pts(current, next));
+			directions.add(mapGrid.getDirection(current, next));
 			current = next;
 			next = (Point) itr.next();
 		}
-		directions.add(getDirection2Pts(current, next));
+		directions.add(mapGrid.getDirection(current, next));
 		return directions;
 	}
 
-	/**
-	 * Get direction of p2 relative to p1
-	 */
-	private Direction getDirection2Pts(Point p1, Point p2){
-		int dx = p2.x - p1.x;
-		int dy = p2.y - p1.y;
 
-		if(dx == -1)
-			switch(dy){
-			case -1:
-				return Direction.Southwest;
-			case 0:
-				return Direction.West;
-			case 1:
-				return Direction.Northwest;
-			default:
-				return null;
-
-			}
-		else if(dx == 0)
-			switch(dy){
-			case -1:
-				return Direction.South;
-			case 1:
-				return Direction.North;
-			default:
-				return null;
-			}
-		else if(dx == 1)
-			switch(dy){
-			case -1:
-				return Direction.Southeast;
-			case 0:
-				return Direction.East;
-			case 1:
-				return Direction.Northeast;
-			default:
-				return null;
-			}
-		else
-			return null;
-	}
 
 	public void run(){
 		findRoute(unit, endX, endY);

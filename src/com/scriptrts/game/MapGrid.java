@@ -334,4 +334,46 @@ public class MapGrid {
         unit.clearPath();
         unit.setState(SpriteState.Attack);
     }
+    
+	/**
+	 * Get direction of p2 relative to p1
+	 */
+	public Direction getDirection(Point p1, Point p2){
+		int dx = p2.x - p1.x;
+		int dy = p2.y - p1.y;
+
+		if(dx < 0){
+			if(dy < 0) return Direction.Southwest;
+			else if(dy == 0) return Direction.West;
+			else return Direction.Northwest;
+		}
+		else if(dx == 0){
+			if(dy < 0) return Direction.South;
+			else if(dy == 0) return null;
+			else return Direction.North;
+		}
+		else{
+			if(dy < 0) return Direction.Southeast;
+			else if(dy == 0) return Direction.East;
+			else return Direction.Northeast;
+		}
+	}
+	
+	/**
+	 * Gets the first unoccupied tile starting from p in the direction d
+	 * @param p starting point to check
+	 * @param d direction to look in
+	 * @return the first unoccupied tile starting from p in the direction d
+	 */
+	public Point getFirstUnoccupiedTile(Point p, Direction d){
+		if(!this.contains(p.x, p.y))
+			return null;
+		if(this.getUnit(p.x, p.y) == null)
+			return p;
+		else{
+			Point delta = getDirectionOffset(d);
+			p.translate(delta.x, delta.y);
+			return getFirstUnoccupiedTile(p, d);
+		}
+	}
 }

@@ -17,16 +17,6 @@ public class PathHandler{
 	private Queue<Pathfinder> pathfinders;
 	
 	/**
-	 * Current map instance
-	 */
-	private GameMap map;
-	
-	/**
-	 * Current unit grid instance
-	 */
-	private MapGrid unitGrid;
-	
-	/**
 	 * Overflow of units to route, if there are more units to route than pathfinders available
 	 */
 	private Queue<GameObject> unitsToRoute;
@@ -38,13 +28,9 @@ public class PathHandler{
 	
 	/**
 	 * Create a new path handler
-	 * @param map current map instance
-	 * @param unitGrid current unit grid instance
 	 */
-	public PathHandler(GameMap map, MapGrid unitGrid){
+	public PathHandler(){
 		pathfinders = new LinkedList<Pathfinder>();
-		this.map = map;
-		this.unitGrid = unitGrid;
 		unitsToRoute = new LinkedList<GameObject>();
 		destinations = new LinkedList<Point>();
 	}
@@ -55,7 +41,7 @@ public class PathHandler{
 	 */
 	public void setNumPathfinders(int n){
 		for(int i = 0; i < n; i++){
-			Pathfinder finder = new Pathfinder(map, unitGrid);
+			Pathfinder finder = new Pathfinder();
 			finder.setPathHandler(this);
 			pathfinders.add(finder);
 		}		
@@ -105,7 +91,4 @@ public class PathHandler{
 			unit.getUnit().setDestination(end);
 		}
 	}
-	
-	
-	
 }
