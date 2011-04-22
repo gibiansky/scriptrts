@@ -60,6 +60,14 @@ public class UnitType {
     }
 
     /**
+     * Check if this unit is a standard unit
+     * @return true if this unit is a standard unit
+     */
+    public boolean isStandard(){
+    	return unitClass == UnitClass.Standard;
+    }
+    
+    /**
      * Check if this unit is a building
      * @return true if this unit is a building
      */

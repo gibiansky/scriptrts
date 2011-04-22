@@ -418,11 +418,23 @@ public class Game extends HeadlessGame {
 						}
 					} else {
 						GameObject unitAtPoint = grid.getUnit(unitTile.x, unitTile.y);
-						for(GameObject unit : Selection.current().getList()){
-							if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
-								unit.getUnit().getOrderHandler().queueOrder(new FollowOrder(unitAtPoint));
-							else
-								unit.getUnit().getOrderHandler().order(new FollowOrder(unitAtPoint));
+						/* If the unit at the click location is a standard unit, issue a follow order */
+						if(unitAtPoint.getUnit().isStandard()){
+							for(GameObject unit : Selection.current().getList()){
+								if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
+									unit.getUnit().getOrderHandler().queueOrder(new FollowOrder(unitAtPoint));
+								else
+									unit.getUnit().getOrderHandler().order(new FollowOrder(unitAtPoint));
+							}
+						}
+						/* Otherwise issue a move order */
+						else{
+							for(GameObject unit : Selection.current().getList()){
+								if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
+									unit.getUnit().getOrderHandler().queueOrder(new MoveOrder(unitTile));
+								else
+									unit.getUnit().getOrderHandler().order(new MoveOrder(unitTile));
+							}
 						}
 					}
 
