@@ -111,9 +111,6 @@ public class Pathfinder extends Thread{
 	 * Reset and clear path when done
 	 */
 	public void reset(){
-		for(int i = 0; i < count; i++){
-			heap[i].reset();
-		}
 		nodeList.clear();
 		path.clear();
 		directions = new LinkedList<Direction>();
@@ -167,6 +164,7 @@ public class Pathfinder extends Thread{
 			return;
 
 		/* Add the starting point to the open point list */
+		start.setHCost(manhattan(start.getX(), start.getY(), endX, endY));
 		start.setOpen();
 		start.setParent(null);
 		nodeList.put(start.getPoint(), start);
@@ -242,6 +240,8 @@ public class Pathfinder extends Thread{
 					/* If we can't place the unit at the current tile, add the current tile to the closed list */ 
 					else{
 						Node n = new Node(p.x, p.y);
+						/* Set the H cost really high so this never gets selected if we break out of the loop early */
+						n.setHCost(Integer.MAX_VALUE);
 						n.setClosed();
 						n.setParent(next);
 						nodeList.put(p, n);
@@ -252,9 +252,19 @@ public class Pathfinder extends Thread{
 			}
 		}
 		
-		/* If we broke out of the loop because we gave up searching, pick the node on the open list with the lowest G cost */
-		if(!nodeList.containsKey(end))
-			retrace(heap[0]);
+		/* If we broke out of the loop because we gave up searching, pick the node on the closed list with the lowest H cost (closest to end point) */
+		if(!nodeList.containsKey(end)){
+			/* Initial value is 1 less than the value set to unreachable nodes */
+			int minHCost = Integer.MAX_VALUE - 1;
+			Node locOfMin = null;
+			for(Node n : nodeList.values()){
+				if(n.getHCost() <= minHCost){
+					minHCost = n.getHCost();
+					locOfMin = n;
+				}
+			}
+			retrace(locOfMin);
+		}
 		/* Otherwise retrace path starting from endpoint */
 		else
 			retrace(nodeList.get(end));
@@ -393,7 +403,7 @@ public class Pathfinder extends Thread{
 	 * @return directions
 	 */
 	public Queue<Direction> getDirections(){
-		if(path.size() == 0)
+		if(path.size() <= 1)
 			return directions;
 		Iterator<Point> itr = path.iterator();
 		Point current = (Point) itr.next();
