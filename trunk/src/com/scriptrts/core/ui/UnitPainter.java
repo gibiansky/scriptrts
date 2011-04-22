@@ -528,8 +528,6 @@ public class UnitPainter {
 					selected[count++] = unitsWithPolys.get(i);
 		}
 		
-		updateButtons(selected);
-		
 		return selected;
 	}
 
@@ -740,10 +738,5 @@ public class UnitPainter {
 						first = false;
 
 					}
-	}
-
-	//TODO: LEV GOGOGOGOGO
-	private void updateButtons(GameObject[] selected){
-		//selected can be empty so check for that
 	}
 }

@@ -62,8 +62,7 @@ public class AnimatedSprite extends Sprite {
 
         /* Set the image we want to draw */
         for(int i = 0; i < times.length; i++){
-            int time = times[i];
-            if(time <= frame){
+            if(times[i] <= frame){
                 setImage(images[i]);
                 setBackCoordinates(backXs[i], backYs[i]);
             }
