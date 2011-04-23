@@ -308,8 +308,8 @@ public class Game extends HeadlessGame {
 
 					/* Click actions */
 					if(clickAction != null){
-						clickAction.click(point.x, point.y);
-						clickAction = null;
+						if(clickAction.click(point.x, point.y))
+							clickAction = null;
 					}
 
 					else{
@@ -411,6 +411,8 @@ public class Game extends HeadlessGame {
 					//TODO: make it do something different if there is a unit there
 					if(getGameGrid().getUnit(unitTile.x, unitTile.y) == null){
 						for(GameObject unit : Selection.current().getList()){
+							if(!unit.getUnit().isStandard())
+								continue;
 							if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
 								unit.getUnit().getOrderHandler().queueOrder(new MoveOrder(unitTile));
 							else
@@ -421,6 +423,8 @@ public class Game extends HeadlessGame {
 						/* If the unit at the click location is a standard unit, issue a follow order */
 						if(unitAtPoint.getUnit().isStandard()){
 							for(GameObject unit : Selection.current().getList()){
+								if(!unit.getUnit().isStandard())
+									continue;
 								if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
 									unit.getUnit().getOrderHandler().queueOrder(new FollowOrder(unitAtPoint));
 								else
@@ -430,6 +434,8 @@ public class Game extends HeadlessGame {
 						/* Otherwise issue a move order */
 						else{
 							for(GameObject unit : Selection.current().getList()){
+								if(!unit.getUnit().isStandard())
+									continue;
 								if(manager.getKeyCodeFlag(KeyEvent.VK_SHIFT))
 									unit.getUnit().getOrderHandler().queueOrder(new MoveOrder(unitTile));
 								else

@@ -182,16 +182,16 @@ public class UnitPainter {
 		for(int i = west; i < east; i++){
 			for(int j = south; j < north; j++){
 				paintUnitsOnMapTile(graphics, i, j);
+				/* If we are currently placing a unit, draw occupied unit tiles */
+				if(Main.getGame().getClickAction() != null)
+					paintUnitSquares(graphics, i, j);
 			}
 		}
 
-		if(UnitPainter.DEBUG){
-			for(int i = west; i < east; i++){
-				for(int j = south; j < north; j++){
+		if(UnitPainter.DEBUG)
+			for(int i = west; i < east; i++)
+				for(int j = south; j < north; j++)
 					paintUnitSquares(graphics, i, j);
-				}
-			}
-		}
 	}
 
 	/**
@@ -342,10 +342,18 @@ public class UnitPainter {
 			Polygon poly = new Polygon(xpts, ypts, 4);
 
 			/* Draw half transparent polygons where the unit will go */
-			graphics.setColor(new Color(0, 255, 0, 120));
-			graphics.fillPolygon(poly);
-			graphics.setColor(Color.green);
-			graphics.drawPolygon(poly);
+			if(grid.getUnit(unitTile.x, unitTile.y) == null){
+				graphics.setColor(new Color(0, 255, 0, 120));
+				graphics.fillPolygon(poly);
+				graphics.setColor(Color.green);
+				graphics.drawPolygon(poly);
+			}
+			else{
+				graphics.setColor(new Color(255, 0, 0, 120));
+				graphics.fillPolygon(poly);
+				graphics.setColor(Color.red);
+				graphics.drawPolygon(poly);
+			}
 		}
 		
 		/* Draw the sprite on top */

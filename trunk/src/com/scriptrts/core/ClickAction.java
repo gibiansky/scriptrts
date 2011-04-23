@@ -14,7 +14,7 @@ public abstract class ClickAction {
      * @param x x coordinate of click
      * @param y y coordinate of click
      */
-    public abstract void click(int x, int y);
+    public abstract boolean click(int x, int y);
 
     /**
      * Draws cursor for the action
