@@ -140,6 +140,8 @@ public class Selection {
 	}
 	
 	public boolean equals(Selection s){
+		if(s == null)
+			return false;
 		for(GameObject x: s.objects){
 			if(!this.contains(x))
 				return false;

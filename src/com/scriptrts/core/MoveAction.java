@@ -11,7 +11,7 @@ import com.scriptrts.game.GameObject;
 public class MoveAction extends ClickAction {
 
 	@Override
-	public void click(int x, int y) {
+	public boolean click(int x, int y) {
 		Point unitTile = Main.getGame().getUnitPainter().unitTileAtPoint(new Point(x,y), Main.getGame().getViewport());
 		/*
 		 * If Shift is held down, queue the order to move; else override.
@@ -22,6 +22,7 @@ public class MoveAction extends ClickAction {
 		else
 			for(GameObject s : Selection.current().getList())
 				s.getUnit().getOrderHandler().order(new MoveOrder(unitTile));
+		return true;
 	}
 
 }

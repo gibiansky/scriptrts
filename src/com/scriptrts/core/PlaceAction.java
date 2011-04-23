@@ -30,10 +30,13 @@ public class PlaceAction extends ClickAction {
      * @param x mouse coordinate x
      * @param y mouse coordinate y
      */
-    public void click(int x, int y){
+    public boolean click(int x, int y){
         Viewport viewport = Main.getGame().getViewport();
         Point point = new Point(x, y);
         Point unitTile = Main.getGame().getUnitPainter().unitTileAtPoint(point, viewport);
+        /* If space is taken, don't do anything */
+        if(!Main.getGame().getGameGrid().canPlaceUnit(unit, unitTile.x, unitTile.y, unit.getFacingDirection()))
+        	return false;
         unit.getUnit().setX(unitTile.x);
         unit.getUnit().setY(unitTile.y);
         Main.getGame().getGameGrid().placeUnit(unit, unitTile.x, unitTile.y);
@@ -42,6 +45,7 @@ public class PlaceAction extends ClickAction {
 
         if(Main.getGameClient() != null)
             Main.getGameClient().sendNewUnitNotification(unit);
+        return true;
     }
 
     /**
