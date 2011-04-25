@@ -216,7 +216,7 @@ public class Game extends HeadlessGame {
 					/* Retrieve cruiser sprites */
 					BufferedImage art = ResourceManager.loadImage("resource/unit/spaceship/Art.png", 200, 200);
 					Sprite[] sprites = ResourceManager.loadSpriteSet("cruiser.sprite", getPlayer());
-					GameObject cruiser = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, UnitShape.SHAPE_1x1, UnitClass.Standard);
+					GameObject cruiser = new GameObject(getPlayer(), sprites, art, uSpeed, 0, 0, Direction.East, UnitShape.SHAPE_5x5, UnitClass.Standard);
 					Main.getGame().onClick(new PlaceAction(cruiser));
 				} catch (Exception e) {
 					e.printStackTrace();

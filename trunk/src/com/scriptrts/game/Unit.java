@@ -112,7 +112,7 @@ public class Unit extends UnitType {
 
         GameObject gameObj = Main.getGame().getGameManager().unitWithId(getId());
         if(gameObj.getPath() != null){
-        	gameObj.setDirection(null);
+        	gameObj.clearPath();
         }
 
         if(!pathHandler.isEmpty()){

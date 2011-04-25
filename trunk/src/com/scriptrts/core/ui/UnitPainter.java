@@ -313,7 +313,7 @@ public class UnitPainter {
 		/* Draw the place it will snap to */
 		Point pointOnScreen = new Point(xLoc, yLoc);
 		Point unitTile;
-		
+
 		for(Point p : unit.getShape(unit.getFacingDirection())){
 			unitTile = unitTileAtPoint(pointOnScreen, viewport);
 			unitTile.translate(p.x, p.y);
@@ -355,7 +355,7 @@ public class UnitPainter {
 				graphics.drawPolygon(poly);
 			}
 		}
-		
+
 		/* Draw the sprite on top */
 		Sprite sprite = unit.getCurrentSprite();
 		Composite composite = graphics.getComposite();
@@ -366,7 +366,7 @@ public class UnitPainter {
 
 	public void paintUnitSquares(Graphics2D graphics, int i, int j){
 		/* Paint taken up squares as blue */
-		
+
 		/* Calculate the pixel location of the tile on which we're drawing */
 		int tileX = mapPainter.getTileWidth();
 		int tileY = mapPainter.getTileHeight();
@@ -433,7 +433,7 @@ public class UnitPainter {
 		/* Keep track of the direction the rectangle was selected from */
 		boolean topToBottom = true;
 		boolean leftToRight = true;
-		
+
 		/* Rearrange coordinates so the top left point really is the top left, and bottom right really is bottom right */
 		if(topLeft.x > bottomRight.x){
 			int temp = topLeft.x;
@@ -513,10 +513,10 @@ public class UnitPainter {
 					nBuildings++;
 			}
 		}
-		
+
 		/* Put units we've counted inside an array */
 		GameObject[] selected;
-		
+
 		/* If we have only selected buildings, return the first building selected */
 		if(nBuildings == count && nBuildings > 0){
 			selected = new GameObject[1];
@@ -535,7 +535,7 @@ public class UnitPainter {
 				if(!unitsWithPolys.get(i).getUnit().isBuilding() && rect.intersects(unitPolys.get(i).getBounds()))
 					selected[count++] = unitsWithPolys.get(i);
 		}
-		
+
 		return selected;
 	}
 
@@ -550,10 +550,9 @@ public class UnitPainter {
 		GameObject unit = grid.getUnit(i, j);
 		if(unit == null) return;
 		if(unit.getUnit().isTerrain()) return;
-		/* If this is a building, check that this is the tile the building is centered on */
-		if(unit.getUnit().isBuilding())
-			if(unit.getUnit().getX() != i || unit.getUnit().getY() != j)
-				return;
+		/* Check that this is the tile the unit is centered on */
+		if(unit.getUnit().getX() != i || unit.getUnit().getY() != j)
+			return;
 
 		/* Calculate the pixel location of the tile on which we're looking for units */
 		int tileX = mapPainter.getTileWidth();
