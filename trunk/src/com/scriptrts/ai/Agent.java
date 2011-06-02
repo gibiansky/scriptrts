@@ -8,5 +8,13 @@ public class Agent {
 		x = ix;
 		y = iy;
 	}
-	
+
+	public void update(double dt){
+		vx += ax * dt;
+		vy += ay * dt;
+		x += vx * dt;
+		y += vy * dt;
+		ax = 0;
+		ay = 0;
+	}
 }
