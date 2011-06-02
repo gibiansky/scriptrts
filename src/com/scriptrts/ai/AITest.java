@@ -6,17 +6,18 @@ import java.awt.Polygon;
 import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-public class AITest extends JFrame implements KeyListener {
+public class AITest extends JFrame implements KeyListener, MouseListener {
 
-	private Agent[] agents;
 	private Agent leader;
+	private AgentGroup group;
 	private TestPanel panel;
 
-	private static final int MAX_AGENTS = 30;
 	private static final int ACCELERATION = 10;
 	private static final int V_MAX = 20;
 	private static final double DT = 0.1;
@@ -30,17 +31,15 @@ public class AITest extends JFrame implements KeyListener {
 		add(panel);
 
 		addKeyListener(this);
+		addMouseListener(this);
 
-		agents = new Agent[MAX_AGENTS];
 		leader = new Agent(400, 300);
+		group = new AgentGroup(leader);
 
 		new Thread() {
 			public void run() {
 				while(true) {
-					leader.vx += leader.ax * DT;
-					leader.vy += leader.ay * DT;
-					leader.x += leader.vx * DT;
-					leader.y += leader.vy * DT;
+					leader.update(DT);
 					if(leader.x > 800) {
 						leader.x = 800;
 						leader.vx = 0;
@@ -70,6 +69,21 @@ public class AITest extends JFrame implements KeyListener {
 				}
 			}
 		}.start();
+
+		while(true){
+			for(Agent agent : group.getAgents()){
+				Separation.update(group, agent);
+				Cohesion.update(group, agent);
+				Alignment.update(group, agent);
+				agent.update(DT);
+				group.updateCentroid();
+			}
+			try {
+				Thread.sleep(30);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private class TestPanel extends JPanel {
@@ -80,6 +94,9 @@ public class AITest extends JFrame implements KeyListener {
 			Graphics2D g2d = (Graphics2D) g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g2d.fillPolygon(getPolygon((int) leader.x, (int) leader.y));
+			for(Agent agent : group.getAgents()){
+				g2d.fillPolygon(getPolygon((int) agent.x, (int) agent.y));
+			}
 		}
 
 		private Polygon getPolygon(int x, int y) {
@@ -94,7 +111,6 @@ public class AITest extends JFrame implements KeyListener {
 		new AITest();
 	}
 
-	@Override
 	public void keyPressed(KeyEvent e) {
 		char key = ("" + e.getKeyChar()).toLowerCase().charAt(0);
 		switch (key) {
@@ -115,14 +131,23 @@ public class AITest extends JFrame implements KeyListener {
 		}
 	}
 
-	@Override
 	public void keyReleased(KeyEvent e) {
-
+	}
+	public void keyTyped(KeyEvent e) {
 	}
 
-	@Override
-	public void keyTyped(KeyEvent e) {
+	public void mouseClicked(MouseEvent e) {
+		Agent agent = new Agent(e.getX(), e.getY());
+		group.add(agent);
+	}
 
+	public void mouseEntered(MouseEvent e) {
+	}
+	public void mouseExited(MouseEvent e) {
+	}
+	public void mousePressed(MouseEvent e) {
+	}
+	public void mouseReleased(MouseEvent e) {
 	}
 
 }

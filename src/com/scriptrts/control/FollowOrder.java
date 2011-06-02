@@ -16,14 +16,14 @@ public class FollowOrder extends Order {
     private GameObject target;
     
     /**
-     * Counter to determine when to update calls
-     */
-    private int count;
-    
-    /**
      * Number of frames between updates to the follow order
      */
     private int updateFrequency = 20;
+    
+    /**
+     * Counter to determine when to update calls
+     */
+    private int count = (int) Math.floor(Math.random() * updateFrequency);
     
     /**
      * Create a new follow order to follow a given unit.
