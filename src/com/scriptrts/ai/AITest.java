@@ -1,5 +1,6 @@
 package com.scriptrts.ai;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
@@ -19,7 +20,7 @@ public class AITest extends JFrame implements KeyListener, MouseListener {
 	private TestPanel panel;
 
 	private static final int ACCELERATION = 10;
-	private static final int V_MAX = 20;
+	public static final int V_MAX = 50;
 	private static final double DT = 0.1;
 
 	public AITest() {
@@ -75,6 +76,7 @@ public class AITest extends JFrame implements KeyListener, MouseListener {
 				Separation.update(group, agent);
 				Cohesion.update(group, agent);
 				Alignment.update(group, agent);
+				Arrival.update(group, agent);
 				agent.update(DT);
 				group.updateCentroid();
 			}
@@ -93,7 +95,9 @@ public class AITest extends JFrame implements KeyListener, MouseListener {
 			super.paint(g);
 			Graphics2D g2d = (Graphics2D) g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g2d.setColor(Color.black);
 			g2d.fillPolygon(getPolygon((int) leader.x, (int) leader.y));
+			g2d.setColor(Color.blue);
 			for(Agent agent : group.getAgents()){
 				g2d.fillPolygon(getPolygon((int) agent.x, (int) agent.y));
 			}
@@ -115,16 +119,16 @@ public class AITest extends JFrame implements KeyListener, MouseListener {
 		char key = ("" + e.getKeyChar()).toLowerCase().charAt(0);
 		switch (key) {
 		case 'w':
-			leader.ay = - ACCELERATION;
+			leader.vy = -V_MAX;
 			break;
 		case 's':
-			leader.ay = ACCELERATION;
+			leader.vy = V_MAX;
 			break;
 		case 'a':
-			leader.ax = - ACCELERATION;
+			leader.vx = -V_MAX;
 			break;
 		case 'd':
-			leader.ax = ACCELERATION;
+			leader.vx = V_MAX;
 			break;
 		default:
 			break;
@@ -132,6 +136,17 @@ public class AITest extends JFrame implements KeyListener, MouseListener {
 	}
 
 	public void keyReleased(KeyEvent e) {
+		char key = ("" + e.getKeyChar()).toLowerCase().charAt(0);
+		switch (key) {
+		case 'w': case 's':
+			leader.vy = 0;
+			break;
+		case 'a': case 'd':
+			leader.vx = 0;
+			break;
+		default:
+			break;
+		}
 	}
 	public void keyTyped(KeyEvent e) {
 	}
