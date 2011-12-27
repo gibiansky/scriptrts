@@ -11,7 +11,7 @@ public class StopOrder extends Order {
     /**
      * Check for order equality.
      */
-    public boolean equals(Order o) {
+    public boolean equals(Object o) {
         return o instanceof StopOrder;
     }
 

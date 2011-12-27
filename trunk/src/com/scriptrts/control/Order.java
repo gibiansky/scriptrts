@@ -18,7 +18,7 @@ public abstract class Order {
      * Check whether this order is equivalent to another.
      * @return true if the orders are equivalent, false otherwise;
      */
-    public abstract boolean equals(Order o);
+    public abstract boolean equals(Object o);
 
     /**
      * Start performing the order.

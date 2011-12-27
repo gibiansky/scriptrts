@@ -37,7 +37,7 @@ public class FollowOrder extends Order {
     /**
      * Check whether two orders are equal
      */
-    public boolean equals(Order o) {
+    public boolean equals(Object o) {
         return o instanceof FollowOrder && target == ((FollowOrder)o).target;
     }
 

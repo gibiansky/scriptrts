@@ -24,11 +24,8 @@ public class MoveOrder extends Order implements Comparable<MoveOrder> {
     /**
      * Check whether this order is equivalent to another.
      */
-    public boolean equals(Order other){
-        if(! (other instanceof MoveOrder))
-            return false;
-        else
-            return point.x == ((MoveOrder)other).point.x && point.y == ((MoveOrder)other).point.y;
+    public boolean equals(Object o){
+        return (o instanceof MoveOrder) && point.equals(((MoveOrder)o).point);
     }
 
     /**

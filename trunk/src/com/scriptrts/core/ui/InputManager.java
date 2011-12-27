@@ -36,15 +36,25 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     private boolean mouseMovement = false;
 
     /**
-     * Time when mouse left button was last clicked
+     * Point where mouse left button was last pressed
      */
-    private long mouseLeftClickedTime = System.currentTimeMillis();
+    private Point mouseLeftPressedLocation = new Point(0, 0);
     
     /**
-     * Time when mouse right button was last clicked
+     * Point where mouse right button was last pressed
      */
-    private long mouseRightClickedTime = System.currentTimeMillis();
+    private Point mouseRightPressedLocation = new Point(0, 0);
 
+    /**
+     * Time when mouse left button was last pressed
+     */
+    private long mouseLeftPressedTime = System.currentTimeMillis();
+    
+    /**
+     * Time when mouse right button was last pressed
+     */
+    private long mouseRightPressedTime = System.currentTimeMillis();    
+    
     /**
      * The point where the mouse has been last seen.
      */
@@ -79,6 +89,16 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
      * How many levels the mouse has been scrolled.
      */
     private int mouseWheelScroll = 0;
+    
+    /**
+     * How sensitive clicking vs dragging is (bigger number more lenient towards clicking)
+     */
+    private final static int CLICK_SENSITIVITY = 20;
+    
+    /**
+     * How fast clicking is (smaller number fast clicking)
+     */
+    private final static int CLICK_SPEED = 200;
 
     /**
      * Create the singleton input manager.
@@ -157,10 +177,7 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     public boolean getMouseClicked(){
         boolean ret = mouseClickedRight || mouseClickedLeft;
         mouseClickedRight = mouseClickedLeft = false;
-
-        if(System.currentTimeMillis() - mouseRightClickedTime > 200 && System.currentTimeMillis() - mouseLeftClickedTime > 200)
-                return false;
-
+        
         return ret;
     }
     
@@ -172,9 +189,6 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
         boolean ret = mouseClickedRight;
         mouseClickedRight = false;
 
-        if(System.currentTimeMillis() - mouseRightClickedTime > 200)
-            return false;
-
         return ret;
     }
 
@@ -185,9 +199,6 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     public boolean getLeftMouseClicked(){
         boolean ret = mouseClickedLeft;
         mouseClickedLeft = false;
-
-        if(System.currentTimeMillis() - mouseLeftClickedTime > 200)
-            return false;
 
         return ret;
     }
@@ -235,7 +246,7 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     }
 
     /**
-     * Method inhereted from the key listener 
+     * Method inherited from the key listener 
      * @param key Key event from the Swing component
      */
     public void keyPressed(KeyEvent key){
@@ -243,7 +254,7 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     }
 
     /**
-     * Method inhereted from the key listener 
+     * Method inherited from the key listener 
      * @param key Key event from the Swing component
      */
     public void keyReleased(KeyEvent key){
@@ -251,7 +262,7 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     }
 
     /**
-     * Method inhereted from the key listener 
+     * Method inherited from the key listener 
      * @param key Key event from the Swing component
      */
     public void keyTyped(KeyEvent key){
@@ -279,14 +290,10 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
      * @param mouse MouseEvent passed from Swing component
      */
     public void mouseClicked(MouseEvent mouse){
-        if(mouse.getButton() == MouseEvent.BUTTON1){
+        if(mouse.getButton() == MouseEvent.BUTTON1)
             mouseClickedLeft = true;
-            mouseLeftClickedTime = System.currentTimeMillis();
-        }
-        else if(mouse.getButton() == MouseEvent.BUTTON3){
+        else if(mouse.getButton() == MouseEvent.BUTTON3)
             mouseClickedRight = true;
-            mouseRightClickedTime = System.currentTimeMillis();
-        }
         mouseLocation.x = mouse.getX();
         mouseLocation.y = mouse.getY();
     } 
@@ -296,10 +303,16 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
      * @param mouse MouseEvent passed from Swing component
      */
     public void mousePressed(MouseEvent mouse){
-        if(mouse.getButton() == MouseEvent.BUTTON1)
+        if(mouse.getButton() == MouseEvent.BUTTON1){
             mousePressedLeft = true;
-        else if(mouse.getButton() == MouseEvent.BUTTON3)
+            mouseLeftPressedLocation.setLocation(mouseLocation);
+            mouseLeftPressedTime = System.currentTimeMillis();
+        }
+        else if(mouse.getButton() == MouseEvent.BUTTON3){
             mousePressedRight = true;
+            mouseRightPressedLocation.setLocation(mouseLocation);
+            mouseRightPressedTime = System.currentTimeMillis();
+        }
         mouseLocation.x = mouse.getX();
         mouseLocation.y = mouse.getY();
     }
@@ -309,13 +322,19 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
      * @param mouse MouseEvent passed from Swing component
      */
     public void mouseReleased(MouseEvent mouse){
-        if(mouse.getButton() == MouseEvent.BUTTON1)
-            mousePressedLeft = false;
-        else if(mouse.getButton() == MouseEvent.BUTTON3)
-            mousePressedRight = false;
-        mouseBeingDragged = false;
         mouseLocation.x = mouse.getX();
         mouseLocation.y = mouse.getY();
+        if(mouse.getButton() == MouseEvent.BUTTON1){
+            mousePressedLeft = false;
+            if(mouseLocation.distance(mouseLeftPressedLocation) < CLICK_SENSITIVITY && System.currentTimeMillis() - mouseLeftPressedTime < CLICK_SPEED)
+            	mouseClickedLeft = true;
+        }
+        else if(mouse.getButton() == MouseEvent.BUTTON3){
+            mousePressedRight = false;
+            if(mouseLocation.distance(mouseRightPressedLocation) < CLICK_SENSITIVITY && System.currentTimeMillis() - mouseRightPressedTime < CLICK_SPEED)
+            	mouseClickedRight = true;
+        }
+        mouseBeingDragged = false;
     }
 
     /**
