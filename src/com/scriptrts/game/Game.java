@@ -208,7 +208,7 @@ public class Game extends HeadlessGame {
 				}
 			}
 		}, KeyEvent.VK_W);
-		
+
 		HotkeyManager.registerHotkey(new Action("Create Cruiser"){
 			public void execute(){
 				int uSpeed = 5;
@@ -302,7 +302,7 @@ public class Game extends HeadlessGame {
 				}
 
 				/* Mouse released (from previously pressed position) without dragging or pressing shift */
-				if(!manager.getLeftMouseDown() && mousePreviouslyPressed && bottomRightSelection == null && !manager.getKeyCodeFlag(KeyEvent.VK_SHIFT)){
+				if(manager.getLeftMouseClicked()){
 					/* Get mouse location */
 					Point point = manager.getMouseLocation();
 
@@ -318,7 +318,7 @@ public class Game extends HeadlessGame {
 						if(unit != null) {
 							/* Whether the current selection is a building */
 							boolean currentIsBuilding = Selection.current().isEmpty() || 
-							Selection.current().getList().get(0).getUnit().isBuilding();
+									Selection.current().getList().get(0).getUnit().isBuilding();
 							Selection newCurrent;
 							/* If already selected and pressing control, deselect */
 							if(manager.getKeyCodeFlag(KeyEvent.VK_CONTROL)){
@@ -376,22 +376,22 @@ public class Game extends HeadlessGame {
 						newCurrent = new Selection();
 						for(GameObject unit : selectedUnits)
 							newCurrent.add(unit);
-						
-						/* Whether the current selection is a building */
-						boolean currentIsBuilding = Selection.current().isEmpty() || 
-							Selection.current().getList().get(0).getUnit().isBuilding();
-						
-						/* Whether the new selection is a building */
-						boolean newIsBuilding = selectedUnits.length > 0 && selectedUnits[0].getUnit().isBuilding();
-						
-						/* Combine the two current and new selections if both contain units */
-						if(!currentIsBuilding){
-							if(!newIsBuilding)
-								newCurrent = Selection.combine(Selection.current(), newCurrent);
-							else
-								newCurrent = Selection.current();
-						}
-						Selection.replaceCurrent(newCurrent);
+
+								/* Whether the current selection is a building */
+								boolean currentIsBuilding = Selection.current().isEmpty() || 
+										Selection.current().getList().get(0).getUnit().isBuilding();
+
+								/* Whether the new selection is a building */
+								boolean newIsBuilding = selectedUnits.length > 0 && selectedUnits[0].getUnit().isBuilding();
+
+								/* Combine the two current and new selections if both contain units */
+								if(!currentIsBuilding){
+									if(!newIsBuilding)
+										newCurrent = Selection.combine(Selection.current(), newCurrent);
+									else
+										newCurrent = Selection.current();
+								}
+								Selection.replaceCurrent(newCurrent);
 					}
 					Main.getOverlay().getButtonArea().updateButtons(newCurrent);
 				} else if(!manager.getLeftMouseDown()){
@@ -408,7 +408,6 @@ public class Game extends HeadlessGame {
 					Point point = manager.getMouseLocation();
 					Point unitTile = unitPainter.unitTileAtPoint(point, viewport);  
 					/* If there is no unit at destination, move there */
-					//TODO: make it do something different if there is a unit there
 					if(getGameGrid().getUnit(unitTile.x, unitTile.y) == null){
 						for(GameObject unit : Selection.current().getList()){
 							if(!unit.getUnit().isStandard())
@@ -568,7 +567,6 @@ public class Game extends HeadlessGame {
 						break;
 					}
 			}
-
 			boolean shareDestination = false;
 			Point destination = null;
 			if(queue == null){
@@ -587,8 +585,8 @@ public class Game extends HeadlessGame {
 
 			if(shareQueue && queue != null){
 				drawDestinationQueue(graphics, queue);
-			} else if(shareDestination)
-				unitPainter.paintDestination(graphics, destination.x, destination.y);
+			} else if(shareDestination){
+				unitPainter.paintDestination(graphics, destination.x, destination.y);}
 		}
 
 		/* On top of the map, paint all the units and buildings */
@@ -673,7 +671,7 @@ public class Game extends HeadlessGame {
 	public void onClick(ClickAction act){
 		clickAction = act;
 	}
-	
+
 	public InputManager getInputManager(){
 		return manager;
 	}
