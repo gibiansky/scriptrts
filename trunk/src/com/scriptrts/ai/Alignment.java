@@ -15,10 +15,7 @@ public class Alignment {
 		avgVx /= agents.size();
 		avgVy /= agents.size();
 		Point2D.Double f = new Point2D.Double(avgVx - agent.vx, avgVy - agent.vy);
-		double r = f.distance(0, 0);
-		if(r > 0.05){
-			agent.ax += f.x / Math.pow(r, 2);
-			agent.ay += f.y / Math.pow(r, 2);
-		}
+		agent.ax += f.x;
+		agent.ay += f.y;
 	}
 }
