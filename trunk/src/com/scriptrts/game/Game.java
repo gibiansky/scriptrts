@@ -399,12 +399,8 @@ public class Game extends HeadlessGame {
 					bottomRightSelection = null;
 				}
 
-
-				mousePreviouslyPressed = manager.getLeftMouseDown();
-
-
 				/* Clicking (to set unit destination) */
-				if(manager.getRightMouseClicked()){
+				if(manager.getRightMouseDown() && !mousePreviouslyPressed){
 					Point point = manager.getMouseLocation();
 					Point unitTile = unitPainter.unitTileAtPoint(point, viewport);  
 					/* If there is no unit at destination, move there */
@@ -444,6 +440,9 @@ public class Game extends HeadlessGame {
 					}
 
 				}
+				
+				/* Prevent multiple actions from triggering */
+				mousePreviouslyPressed = manager.getMouseDown();
 
 			}
 
