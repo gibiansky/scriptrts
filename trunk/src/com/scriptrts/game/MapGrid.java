@@ -87,7 +87,7 @@ public class MapGrid {
                 placeUnit(unit);
             }
             else
-                stopUnit(unit);
+                    unit.getUnit().setDestination(unit.getUnit().getDestination());
         } else {
             unit.updateDirection();
         }
@@ -332,9 +332,8 @@ public class MapGrid {
     private void stopUnit(GameObject unit){
         unit.setDirection(null);
         unit.clearPath();
-        unit.setState(SpriteState.Attack);
     }
-    
+        
 	/**
 	 * Get direction of p2 relative to p1
 	 */
