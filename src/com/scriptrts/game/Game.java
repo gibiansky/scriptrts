@@ -33,7 +33,7 @@ import com.scriptrts.util.ResourceManager;
 public class Game extends HeadlessGame {
 
 	/**
-	 * Viewport used to display the map on the scren.
+	 * Viewport used to display the map on the screen.
 	 */ 
 	private Viewport viewport;
 
@@ -271,7 +271,7 @@ public class Game extends HeadlessGame {
 					}
 
 					/* Should check here if there are any other keys that have been depressed that would modify the number being pressed */
-					else if(!Selection.current().equals(SelectionStorage.retrieve(x))) {
+					else {
 						if (SelectionStorage.retrieve(x) == null)
 							Selection.replaceCurrent(new Selection());
 						else
@@ -298,11 +298,10 @@ public class Game extends HeadlessGame {
 					topLeftSelection = point;
 					movedX = 0;
 					movedY = 0;
-
 				}
 
 				/* Mouse released (from previously pressed position) without dragging or pressing shift */
-				if(manager.getLeftMouseClicked()){
+				if(manager.getLeftMouseClicked() && !mousePreviouslyPressed){
 					/* Get mouse location */
 					Point point = manager.getMouseLocation();
 
@@ -400,7 +399,7 @@ public class Game extends HeadlessGame {
 				}
 
 				/* Clicking (to set unit destination) */
-				if(manager.getRightMouseDown() && !mousePreviouslyPressed){
+				if(manager.getRightMouseClicked() || (manager.getRightMouseDown()) && !mousePreviouslyPressed){
 					Point point = manager.getMouseLocation();
 					Point unitTile = unitPainter.unitTileAtPoint(point, viewport);  
 					/* If there is no unit at destination, move there */
