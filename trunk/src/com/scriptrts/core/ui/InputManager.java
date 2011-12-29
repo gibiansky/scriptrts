@@ -68,7 +68,7 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     /**
      * Whether the right mouse has been clicked.
      */
-    private boolean mouseClickedRight = false;
+    public boolean mouseClickedRight = false;
 
     /**
      * Whether the left mouse is pressed.
@@ -78,7 +78,7 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
     /**
      * Whether the left mouse has been clicked.
      */
-    private boolean mouseClickedLeft = false;
+    public boolean mouseClickedLeft = false;
 
     /**
      * Whether the mouse is currently being dragged.
@@ -175,9 +175,7 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
      * @return true if left or right was clicked.
      */
     public boolean getMouseClicked(){
-        boolean ret = mouseClickedRight || mouseClickedLeft;
-        mouseClickedRight = mouseClickedLeft = false;
-        
+        boolean ret = getRightMouseClicked() || getLeftMouseClicked();
         return ret;
     }
     
@@ -186,9 +184,9 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
      * @return true if right mouse was clicked.
      */
     public boolean getRightMouseClicked(){
-        boolean ret = mouseClickedRight;
+        boolean ret = mouseClickedRight || (mouseLocation.distance(mouseRightPressedLocation) < CLICK_SENSITIVITY && System.currentTimeMillis() - mouseRightPressedTime < CLICK_SPEED);
         mouseClickedRight = false;
-
+        mouseRightPressedTime = 0;
         return ret;
     }
 
@@ -197,9 +195,9 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
      * @return true if the left mouse was clicked.
      */
     public boolean getLeftMouseClicked(){
-        boolean ret = mouseClickedLeft;
+        boolean ret = mouseClickedLeft || (mouseLocation.distance(mouseLeftPressedLocation) < CLICK_SENSITIVITY && System.currentTimeMillis() - mouseLeftPressedTime < CLICK_SPEED);
         mouseClickedLeft = false;
-
+        mouseLeftPressedTime = 0;
         return ret;
     }
 
@@ -322,18 +320,12 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
      * @param mouse MouseEvent passed from Swing component
      */
     public void mouseReleased(MouseEvent mouse){
+        if(mouse.getButton() == MouseEvent.BUTTON1)
+            mousePressedLeft = false;
+        else if(mouse.getButton() == MouseEvent.BUTTON3)
+            mousePressedRight = false;
         mouseLocation.x = mouse.getX();
         mouseLocation.y = mouse.getY();
-        if(mouse.getButton() == MouseEvent.BUTTON1){
-            mousePressedLeft = false;
-            if(mouseLocation.distance(mouseLeftPressedLocation) < CLICK_SENSITIVITY && System.currentTimeMillis() - mouseLeftPressedTime < CLICK_SPEED)
-            	mouseClickedLeft = true;
-        }
-        else if(mouse.getButton() == MouseEvent.BUTTON3){
-            mousePressedRight = false;
-            if(mouseLocation.distance(mouseRightPressedLocation) < CLICK_SENSITIVITY && System.currentTimeMillis() - mouseRightPressedTime < CLICK_SPEED)
-            	mouseClickedRight = true;
-        }
         mouseBeingDragged = false;
     }
 
@@ -346,6 +338,8 @@ public class InputManager implements MouseInputListener, MouseWheelListener, Key
         mouseBeingDragged = true;
         mouseLocation.x = mouse.getX();
         mouseLocation.y = mouse.getY();
+        mouseClickedRight = false;
+        mouseClickedLeft = false;
     }
 
     /**
