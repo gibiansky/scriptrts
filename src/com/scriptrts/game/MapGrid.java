@@ -87,7 +87,7 @@ public class MapGrid {
                 placeUnit(unit);
             }
             else
-                    unit.getUnit().setDestination(unit.getUnit().getDestination());
+                   stopUnit(unit);
         } else {
             unit.updateDirection();
         }
