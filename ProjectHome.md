@@ -1,0 +1,1 @@
+A real-time strategy game (RTS) that allows a wide range of scripting to be implemented -- from simple hotkey macros to full-on AI.
